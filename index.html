@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEURAL LINK // VOID PROTOCOL v5</title>
+    <title>NEURAL LINK // VOID PROTOCOL v6 (Genesis Engine)</title>
     <style>
         @font-face {
             font-family: 'EuropaGrotesk-Medium';
@@ -25,7 +25,8 @@
         }
 
         :root {
-            --bg-color: #030712;
+            /* v6: Abyssal Background */
+            --bg-color: #020024;
             --cyan: #06b6d4;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
@@ -33,7 +34,6 @@
             --font-demibold: 'EuropaGrotesk-Demibold', sans-serif;
             --font-bold: 'EuropaGrotesk-Bold', sans-serif;
 
-            /* Absolute Synchronized Transition Timing */
             --void-timing: 1.2s cubic-bezier(0.7, 0, 0.3, 1);
         }
 
@@ -47,12 +47,13 @@
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            background-color: var(--bg-color);
+            /* v6: Gradient background for abyssal galaxy feel */
+            background: radial-gradient(circle at center, #0a0014 0%, var(--bg-color) 100%);
             color: var(--text-main);
             font-family: var(--font-medium);
         }
 
-        /* Canvas Background */
+        /* 3D Galaxy Canvas */
         #bg-canvas {
             position: absolute;
             top: 0;
@@ -62,6 +63,47 @@
             z-index: 0;
             pointer-events: none;
         }
+
+        /* v6: Phase 1 Elegant Typography */
+        #phase-1-text {
+            position: absolute;
+            left: 12%;
+            top: 50%;
+            transform: translateY(-50%) translateX(0px);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            /* Exit Transition when moving to Void */
+            opacity: 1;
+            filter: blur(0px);
+            transition: transform 0.8s ease, opacity 0.8s ease, filter 0.8s ease;
+            pointer-events: none; /* Let galaxy receive events if needed */
+        }
+
+        #phase-1-text.ghost {
+            /* Smooth luxurious exit */
+            transform: translateY(-50%) translateX(-40px);
+            opacity: 0;
+            filter: blur(10px);
+        }
+
+        .phase1-title {
+            font-family: var(--font-demibold);
+            font-size: 4rem;
+            letter-spacing: 0.2em;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+        }
+
+        .phase1-subtitle {
+            font-family: var(--font-medium);
+            font-size: 1rem;
+            letter-spacing: 0.4em;
+            color: var(--cyan);
+            text-transform: uppercase;
+        }
+
 
         /* Character Phase 1 */
         .hero-wrapper {
@@ -90,7 +132,6 @@
             100% { transform: translateY(0px) rotate(0deg); }
         }
 
-        /* Reduced Zoom In-Place Ghost effect */
         .hero-wrapper.ghost {
             transform: scale(1.8);
             opacity: 0;
@@ -150,7 +191,6 @@
             90% { transform: translate(-2%, -2%); }
         }
 
-
         /* Phase 2 Container */
         #phase-2 {
             position: absolute;
@@ -189,19 +229,17 @@
 
             transform: translateY(110%);
             clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-            /* v5: Exit transition with fast fall duration */
             transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
             text-shadow: 0 0 0px rgba(6, 182, 212, 0);
         }
 
-        /* v5: Rapid cascading fall on exit */
+        /* Rapid cascading fall on exit */
         .clip-wrapper:nth-child(1) .dark-text-line { transition-delay: 0s; }
         .clip-wrapper:nth-child(2) .dark-text-line { transition-delay: 0.1s; }
         .clip-wrapper:nth-child(3) .dark-text-line { transition-delay: 0.2s; }
 
         #phase-2.active .dark-text-line {
             transform: translateY(0);
-            /* Slower transition for entry */
             transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
             animation: textPulseGlow 4s infinite ease-in-out alternate;
         }
@@ -216,19 +254,16 @@
             100% { text-shadow: 0 0 25px rgba(6, 182, 212, 0.5); }
         }
 
-
         /* New Character Phase 2 Wrapper */
         .hero-phase2-wrapper {
             position: absolute;
             left: 2%;
             bottom: 0;
             pointer-events: none;
-            /* v5: transform-origin MUST be bottom center so it expands up without showing bottom crop */
             transform-origin: bottom center;
         }
 
         #phase-2.active .hero-phase2-wrapper {
-            /* v5: Breathing animation replacing float */
             animation: phase2Breathe 4s ease-in-out infinite 1.5s;
         }
 
@@ -238,13 +273,12 @@
             100% { transform: scaleY(1) scaleX(1); }
         }
 
-        /* v5: New Character Phase 2 Image (Handles Materialization and Slide Down/Blur Exit) */
+        /* New Character Phase 2 Image (Handles Materialization and Slide Down/Blur Exit) */
         .hero-character-phase2 {
             height: 85vh;
             max-height: 900px;
             display: block;
 
-            /* v5: Exit base state slides down, blurs, and fades */
             opacity: 0;
             filter: blur(15px);
             transform: translateY(40px) scale(1.02);
@@ -260,7 +294,7 @@
             0% {
                 opacity: 0;
                 filter: blur(20px) brightness(3) drop-shadow(15px 0px 0px rgba(0, 255, 255, 0.8)) drop-shadow(-15px 0px 0px rgba(255, 0, 0, 0.8));
-                transform: translateY(0px) scale(1.05); /* Ensure it starts vertically fixed during animation */
+                transform: translateY(0px) scale(1.05);
             }
             20% {
                 opacity: 0.5;
@@ -377,6 +411,12 @@
 
     <div class="film-grain"></div>
 
+    <!-- v6: Phase 1 Elegant Typography -->
+    <div id="phase-1-text">
+        <div class="phase1-title">AURORA SYSTEM</div>
+        <div class="phase1-subtitle">Awaiting Uplink // Standby</div>
+    </div>
+
     <!-- Phase 1 Content -->
     <div id="hero-action-wrapper" class="hero-wrapper">
         <img src="chibiVKpng.png" id="hero-action" class="hero-character" alt="Character" crossorigin="anonymous">
@@ -409,98 +449,213 @@
 
     <script>
         // --------------------------------------------------------
-        // Canvas Particle Network Background
+        // v6: 3D Galaxy Engine (Vanilla JS Canvas)
         // --------------------------------------------------------
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
 
-        let width, height, particles;
+        let width, height;
+        let stars = [];
 
-        function initCanvas() {
+        // Settings
+        const STAR_COUNT = 3500;
+        const GALAXY_RADIUS = 1500;
+        const SPIRAL_ARMS = 4;
+        const ARM_SPREAD = 0.5; // How thick the arms are
+
+        // Core interaction
+        let mouseX = 0;
+        let mouseY = 0;
+        let targetRotX = Math.PI / 3; // Initial tilt looking down slightly
+        let targetRotY = 0;
+        let currentRotX = targetRotX;
+        let currentRotY = targetRotY;
+
+        // Colors corresponding to Voddkin aesthetic
+        const starColors = [
+            '#06b6d4', // Cyan
+            '#8b5cf6', // Violet
+            '#3b82f6', // Electric Blue
+            '#ffffff'  // Pure White core stars
+        ];
+
+        function initGalaxy() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            particles = [];
+            stars = [];
 
-            const particleCount = Math.floor(width * height / 15000);
+            for (let i = 0; i < STAR_COUNT; i++) {
+                // Logarithmic spiral distribution
+                // Center weighted (more stars at distance ~0)
+                const distance = Math.pow(Math.random(), 3) * GALAXY_RADIUS;
 
-            for (let i = 0; i < particleCount; i++) {
-                particles.push(new Particle());
+                // Which arm this star belongs to
+                const armOffset = (Math.PI * 2 / SPIRAL_ARMS) * Math.floor(Math.random() * SPIRAL_ARMS);
+
+                // The angle based on distance creates the spiral shape
+                const spiralAngle = distance * 0.004;
+
+                // Random scatter within the arm
+                const scatterAngle = (Math.random() - 0.5) * ARM_SPREAD;
+                const finalAngle = spiralAngle + armOffset + scatterAngle;
+
+                // X, Z define the flat galactic plane. Y is thickness.
+                const x = Math.cos(finalAngle) * distance;
+                const z = Math.sin(finalAngle) * distance;
+
+                // Thickness of galaxy (thicker at center, thinner at edges)
+                const thickness = (1 - (distance / GALAXY_RADIUS)) * 100;
+                const y = (Math.random() - 0.5) * thickness;
+
+                // Pick a color
+                const color = starColors[Math.floor(Math.random() * starColors.length)];
+
+                // Base size - occasional large 'stardust' blobs
+                const isNebula = Math.random() > 0.95;
+                const size = isNebula ? Math.random() * 8 + 4 : Math.random() * 1.5 + 0.2;
+
+                stars.push({
+                    x, y, z,
+                    ox: x, oy: y, oz: z,
+                    size,
+                    color,
+                    isNebula,
+                    // Orbital speed based on distance (Kepler's third law approx)
+                    speed: 0.001 + (0.005 * (1 - distance / GALAXY_RADIUS))
+                });
             }
         }
 
-        class Particle {
-            constructor() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.vx = (Math.random() - 0.5) * 0.5;
-                this.vy = (Math.random() - 0.5) * 0.5;
-                this.radius = Math.random() * 1.5 + 0.5;
-            }
-
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-
-                if (this.x < 0 || this.x > width) this.vx = -this.vx;
-                if (this.y < 0 || this.y > height) this.vy = -this.vy;
-            }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(6, 182, 212, 0.5)';
-                ctx.fill();
-            }
-        }
-
-        let mouse = { x: null, y: null };
+        // Mouse Parallax Logic
         window.addEventListener('mousemove', (e) => {
-            mouse.x = e.x;
-            mouse.y = e.y;
-        });
-        window.addEventListener('mouseout', () => {
-            mouse.x = null;
-            mouse.y = null;
+            // Update mouse vars for pixel perfect hitbox
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+
+            // Update rotation targets for 3D Engine
+            // Normalize mouse between -1 and 1
+            const nx = (e.clientX / width) * 2 - 1;
+            const ny = (e.clientY / height) * 2 - 1;
+
+            // Limit rotation to avoid flipping the galaxy upside down
+            targetRotX = (Math.PI / 3) + ny * 0.3;
+            targetRotY = nx * 0.5;
         });
 
-        function animate() {
+        window.addEventListener('resize', initGalaxy);
+
+        function rotate3D(x, y, z, rotX, rotY) {
+            // Rotate around X axis
+            let cosX = Math.cos(rotX);
+            let sinX = Math.sin(rotX);
+            let y1 = y * cosX - z * sinX;
+            let z1 = y * sinX + z * cosX;
+
+            // Rotate around Y axis
+            let cosY = Math.cos(rotY);
+            let sinY = Math.sin(rotY);
+            let x2 = x * cosY + z1 * sinY;
+            let z2 = -x * sinY + z1 * cosY;
+
+            return { x: x2, y: y1, z: z2 };
+        }
+
+        // Main render loop
+        let autoRotY = 0;
+
+        function animateGalaxy() {
+            // Fade out previous frame slightly for motion blur (if desired, using clearRect for sharp stars)
             ctx.clearRect(0, 0, width, height);
 
-            for (let i = 0; i < particles.length; i++) {
-                particles[i].update();
-                particles[i].draw();
+            // Additive blending for gorgeous glowing stars and nebula dust
+            ctx.globalCompositeOperation = 'lighter';
 
-                for (let j = i; j < particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
+            // Interpolate rotations for smooth inertia
+            currentRotX += (targetRotX - currentRotX) * 0.05;
+            currentRotY += (targetRotY - currentRotY) * 0.05;
 
-                    if (dist < 120) {
-                        ctx.beginPath();
-                        ctx.strokeStyle = `rgba(6, 182, 212, ${0.15 - dist/800})`;
-                        ctx.lineWidth = 0.5;
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.stroke();
-                    }
-                }
+            // Continual slow auto-rotation of the whole structure
+            autoRotY += 0.0005;
 
-                if (mouse.x != null && mouse.y != null) {
-                    const dx = particles[i].x - mouse.x;
-                    const dy = particles[i].y - mouse.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 150) {
-                        particles[i].x += dx / 100;
-                        particles[i].y += dy / 100;
-                    }
+            // Depth sorting: Sort stars by Z so far stars draw first
+            const projectedStars = [];
+
+            for (let i = 0; i < stars.length; i++) {
+                let s = stars[i];
+
+                // Calculate individual orbit rotation (stars orbiting the center)
+                let orbitCos = Math.cos(s.speed);
+                let orbitSin = Math.sin(s.speed);
+                let nx = s.ox * orbitCos - s.oz * orbitSin;
+                let nz = s.ox * orbitSin + s.oz * orbitCos;
+                s.ox = nx;
+                s.oz = nz;
+
+                // Apply global combined rotation (Auto + Mouse Parallax)
+                let totalRotY = currentRotY + autoRotY;
+                let p = rotate3D(s.ox, s.oy, s.oz, currentRotX, totalRotY);
+
+                // Perspective projection
+                let fov = 800;
+                let zOffset = 1000; // Move galaxy forward into view
+                let zPos = p.z + zOffset;
+
+                if (zPos > 0) {
+                    let scale = fov / zPos;
+                    let projX = width / 2 + p.x * scale;
+                    let projY = height / 2 + p.y * scale;
+
+                    projectedStars.push({
+                        px: projX,
+                        py: projY,
+                        pz: p.z,
+                        scale: scale,
+                        ref: s
+                    });
                 }
             }
-            requestAnimationFrame(animate);
+
+            // Sort back to front
+            projectedStars.sort((a, b) => b.pz - a.pz);
+
+            // Draw
+            for (let i = 0; i < projectedStars.length; i++) {
+                let p = projectedStars[i];
+                let s = p.ref;
+                let scaledSize = s.size * p.scale;
+
+                // Skip if offscreen
+                if (p.px < 0 || p.px > width || p.py < 0 || p.py > height) continue;
+
+                ctx.beginPath();
+                ctx.arc(p.px, p.py, scaledSize, 0, Math.PI * 2);
+
+                // Simulate distance opacity
+                let alpha = Math.min(1, Math.max(0.1, p.scale * 1.5));
+
+                if (s.isNebula) {
+                    // Nebula: highly blurred, low opacity
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = s.color;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.1})`;
+                } else {
+                    // Crisp star
+                    ctx.shadowBlur = scaledSize * 2;
+                    ctx.shadowColor = s.color;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                }
+
+                ctx.fill();
+            }
+
+            ctx.globalCompositeOperation = 'source-over'; // reset
+            ctx.shadowBlur = 0; // reset
+
+            requestAnimationFrame(animateGalaxy);
         }
 
-        window.addEventListener('resize', initCanvas);
-        initCanvas();
-        animate();
+        initGalaxy();
+        animateGalaxy();
 
         // --------------------------------------------------------
         // Pixel-Perfect Hitbox (Alpha Channel)
@@ -556,7 +711,7 @@
 
 
         // --------------------------------------------------------
-        // Ghost & Void Transitions Logic (In-Place & Sync)
+        // Ghost & Void Transitions Logic
         // --------------------------------------------------------
         const blackHole = document.getElementById('black-hole');
         const phase2 = document.getElementById('phase-2');
@@ -564,6 +719,7 @@
         const btnReturnWrapper = document.getElementById('btn-return-wrapper');
         const darkTextsContainer = document.getElementById('dark-texts-container');
         const heroPhase2 = document.getElementById('hero-phase2');
+        const phase1Text = document.getElementById('phase-1-text');
 
         heroAction.addEventListener('click', (e) => {
             if (!isHoveringPixel) return;
@@ -575,7 +731,9 @@
             blackHole.style.left = `${centerX}px`;
             blackHole.style.top = `${centerY}px`;
 
+            // Trigger Phase 1 Exits
             heroWrapper.classList.add('ghost');
+            phase1Text.classList.add('ghost'); // Elegant text exit
 
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
@@ -590,22 +748,13 @@
         });
 
         btnReturn.addEventListener('click', () => {
-            // v5: Orchestrated JS Timing
-
-            // 1. Remove phase2 active. This triggers:
-            // - The Return button to disappear quickly.
-            // - The dark texts to fall in a rapid cascade (0s, 0.1s, 0.2s delay).
             phase2.classList.remove('active');
-
-            // Immediately remove the glitch materialization class so CSS base rules take over.
-            // Base CSS rules specify the character slides down, blurs, and fades out.
             heroPhase2.classList.remove('glitch-entry');
 
-            // 2. Wait exactly 800ms for these exit animations to finish
-            // before starting the black hole collapse and character reappearance.
             setTimeout(() => {
                 blackHole.classList.remove('active');
                 heroWrapper.classList.remove('ghost');
+                phase1Text.classList.remove('ghost'); // Elegant text return
             }, 800);
         });
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEURAL LINK // VOID PROTOCOL v7 (Abyssal Constellation)</title>
+    <title>NEURAL LINK // VOID PROTOCOL v8 (Master Polish)</title>
     <style>
         @font-face {
             font-family: 'EuropaGrotesk-Medium';
@@ -25,7 +25,6 @@
         }
 
         :root {
-            /* v7: Deep Abyssal Background */
             --bg-color: #030108;
             --cyan: #06b6d4;
             --text-main: #f8fafc;
@@ -41,13 +40,14 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            /* v8: Hide native cursor globally */
+            cursor: none !important;
         }
 
         body, html {
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            /* v7: Extreme dark void to contrast with the dense star core */
             background: radial-gradient(circle at center, #050212 0%, var(--bg-color) 100%);
             color: var(--text-main);
             font-family: var(--font-medium);
@@ -64,6 +64,33 @@
             pointer-events: none;
         }
 
+        /* v8: Cinematic Vignette */
+        .vignette {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* v8: Custom Inverted Cursor */
+        .custom-cursor {
+            position: fixed;
+            top: 0; left: 0;
+            width: 20px; height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: difference;
+            transform: translate(-50%, -50%) scale(1);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Elastic feel */
+        }
+
+        .custom-cursor.hovering {
+            transform: translate(-50%, -50%) scale(3); /* Expand over hitboxes */
+        }
+
         /* Phase 1 Elegant Typography */
         #phase-1-text {
             position: absolute;
@@ -78,8 +105,6 @@
             filter: blur(0px);
             transition: transform 0.8s ease, opacity 0.8s ease, filter 0.8s ease;
             pointer-events: none;
-
-            /* v7: Strong dark shadow to pop out from dense star core */
             text-shadow: 0 0 20px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 0, 0, 0.8);
         }
 
@@ -94,7 +119,6 @@
             font-size: 4rem;
             letter-spacing: 0.2em;
             color: #fff;
-            /* Enhance cyan core over the black shadow */
             text-shadow: 0 0 20px rgba(6, 182, 212, 0.6), 0 0 40px rgba(0, 0, 0, 1);
         }
 
@@ -115,6 +139,7 @@
             z-index: 20;
             transition: transform var(--void-timing), opacity 0.5s ease-out;
             transform-origin: center center;
+            /* Note: Pointer events manually managed via JS Alpha check */
             pointer-events: auto;
         }
 
@@ -211,13 +236,14 @@
             align-items: flex-end;
             gap: 1.5rem;
             text-align: right;
-            transition: transform 0.1s linear;
+            transition: transform 0.1s linear, filter 0.1s linear; /* Note: Filter transition added for kinetic glitch */
         }
 
         .clip-wrapper {
             overflow: hidden;
-            padding-bottom: 0.2em;
-            margin-bottom: -0.2em;
+            /* v8: Text Guillotine Fix - add padding to prevent cutting shadows */
+            padding: 30px;
+            margin: -30px;
         }
 
         .dark-text-line {
@@ -229,9 +255,10 @@
             letter-spacing: -0.02em;
 
             transform: translateY(110%);
-            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+            /* v8: Expand horizontal polygons heavily to not clip the glow */
+            clip-path: polygon(-20% 0, 120% 0, 120% 100%, -20% 100%);
             transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-            text-shadow: 0 0 0px rgba(6, 182, 212, 0);
+            text-shadow: 0 0 0px rgba(255, 255, 255, 0);
         }
 
         /* Cascading exit */
@@ -242,7 +269,8 @@
         #phase-2.active .dark-text-line {
             transform: translateY(0);
             transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-            animation: textPulseGlow 4s infinite ease-in-out alternate;
+            /* v8: Surgical White Glow, faster pulse */
+            animation: textPulseWhite 1.2s infinite ease-in-out alternate;
         }
 
         /* Cascading enter */
@@ -250,9 +278,10 @@
         #phase-2.active .clip-wrapper:nth-child(2) .dark-text-line { transition-delay: 0.95s; }
         #phase-2.active .clip-wrapper:nth-child(3) .dark-text-line { transition-delay: 1.1s; }
 
-        @keyframes textPulseGlow {
-            0% { text-shadow: 0 0 5px rgba(6, 182, 212, 0.1); }
-            100% { text-shadow: 0 0 25px rgba(6, 182, 212, 0.5); }
+        /* v8: Pure white pulse, elegant and non-blinding */
+        @keyframes textPulseWhite {
+            0% { text-shadow: 0 0 5px rgba(255, 255, 255, 0.05); }
+            100% { text-shadow: 0 0 15px rgba(255, 255, 255, 0.3); }
         }
 
         /* New Character Phase 2 Wrapper */
@@ -262,6 +291,8 @@
             bottom: 0;
             pointer-events: none;
             transform-origin: bottom center;
+            /* Filter transition added for kinetic glitch */
+            transition: filter 0.1s linear;
         }
 
         #phase-2.active .hero-phase2-wrapper {
@@ -334,13 +365,13 @@
             display: flex;
             align-items: center;
             gap: 1rem;
-            cursor: pointer;
             opacity: 0;
             transition: opacity 0.3s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
             padding: 1rem 2rem;
             background: transparent;
             border: none;
             outline: none;
+            /* Note: Native cursor hidden globally */
         }
 
         #phase-2.active .btn-return-wrapper {
@@ -408,11 +439,12 @@
 </head>
 <body>
 
-    <canvas id="bg-canvas"></canvas>
+    <div class="vignette"></div>
+    <div id="custom-cursor" class="custom-cursor"></div>
 
+    <canvas id="bg-canvas"></canvas>
     <div class="film-grain"></div>
 
-    <!-- Phase 1 Elegant Typography -->
     <div id="phase-1-text">
         <div class="phase1-title">AURORA SYSTEM</div>
         <div class="phase1-subtitle">Awaiting Uplink // Standby</div>
@@ -428,7 +460,7 @@
 
     <!-- Phase 2 Content -->
     <div id="phase-2">
-        <div class="hero-phase2-wrapper">
+        <div id="hero-phase2-wrapper" class="hero-phase2-wrapper">
             <img src="VKpng.png" id="hero-phase2" class="hero-character-phase2" alt="Materialized Character">
         </div>
 
@@ -450,7 +482,34 @@
 
     <script>
         // --------------------------------------------------------
-        // v7: Abyssal Constellation Galaxy Engine
+        // v8: Custom Cursor Logic
+        // --------------------------------------------------------
+        const customCursor = document.getElementById('custom-cursor');
+        let rawMouseX = window.innerWidth / 2;
+        let rawMouseY = window.innerHeight / 2;
+        let cursorX = rawMouseX;
+        let cursorY = rawMouseY;
+
+        // Smooth cursor follow loop
+        function renderCursor() {
+            cursorX += (rawMouseX - cursorX) * 0.2;
+            cursorY += (rawMouseY - cursorY) * 0.2;
+            customCursor.style.left = `${cursorX}px`;
+            customCursor.style.top = `${cursorY}px`;
+            requestAnimationFrame(renderCursor);
+        }
+        requestAnimationFrame(renderCursor);
+
+        // --------------------------------------------------------
+        // v8: Kinetic Glitch Variables
+        // --------------------------------------------------------
+        let lastMouseX = rawMouseX;
+        let velocityX = 0;
+        const heroPhase2Wrapper = document.getElementById('hero-phase2-wrapper');
+        const darkTextsContainer = document.getElementById('dark-texts-container');
+
+        // --------------------------------------------------------
+        // 60FPS Galaxy Engine
         // --------------------------------------------------------
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d', { alpha: false });
@@ -471,12 +530,8 @@
         let currentRotY = targetRotY;
         let autoRotY = 0;
 
-        // v7: Removed white core color, strictly Deep Void colors
         const starColors = [
-            '#06b6d4', // Cyan
-            '#8b5cf6', // Violet
-            '#3b82f6', // Electric Blue
-            '#0284c7'  // Deep Blue
+            '#06b6d4', '#8b5cf6', '#3b82f6', '#0284c7'
         ];
 
         const spriteCache = {};
@@ -484,8 +539,6 @@
         function createStarSprite(color, type) {
             const c = document.createElement('canvas');
             const cCtx = c.getContext('2d');
-
-            // v7: Gas clouds are massive
             const radius = type === 'gas' ? 80 : (type === 'nebula' ? 30 : 8);
             c.width = radius * 2;
             c.height = radius * 2;
@@ -500,7 +553,6 @@
                 grad.addColorStop(0.3, color);
                 grad.addColorStop(1, 'transparent');
             } else {
-                // Dimmer core, no white blowout
                 grad.addColorStop(0, color);
                 grad.addColorStop(0.2, color);
                 grad.addColorStop(1, 'transparent');
@@ -508,11 +560,7 @@
 
             cCtx.fillStyle = grad;
             cCtx.fillRect(0, 0, c.width, c.height);
-
-            return {
-                canvas: c,
-                radius: radius
-            };
+            return { canvas: c, radius: radius };
         }
 
         function preRenderSprites() {
@@ -542,65 +590,39 @@
 
                 const ox = Math.cos(finalAngle) * distance;
                 const oz = Math.sin(finalAngle) * distance;
-
                 const thickness = (1 - (distance / GALAXY_RADIUS)) * 100;
                 const oy = (Math.random() - 0.5) * thickness;
-
                 const color = starColors[Math.floor(Math.random() * starColors.length)];
 
-                // v7: Type Distribution - 10% massive gas, 20% nebulas, 70% crisp stars
                 const roll = Math.random();
                 let type, baseScale;
 
-                if (roll > 0.9) {
-                    type = 'gas';
-                    baseScale = Math.random() * 4 + 3; // Huge
-                } else if (roll > 0.7) {
-                    type = 'nebula';
-                    baseScale = Math.random() * 2 + 1;
-                } else {
-                    type = 'star';
-                    baseScale = Math.random() * 1.2 + 0.3;
-                }
+                if (roll > 0.9) { type = 'gas'; baseScale = Math.random() * 4 + 3; }
+                else if (roll > 0.7) { type = 'nebula'; baseScale = Math.random() * 2 + 1; }
+                else { type = 'star'; baseScale = Math.random() * 1.2 + 0.3; }
 
                 const speed = 0.001 + (0.005 * (1 - distance / GALAXY_RADIUS));
-                const orbitCos = Math.cos(speed);
-                const orbitSin = Math.sin(speed);
-
                 const spriteKey = color + '_' + type;
                 const sprite = spriteCache[spriteKey];
 
                 stars.push({
-                    ox, oy, oz,
-                    baseScale,
-                    type,
-                    orbitCos, orbitSin,
-                    spriteCanvas: sprite.canvas,
-                    spriteRadius: sprite.radius
+                    ox, oy, oz, baseScale, type,
+                    orbitCos: Math.cos(speed), orbitSin: Math.sin(speed),
+                    spriteCanvas: sprite.canvas, spriteRadius: sprite.radius
                 });
-
                 renderList[i] = { px: 0, py: 0, pz: 0, scale: 0, ref: stars[i] };
             }
         }
 
-        window.addEventListener('mousemove', (e) => {
-            const nx = (e.clientX / width) * 2 - 1;
-            const ny = (e.clientY / height) * 2 - 1;
-            targetRotX = (Math.PI / 3) + ny * 0.3;
-            targetRotY = nx * 0.5;
-        });
-
         window.addEventListener('resize', initGalaxy);
 
-        // v7: Logic for dynamically pausing/slowing canvas
         let animFrameId = null;
         let globalTimeScale = 1.0;
         let isGalaxyPaused = false;
 
         function animateGalaxy() {
-            if (isGalaxyPaused) return; // Prevent heavy math when hidden
+            if (isGalaxyPaused) return;
 
-            // v7: Abyssal center gradient
             ctx.fillStyle = '#050212';
             ctx.fillRect(0, 0, width, height);
 
@@ -618,29 +640,23 @@
 
             const fov = 800;
             const zOffset = 1000;
-
             let visibleCount = 0;
 
             for (let i = 0; i < STAR_COUNT; i++) {
                 let s = stars[i];
 
-                // Orbit only moves if we are actively time scaling
                 if (globalTimeScale > 0.01) {
-                    // Apply speed scaled by time
                     const scaledCos = Math.cos(Math.acos(s.orbitCos) * globalTimeScale);
                     const scaledSin = Math.sin(Math.asin(s.orbitSin) * globalTimeScale);
                     const nx = s.ox * scaledCos - s.oz * scaledSin;
                     const nz = s.ox * scaledSin + s.oz * scaledCos;
-                    s.ox = nx;
-                    s.oz = nz;
+                    s.ox = nx; s.oz = nz;
                 }
 
                 const y1 = s.oy * cosX - s.oz * sinX;
                 const z1 = s.oy * sinX + s.oz * cosX;
-
                 const finalX = s.ox * cosY + z1 * sinY;
                 const finalZ = -s.ox * sinY + z1 * cosY;
-
                 const zPos = finalZ + zOffset;
 
                 if (zPos > 0) {
@@ -650,11 +666,8 @@
 
                     if (projX > -100 && projX < width + 100 && projY > -100 && projY < height + 100) {
                         let rl = renderList[visibleCount];
-                        rl.px = projX;
-                        rl.py = projY;
-                        rl.pz = finalZ;
-                        rl.scale = scale;
-                        rl.ref = s;
+                        rl.px = projX; rl.py = projY; rl.pz = finalZ;
+                        rl.scale = scale; rl.ref = s;
                         visibleCount++;
                     }
                 }
@@ -670,11 +683,7 @@
                 let drawRadius = s.spriteRadius * finalScale;
                 let distAlpha = Math.min(1, Math.max(0.05, p.scale * 1.5));
 
-                // v7: Fine-tuned alphas to prevent blowout
-                let finalAlpha;
-                if (s.type === 'gas') finalAlpha = distAlpha * 0.03; // Very subtle
-                else if (s.type === 'nebula') finalAlpha = distAlpha * 0.2;
-                else finalAlpha = distAlpha * 0.6;
+                let finalAlpha = s.type === 'gas' ? distAlpha * 0.03 : (s.type === 'nebula' ? distAlpha * 0.2 : distAlpha * 0.6);
 
                 ctx.globalAlpha = finalAlpha;
                 ctx.drawImage(s.spriteCanvas, p.px - drawRadius, p.py - drawRadius, drawRadius * 2, drawRadius * 2);
@@ -682,7 +691,6 @@
 
             ctx.globalCompositeOperation = 'source-over';
             ctx.globalAlpha = 1.0;
-
             animFrameId = requestAnimationFrame(animateGalaxy);
         }
 
@@ -690,10 +698,70 @@
         animateGalaxy();
 
         // --------------------------------------------------------
+        // Main Unified UI Interaction Loop (Velocity, Parallax, Cursor)
+        // --------------------------------------------------------
+        const phase2 = document.getElementById('phase-2');
+
+        function uiInteractionLoop() {
+            // Calculate Mouse Velocity
+            velocityX = rawMouseX - lastMouseX;
+            lastMouseX = rawMouseX;
+
+            // v8: Kinetic Glitch Effect during Phase 2
+            if (phase2.classList.contains('active')) {
+                // Apply a tolerance threshold to start separating RGB channels
+                const absVel = Math.abs(velocityX);
+                if (absVel > 10) {
+                    // Cap glitch magnitude
+                    const glitchOffset = Math.min(absVel * 0.5, 30);
+                    const direction = velocityX > 0 ? 1 : -1;
+
+                    // Create RGB separation drop-shadows
+                    const glitchFilter = `drop-shadow(${glitchOffset * direction}px 0px 0px rgba(0, 255, 255, 0.8)) drop-shadow(${-glitchOffset * direction}px 0px 0px rgba(255, 0, 0, 0.8))`;
+
+                    heroPhase2Wrapper.style.filter = glitchFilter;
+                    // darkTextsContainer parallax logic overrides transform, so apply filter exclusively
+                    darkTextsContainer.style.filter = glitchFilter;
+                } else {
+                    // Settle glitch quickly
+                    heroPhase2Wrapper.style.filter = 'drop-shadow(0px 0px 0px rgba(0,255,255,0))';
+                    darkTextsContainer.style.filter = 'drop-shadow(0px 0px 0px rgba(0,255,255,0))';
+                }
+
+                // Phase 2 Mouse Parallax Math
+                const screenX = window.innerWidth;
+                const screenY = window.innerHeight;
+                const xPercent = (rawMouseX / screenX) * 2 - 1;
+                const yPercent = (rawMouseY / screenY) * 2 - 1;
+
+                const parallaxX = xPercent * -20;
+                const parallaxY = -50 + (yPercent * -10);
+
+                darkTextsContainer.style.transform = `translate(${parallaxX}px, ${parallaxY}%)`;
+            }
+
+            requestAnimationFrame(uiInteractionLoop);
+        }
+        requestAnimationFrame(uiInteractionLoop);
+
+        // Update generic mouse variables globally
+        window.addEventListener('mousemove', (e) => {
+            rawMouseX = e.clientX;
+            rawMouseY = e.clientY;
+
+            // 3D Parallax Targets
+            const nx = (e.clientX / width) * 2 - 1;
+            const ny = (e.clientY / height) * 2 - 1;
+            targetRotX = (Math.PI / 3) + ny * 0.3;
+            targetRotY = nx * 0.5;
+        });
+
+        // --------------------------------------------------------
         // Pixel-Perfect Hitbox (Alpha Channel)
         // --------------------------------------------------------
         const heroAction = document.getElementById('hero-action');
         const heroWrapper = document.getElementById('hero-action-wrapper');
+        const btnReturnWrapper = document.getElementById('btn-return-wrapper');
 
         const offscreenCanvas = document.createElement('canvas');
         const offCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
@@ -724,31 +792,28 @@
                 const alpha = pixelData[3];
 
                 if (alpha > 0) {
-                    heroAction.style.cursor = 'pointer';
                     isHoveringPixel = true;
+                    customCursor.classList.add('hovering'); // v8 Cursor expand
                 } else {
-                    heroAction.style.cursor = 'default';
                     isHoveringPixel = false;
+                    customCursor.classList.remove('hovering');
                 }
             } else {
-                heroAction.style.cursor = 'default';
                 isHoveringPixel = false;
+                customCursor.classList.remove('hovering');
             }
         });
 
         heroAction.addEventListener('mouseleave', () => {
-            heroAction.style.cursor = 'default';
             isHoveringPixel = false;
+            customCursor.classList.remove('hovering');
         });
 
         // --------------------------------------------------------
-        // v7: Zero-Lag Ghost & Void Transitions Logic
+        // Ghost & Void Transitions Logic
         // --------------------------------------------------------
         const blackHole = document.getElementById('black-hole');
-        const phase2 = document.getElementById('phase-2');
         const btnReturn = document.getElementById('btn-return');
-        const btnReturnWrapper = document.getElementById('btn-return-wrapper');
-        const darkTextsContainer = document.getElementById('dark-texts-container');
         const heroPhase2 = document.getElementById('hero-phase2');
         const phase1Text = document.getElementById('phase-1-text');
 
@@ -756,6 +821,7 @@
 
         heroAction.addEventListener('click', (e) => {
             if (!isHoveringPixel) return;
+            customCursor.classList.remove('hovering');
 
             const rect = heroWrapper.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
@@ -767,7 +833,6 @@
             heroWrapper.classList.add('ghost');
             phase1Text.classList.add('ghost');
 
-            // v7: Dynamically decelerate canvas to prevent CSS stutter
             clearInterval(decelerationInterval);
             decelerationInterval = setInterval(() => {
                 globalTimeScale = Math.max(0, globalTimeScale - 0.1);
@@ -783,21 +848,19 @@
                 phase2.classList.add('active');
                 heroPhase2.classList.add('glitch-entry');
 
-                // v7: Full stop the canvas when Phase 2 is completely active
                 isGalaxyPaused = true;
                 cancelAnimationFrame(animFrameId);
             }, 1000);
         });
 
         btnReturn.addEventListener('click', () => {
+            customCursor.classList.remove('hovering');
             phase2.classList.remove('active');
             heroPhase2.classList.remove('glitch-entry');
 
-            // v7: Restart Canvas Render
             isGalaxyPaused = false;
             animateGalaxy();
 
-            // Accelerate back gracefully
             clearInterval(decelerationInterval);
             decelerationInterval = setInterval(() => {
                 globalTimeScale = Math.min(1.0, globalTimeScale + 0.05);
@@ -810,26 +873,9 @@
             }, 800);
         });
 
-        // --------------------------------------------------------
-        // Magnetic Parallax for Typography in Phase 2
-        // --------------------------------------------------------
-        window.addEventListener('mousemove', (e) => {
-            if (phase2.classList.contains('active')) {
-                const screenX = window.innerWidth;
-                const screenY = window.innerHeight;
-
-                const xPercent = (e.clientX / screenX) * 2 - 1;
-                const yPercent = (e.clientY / screenY) * 2 - 1;
-
-                const parallaxX = xPercent * -20;
-                const parallaxY = -50 + (yPercent * -10);
-
-                darkTextsContainer.style.transform = `translate(${parallaxX}px, ${parallaxY}%)`;
-            }
-        });
 
         // --------------------------------------------------------
-        // Magnetic Button Effect for RETURN
+        // Magnetic Button Effect for RETURN & Cursor Scale
         // --------------------------------------------------------
         btnReturnWrapper.addEventListener('mousemove', (e) => {
             const rect = btnReturnWrapper.getBoundingClientRect();
@@ -837,10 +883,12 @@
             const y = e.clientY - rect.top - rect.height / 2;
 
             btnReturn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+            customCursor.classList.add('hovering');
         });
 
         btnReturnWrapper.addEventListener('mouseleave', () => {
             btnReturn.style.transform = `translate(0px, 0px)`;
+            customCursor.classList.remove('hovering');
         });
 
     </script>

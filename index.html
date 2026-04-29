@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEURAL LINK // VOID PROTOCOL</title>
+    <title>NEURAL LINK // VOID PROTOCOL v3</title>
     <style>
         @font-face {
             font-family: 'EuropaGrotesk-Medium';
@@ -32,8 +32,9 @@
             --font-medium: 'EuropaGrotesk-Medium', sans-serif;
             --font-demibold: 'EuropaGrotesk-Demibold', sans-serif;
             --font-bold: 'EuropaGrotesk-Bold', sans-serif;
-            /* Premium Synchronized Transition Timing */
-            --void-timing: 1.2s cubic-bezier(0.8, 0, 0.2, 1);
+
+            /* v3: Absolute Synchronized Transition Timing */
+            --void-timing: 1.2s cubic-bezier(0.7, 0, 0.3, 1);
         }
 
         * {
@@ -67,21 +68,25 @@
             position: absolute;
             top: 50%;
             right: 8%;
-            transform: translateY(-50%);
+            /* Fixed anchoring via margin instead of transform to allow pure scale transform */
+            margin-top: -22.5vh;
             z-index: 20;
-            /* Sync the disappearing effect with the black hole */
-            transition: all var(--void-timing);
-            /* Reset transform origin to character center for symmetrical scaling */
+            /* Sync the disappearing effect with the black hole exactly */
+            transition: transform var(--void-timing), opacity var(--void-timing);
             transform-origin: center center;
+            /* Pointer events are handled manually via JS Alpha check */
+            pointer-events: auto;
         }
 
         .hero-character {
             height: 45vh;
             max-height: 450px;
-            cursor: pointer;
-            /* Complex float with slight rotation */
-            animation: complexFloat 5s ease-in-out infinite;
+            /* Cursor pointer is now handled via JS dynamically */
             display: block;
+            animation: complexFloat 5s ease-in-out infinite;
+            /* Disable native dragging so it doesn't interrupt custom JS */
+            user-select: none;
+            -webkit-user-drag: none;
         }
 
         @keyframes complexFloat {
@@ -90,10 +95,10 @@
             100% { transform: translateY(0px) rotate(0deg); }
         }
 
-        /* Ghost effect - synced with void */
+        /* v3: In-Place Ghost effect */
         .hero-wrapper.ghost {
-            /* We calculate translate dynamic in JS based on viewport center */
-            /* Scale up and fade out */
+            /* Extreme zoom and fade strictly in place */
+            transform: scale(3);
             opacity: 0;
             pointer-events: none;
         }
@@ -115,10 +120,42 @@
             transition: transform var(--void-timing);
         }
         #black-hole.active {
-            /* 10000 ensures it covers any viewport size even from the far right edge */
+            /* 10000 ensures it covers any viewport size */
             transform: translate(-50%, -50%) scale(10000);
             pointer-events: auto;
         }
+
+        /* v3: Animated Film Grain Overlay */
+        .film-grain {
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
+            opacity: 0;
+            pointer-events: none;
+            z-index: 24; /* Under typography/character but over black hole */
+            mix-blend-mode: overlay;
+            transition: opacity 1s ease;
+        }
+
+        #phase-2.active .film-grain {
+            opacity: 0.15;
+            animation: grainShift 0.2s steps(2) infinite;
+        }
+
+        @keyframes grainShift {
+            0%, 100% { transform: translate(0, 0); }
+            10% { transform: translate(-2%, -2%); }
+            20% { transform: translate(-4%, 2%); }
+            30% { transform: translate(2%, -4%); }
+            40% { transform: translate(-2%, 4%); }
+            50% { transform: translate(4%, -2%); }
+            60% { transform: translate(2%, 2%); }
+            70% { transform: translate(-4%, -4%); }
+            80% { transform: translate(4%, 4%); }
+            90% { transform: translate(-2%, -2%); }
+        }
+
 
         /* Phase 2 Container */
         #phase-2 {
@@ -139,12 +176,12 @@
             align-items: flex-end;
             gap: 1.5rem;
             text-align: right;
+            /* Will be manipulated via JS for parallax */
+            transition: transform 0.1s linear;
         }
 
-        /* Clip-path container for premium text reveal */
         .clip-wrapper {
             overflow: hidden;
-            /* Pad slightly to prevent clipping descenders/ascenders */
             padding-bottom: 0.2em;
             margin-bottom: -0.2em;
         }
@@ -157,7 +194,6 @@
             text-transform: uppercase;
             letter-spacing: -0.02em;
 
-            /* Prepare for clip-path reveal from bottom up */
             transform: translateY(110%);
             clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
             transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -170,30 +206,48 @@
         #phase-2.active .clip-wrapper:nth-child(2) .dark-text-line { transition-delay: 0.95s; }
         #phase-2.active .clip-wrapper:nth-child(3) .dark-text-line { transition-delay: 1.1s; }
 
-        /* New Character Phase 2 (Left Aligned) */
+        /* v3: New Character Phase 2 (Anchored Left Bottom) */
         .hero-character-phase2 {
             position: absolute;
-            left: 5%;
-            top: 50%;
-            transform: translateY(-50%);
-            height: 75vh;
-            max-height: 800px;
+            left: 2%;
+            bottom: 0; /* Anchored to bottom to hide crop */
+            height: 85vh; /* Imposing half-body scale */
+            max-height: 900px;
 
             /* Fast exit state (no delay) when removing .active */
             opacity: 0;
-            filter: blur(20px) brightness(2);
+            filter: blur(20px) brightness(2) drop-shadow(0px 0px 0px rgba(0,255,255,0));
             transition: opacity 0.5s ease, filter 0.5s ease, transform 0.5s ease;
             pointer-events: none;
+            transform-origin: bottom center;
         }
 
-        #phase-2.active .hero-character-phase2 {
-            /* Heavy sci-fi materialization entry state */
-            transition: opacity 2s cubic-bezier(0.16, 1, 0.3, 1) 1s,
-                        filter 2.5s cubic-bezier(0.16, 1, 0.3, 1) 1s,
-                        transform 3s cubic-bezier(0.16, 1, 0.3, 1) 0.8s;
-            opacity: 1;
-            filter: blur(0px) brightness(1);
-            transform: translateY(-50%) scale(1.02);
+        /* Glitch entry animation class applied via JS */
+        .glitch-entry {
+            animation: sciFiMaterialize 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes sciFiMaterialize {
+            0% {
+                opacity: 0;
+                filter: blur(20px) brightness(3) drop-shadow(15px 0px 0px rgba(0, 255, 255, 0.8)) drop-shadow(-15px 0px 0px rgba(255, 0, 0, 0.8));
+                transform: scale(1.05);
+            }
+            20% {
+                opacity: 0.5;
+                filter: blur(10px) brightness(2) drop-shadow(5px 0px 0px rgba(0, 255, 255, 0.6)) drop-shadow(-5px 0px 0px rgba(255, 0, 0, 0.6));
+                transform: scale(1.03);
+            }
+            40% {
+                opacity: 0.8;
+                filter: blur(5px) brightness(1.5) drop-shadow(-10px 0px 0px rgba(0, 255, 255, 0.5)) drop-shadow(10px 0px 0px rgba(255, 0, 0, 0.5));
+                transform: scale(1.01);
+            }
+            100% {
+                opacity: 1;
+                filter: blur(0px) brightness(1) drop-shadow(0px 0px 0px rgba(0, 255, 255, 0)) drop-shadow(0px 0px 0px rgba(255, 0, 0, 0));
+                transform: scale(1);
+            }
         }
 
         /* Magnetic Return Button */
@@ -291,9 +345,12 @@
 
     <canvas id="bg-canvas"></canvas>
 
-    <!-- Phase 1 Content (Cleaned up, only character) -->
+    <div class="film-grain"></div>
+
+    <!-- Phase 1 Content -->
     <div id="hero-action-wrapper" class="hero-wrapper">
-        <img src="chibiVKpng.png" id="hero-action" class="hero-character" alt="Character">
+        <!-- Add crossorigin="anonymous" to allow canvas pixel reading if served over network -->
+        <img src="chibiVKpng.png" id="hero-action" class="hero-character" alt="Character" crossorigin="anonymous">
     </div>
 
     <!-- The Void (Black Hole) -->
@@ -301,12 +358,11 @@
 
     <!-- Phase 2 Content -->
     <div id="phase-2">
+        <!-- Left Side: Anchored New Character -->
+        <img src="VKpng.png" id="hero-phase2" class="hero-character-phase2" alt="Materialized Character">
 
-        <!-- Left Side: New Character with Materialization -->
-        <img src="VKpng.png" class="hero-character-phase2" alt="Materialized Character">
-
-        <!-- Right Side: Typography -->
-        <div class="dark-texts">
+        <!-- Right Side: Magnetic Parallax Typography -->
+        <div id="dark-texts-container" class="dark-texts">
             <div class="clip-wrapper"><div class="dark-text-line">VOID</div></div>
             <div class="clip-wrapper"><div class="dark-text-line">PROTOCOL</div></div>
             <div class="clip-wrapper"><div class="dark-text-line">INITIATED</div></div>
@@ -419,48 +475,103 @@
         animate();
 
         // --------------------------------------------------------
-        // Ghost & Void Transitions Logic (Perfect Sync)
+        // v3: Pixel-Perfect Hitbox (Alpha Channel)
         // --------------------------------------------------------
-        const heroWrapper = document.getElementById('hero-action-wrapper');
         const heroAction = document.getElementById('hero-action');
+        const heroWrapper = document.getElementById('hero-action-wrapper');
+
+        // Create an offscreen canvas to analyze pixel data
+        const offscreenCanvas = document.createElement('canvas');
+        const offCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
+        let isImageLoaded = false;
+
+        heroAction.onload = () => {
+            // Need intrinsic dimensions for pixel mapping
+            offscreenCanvas.width = heroAction.naturalWidth;
+            offscreenCanvas.height = heroAction.naturalHeight;
+            offCtx.drawImage(heroAction, 0, 0);
+            isImageLoaded = true;
+        };
+        // Trigger load manually in case it's already cached
+        if(heroAction.complete) heroAction.onload();
+
+        let isHoveringPixel = false;
+
+        heroAction.addEventListener('mousemove', (e) => {
+            if (!isImageLoaded || heroWrapper.classList.contains('ghost')) return;
+
+            const rect = heroAction.getBoundingClientRect();
+            // Calculate scale ratio between rendered size and natural size
+            const scaleX = heroAction.naturalWidth / rect.width;
+            const scaleY = heroAction.naturalHeight / rect.height;
+
+            // Map mouse coordinates relative to the image bounds
+            const x = Math.round((e.clientX - rect.left) * scaleX);
+            const y = Math.round((e.clientY - rect.top) * scaleY);
+
+            // Ensure coordinates are within natural bounds
+            if (x >= 0 && x < offscreenCanvas.width && y >= 0 && y < offscreenCanvas.height) {
+                // Get alpha channel (index 3) of the specific pixel
+                const pixelData = offCtx.getImageData(x, y, 1, 1).data;
+                const alpha = pixelData[3];
+
+                if (alpha > 0) {
+                    heroAction.style.cursor = 'pointer';
+                    isHoveringPixel = true;
+                } else {
+                    heroAction.style.cursor = 'default';
+                    isHoveringPixel = false;
+                }
+            } else {
+                heroAction.style.cursor = 'default';
+                isHoveringPixel = false;
+            }
+        });
+
+        heroAction.addEventListener('mouseleave', () => {
+            heroAction.style.cursor = 'default';
+            isHoveringPixel = false;
+        });
+
+
+        // --------------------------------------------------------
+        // v3: Ghost & Void Transitions Logic (In-Place & Sync)
+        // --------------------------------------------------------
         const blackHole = document.getElementById('black-hole');
         const phase2 = document.getElementById('phase-2');
         const btnReturn = document.getElementById('btn-return');
         const btnReturnWrapper = document.getElementById('btn-return-wrapper');
+        const darkTextsContainer = document.getElementById('dark-texts-container');
+        const heroPhase2 = document.getElementById('hero-phase2');
 
-        heroAction.addEventListener('click', () => {
-            // Get center coordinates of the character
+        heroAction.addEventListener('click', (e) => {
+            // Only trigger if we clicked an actual colored pixel!
+            if (!isHoveringPixel) return;
+
+            // Calculate EXACT center of the character
             const rect = heroWrapper.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
 
-            // Position the black hole exactly at character's center
+            // Spawn black hole precisely at character's center
             blackHole.style.left = `${centerX}px`;
             blackHole.style.top = `${centerY}px`;
 
-            // Calculate translation needed to move character to center of screen
-            // Account for the existing translateY(-50%) in the initial CSS
-            const screenCenterX = window.innerWidth / 2;
-            const screenCenterY = window.innerHeight / 2;
-            const moveX = screenCenterX - centerX;
-            const moveY = screenCenterY - centerY;
-
-            // Apply ghost transition: move to center, scale up
-            // Add back the -50% to counteract the base transform reset
-            heroWrapper.style.transform = `translate(${moveX}px, calc(-50% + ${moveY}px)) scale(2)`;
+            // Ghost effect happens IN-PLACE via CSS class (transform: scale(3) opacity: 0)
             heroWrapper.classList.add('ghost');
 
-            // Trigger Black Hole exactly concurrently (using a tiny timeout to ensure reflow)
+            // Trigger Black Hole exactly concurrently
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                     blackHole.classList.add('active');
                 });
             });
 
-            // Show Phase 2 Elements after the void transition almost completes
-            // --void-timing is 1.2s, so we trigger phase 2 at ~1s for seamless overlap
+            // Trigger Phase 2 Materialization
+            // --void-timing is 1.2s. Start glitch entry seamlessly at 1s.
             setTimeout(() => {
                 phase2.classList.add('active');
+                heroPhase2.classList.add('glitch-entry');
             }, 1000);
         });
 
@@ -468,14 +579,40 @@
             // Revert Phase 2
             phase2.classList.remove('active');
 
+            // The phase2 character immediately loses glitch class so it fades out fast
+            setTimeout(() => {
+                heroPhase2.classList.remove('glitch-entry');
+            }, 50);
+
             // Wait for Phase 2 elements to fade out before shrinking the void
             setTimeout(() => {
                 blackHole.classList.remove('active');
 
-                // Concurrently bring back the Phase 1 character
-                heroWrapper.style.transform = `translateY(-50%)`;
+                // Concurrently bring back the Phase 1 character in-place
                 heroWrapper.classList.remove('ghost');
-            }, 800);
+            }, 500);
+        });
+
+        // --------------------------------------------------------
+        // v3: Magnetic Parallax for Typography in Phase 2
+        // --------------------------------------------------------
+        window.addEventListener('mousemove', (e) => {
+            // Only apply parallax if Phase 2 is active
+            if (phase2.classList.contains('active')) {
+                const screenX = window.innerWidth;
+                const screenY = window.innerHeight;
+
+                // Calculate percentage of mouse position from center (-1 to 1)
+                const xPercent = (e.clientX / screenX) * 2 - 1;
+                const yPercent = (e.clientY / screenY) * 2 - 1;
+
+                // Base Y transform is -50%. Add parallax shift.
+                // Move text subtly in opposite direction of mouse for float effect
+                const parallaxX = xPercent * -20; // max 20px shift
+                const parallaxY = -50 + (yPercent * -10); // max 10px shift
+
+                darkTextsContainer.style.transform = `translate(${parallaxX}px, ${parallaxY}%)`;
+            }
         });
 
         // --------------------------------------------------------

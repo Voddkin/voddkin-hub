@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEURAL LINK // VOID PROTOCOL v6 (Genesis Engine)</title>
+    <title>NEURAL LINK // VOID PROTOCOL v6.1 (60FPS Engine)</title>
     <style>
         @font-face {
             font-family: 'EuropaGrotesk-Medium';
@@ -25,7 +25,6 @@
         }
 
         :root {
-            /* v6: Abyssal Background */
             --bg-color: #020024;
             --cyan: #06b6d4;
             --text-main: #f8fafc;
@@ -47,7 +46,6 @@
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            /* v6: Gradient background for abyssal galaxy feel */
             background: radial-gradient(circle at center, #0a0014 0%, var(--bg-color) 100%);
             color: var(--text-main);
             font-family: var(--font-medium);
@@ -64,7 +62,7 @@
             pointer-events: none;
         }
 
-        /* v6: Phase 1 Elegant Typography */
+        /* Phase 1 Elegant Typography */
         #phase-1-text {
             position: absolute;
             left: 12%;
@@ -74,15 +72,13 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
-            /* Exit Transition when moving to Void */
             opacity: 1;
             filter: blur(0px);
             transition: transform 0.8s ease, opacity 0.8s ease, filter 0.8s ease;
-            pointer-events: none; /* Let galaxy receive events if needed */
+            pointer-events: none;
         }
 
         #phase-1-text.ghost {
-            /* Smooth luxurious exit */
             transform: translateY(-50%) translateX(-40px);
             opacity: 0;
             filter: blur(10px);
@@ -103,7 +99,6 @@
             color: var(--cyan);
             text-transform: uppercase;
         }
-
 
         /* Character Phase 1 */
         .hero-wrapper {
@@ -199,7 +194,7 @@
             pointer-events: none;
         }
 
-        /* Typography Phase 2 (Right Aligned) */
+        /* Typography Phase 2 */
         .dark-texts {
             position: absolute;
             right: 8%;
@@ -233,7 +228,7 @@
             text-shadow: 0 0 0px rgba(6, 182, 212, 0);
         }
 
-        /* Rapid cascading fall on exit */
+        /* Cascading exit */
         .clip-wrapper:nth-child(1) .dark-text-line { transition-delay: 0s; }
         .clip-wrapper:nth-child(2) .dark-text-line { transition-delay: 0.1s; }
         .clip-wrapper:nth-child(3) .dark-text-line { transition-delay: 0.2s; }
@@ -244,7 +239,7 @@
             animation: textPulseGlow 4s infinite ease-in-out alternate;
         }
 
-        /* Entry cascading rise */
+        /* Cascading enter */
         #phase-2.active .clip-wrapper:nth-child(1) .dark-text-line { transition-delay: 0.8s; }
         #phase-2.active .clip-wrapper:nth-child(2) .dark-text-line { transition-delay: 0.95s; }
         #phase-2.active .clip-wrapper:nth-child(3) .dark-text-line { transition-delay: 1.1s; }
@@ -273,7 +268,7 @@
             100% { transform: scaleY(1) scaleX(1); }
         }
 
-        /* New Character Phase 2 Image (Handles Materialization and Slide Down/Blur Exit) */
+        /* New Character Phase 2 Image */
         .hero-character-phase2 {
             height: 85vh;
             max-height: 900px;
@@ -411,7 +406,7 @@
 
     <div class="film-grain"></div>
 
-    <!-- v6: Phase 1 Elegant Typography -->
+    <!-- Phase 1 Elegant Typography -->
     <div id="phase-1-text">
         <div class="phase1-title">AURORA SYSTEM</div>
         <div class="phase1-subtitle">Awaiting Uplink // Standby</div>
@@ -449,207 +444,224 @@
 
     <script>
         // --------------------------------------------------------
-        // v6: 3D Galaxy Engine (Vanilla JS Canvas)
+        // v6.1: 60FPS Galaxy Engine (Offscreen Canvas Batching)
         // --------------------------------------------------------
         const canvas = document.getElementById('bg-canvas');
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { alpha: false }); // Optimization: opaque canvas
 
         let width, height;
+        let halfW, halfH;
         let stars = [];
+        let renderList = [];
 
-        // Settings
-        const STAR_COUNT = 3500;
+        // Settings for 60FPS Target
+        const STAR_COUNT = 1200;
         const GALAXY_RADIUS = 1500;
         const SPIRAL_ARMS = 4;
-        const ARM_SPREAD = 0.5; // How thick the arms are
+        const ARM_SPREAD = 0.6;
 
-        // Core interaction
-        let mouseX = 0;
-        let mouseY = 0;
-        let targetRotX = Math.PI / 3; // Initial tilt looking down slightly
+        let targetRotX = Math.PI / 3;
         let targetRotY = 0;
         let currentRotX = targetRotX;
         let currentRotY = targetRotY;
+        let autoRotY = 0;
 
-        // Colors corresponding to Voddkin aesthetic
         const starColors = [
             '#06b6d4', // Cyan
             '#8b5cf6', // Violet
             '#3b82f6', // Electric Blue
-            '#ffffff'  // Pure White core stars
+            '#ffffff'  // Pure White
         ];
+
+        // Otimization: Pre-render star types to offscreen canvases
+        const spriteCache = {};
+
+        function createStarSprite(color, isNebula) {
+            const c = document.createElement('canvas');
+            const cCtx = c.getContext('2d');
+
+            // Size mapping based on type
+            const radius = isNebula ? 40 : 10;
+            c.width = radius * 2;
+            c.height = radius * 2;
+
+            const grad = cCtx.createRadialGradient(radius, radius, 0, radius, radius, radius);
+
+            if (isNebula) {
+                // Nebula sprite: Soft center fading out smoothly
+                grad.addColorStop(0, color);
+                grad.addColorStop(0.3, color);
+                grad.addColorStop(1, 'transparent');
+            } else {
+                // Crisp star sprite: Hot white center fading to color
+                grad.addColorStop(0, '#ffffff');
+                grad.addColorStop(0.1, color);
+                grad.addColorStop(0.6, 'transparent');
+                grad.addColorStop(1, 'transparent');
+            }
+
+            cCtx.fillStyle = grad;
+            cCtx.fillRect(0, 0, c.width, c.height);
+
+            return {
+                canvas: c,
+                radius: radius
+            };
+        }
+
+        function preRenderSprites() {
+            starColors.forEach(color => {
+                spriteCache[color + '_star'] = createStarSprite(color, false);
+                spriteCache[color + '_nebula'] = createStarSprite(color, true);
+            });
+        }
+        preRenderSprites();
 
         function initGalaxy() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
+            halfW = width / 2;
+            halfH = height / 2;
+
             stars = [];
+            // Pre-allocate the render list for memory optimization
+            renderList = new Array(STAR_COUNT);
 
             for (let i = 0; i < STAR_COUNT; i++) {
-                // Logarithmic spiral distribution
-                // Center weighted (more stars at distance ~0)
                 const distance = Math.pow(Math.random(), 3) * GALAXY_RADIUS;
-
-                // Which arm this star belongs to
                 const armOffset = (Math.PI * 2 / SPIRAL_ARMS) * Math.floor(Math.random() * SPIRAL_ARMS);
-
-                // The angle based on distance creates the spiral shape
                 const spiralAngle = distance * 0.004;
-
-                // Random scatter within the arm
                 const scatterAngle = (Math.random() - 0.5) * ARM_SPREAD;
                 const finalAngle = spiralAngle + armOffset + scatterAngle;
 
-                // X, Z define the flat galactic plane. Y is thickness.
-                const x = Math.cos(finalAngle) * distance;
-                const z = Math.sin(finalAngle) * distance;
+                const ox = Math.cos(finalAngle) * distance;
+                const oz = Math.sin(finalAngle) * distance;
 
-                // Thickness of galaxy (thicker at center, thinner at edges)
                 const thickness = (1 - (distance / GALAXY_RADIUS)) * 100;
-                const y = (Math.random() - 0.5) * thickness;
+                const oy = (Math.random() - 0.5) * thickness;
 
-                // Pick a color
                 const color = starColors[Math.floor(Math.random() * starColors.length)];
 
-                // Base size - occasional large 'stardust' blobs
-                const isNebula = Math.random() > 0.95;
-                const size = isNebula ? Math.random() * 8 + 4 : Math.random() * 1.5 + 0.2;
+                // Increase nebula percentage to ~25% to fill space cheaply
+                const isNebula = Math.random() > 0.75;
+                const baseScale = isNebula ? Math.random() * 4 + 2 : Math.random() * 1.5 + 0.5;
+
+                // Pre-calculate orbit sines/cosines since speed is constant
+                const speed = 0.001 + (0.005 * (1 - distance / GALAXY_RADIUS));
+                const orbitCos = Math.cos(speed);
+                const orbitSin = Math.sin(speed);
+
+                // Cache sprite reference
+                const spriteKey = color + (isNebula ? '_nebula' : '_star');
+                const sprite = spriteCache[spriteKey];
 
                 stars.push({
-                    x, y, z,
-                    ox: x, oy: y, oz: z,
-                    size,
-                    color,
+                    ox, oy, oz,
+                    baseScale,
                     isNebula,
-                    // Orbital speed based on distance (Kepler's third law approx)
-                    speed: 0.001 + (0.005 * (1 - distance / GALAXY_RADIUS))
+                    orbitCos, orbitSin,
+                    spriteCanvas: sprite.canvas,
+                    spriteRadius: sprite.radius
                 });
+
+                // Initialize render list objects to avoid GC pressure
+                renderList[i] = { px: 0, py: 0, pz: 0, scale: 0, ref: stars[i] };
             }
         }
 
-        // Mouse Parallax Logic
         window.addEventListener('mousemove', (e) => {
-            // Update mouse vars for pixel perfect hitbox
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-
-            // Update rotation targets for 3D Engine
-            // Normalize mouse between -1 and 1
             const nx = (e.clientX / width) * 2 - 1;
             const ny = (e.clientY / height) * 2 - 1;
-
-            // Limit rotation to avoid flipping the galaxy upside down
             targetRotX = (Math.PI / 3) + ny * 0.3;
             targetRotY = nx * 0.5;
         });
 
         window.addEventListener('resize', initGalaxy);
 
-        function rotate3D(x, y, z, rotX, rotY) {
-            // Rotate around X axis
-            let cosX = Math.cos(rotX);
-            let sinX = Math.sin(rotX);
-            let y1 = y * cosX - z * sinX;
-            let z1 = y * sinX + z * cosX;
-
-            // Rotate around Y axis
-            let cosY = Math.cos(rotY);
-            let sinY = Math.sin(rotY);
-            let x2 = x * cosY + z1 * sinY;
-            let z2 = -x * sinY + z1 * cosY;
-
-            return { x: x2, y: y1, z: z2 };
-        }
-
-        // Main render loop
-        let autoRotY = 0;
-
         function animateGalaxy() {
-            // Fade out previous frame slightly for motion blur (if desired, using clearRect for sharp stars)
-            ctx.clearRect(0, 0, width, height);
+            // Fill opaque background to clear frame (faster than clearRect with alpha)
+            ctx.fillStyle = '#0a0014'; // Closest to center gradient color
+            ctx.fillRect(0, 0, width, height);
 
-            // Additive blending for gorgeous glowing stars and nebula dust
             ctx.globalCompositeOperation = 'lighter';
 
-            // Interpolate rotations for smooth inertia
             currentRotX += (targetRotX - currentRotX) * 0.05;
             currentRotY += (targetRotY - currentRotY) * 0.05;
-
-            // Continual slow auto-rotation of the whole structure
             autoRotY += 0.0005;
 
-            // Depth sorting: Sort stars by Z so far stars draw first
-            const projectedStars = [];
+            // Pre-calculate frame-wide rotation math once
+            const totalRotY = currentRotY + autoRotY;
+            const cosX = Math.cos(currentRotX);
+            const sinX = Math.sin(currentRotX);
+            const cosY = Math.cos(totalRotY);
+            const sinY = Math.sin(totalRotY);
 
-            for (let i = 0; i < stars.length; i++) {
+            const fov = 800;
+            const zOffset = 1000;
+
+            let visibleCount = 0;
+
+            for (let i = 0; i < STAR_COUNT; i++) {
                 let s = stars[i];
 
-                // Calculate individual orbit rotation (stars orbiting the center)
-                let orbitCos = Math.cos(s.speed);
-                let orbitSin = Math.sin(s.speed);
-                let nx = s.ox * orbitCos - s.oz * orbitSin;
-                let nz = s.ox * orbitSin + s.oz * orbitCos;
+                // 1. Orbital transform (inlined and precalculated trig)
+                const nx = s.ox * s.orbitCos - s.oz * s.orbitSin;
+                const nz = s.ox * s.orbitSin + s.oz * s.orbitCos;
                 s.ox = nx;
                 s.oz = nz;
 
-                // Apply global combined rotation (Auto + Mouse Parallax)
-                let totalRotY = currentRotY + autoRotY;
-                let p = rotate3D(s.ox, s.oy, s.oz, currentRotX, totalRotY);
+                // 2. Global X rotation (inlined)
+                const y1 = s.oy * cosX - nz * sinX;
+                const z1 = s.oy * sinX + nz * cosX;
 
-                // Perspective projection
-                let fov = 800;
-                let zOffset = 1000; // Move galaxy forward into view
-                let zPos = p.z + zOffset;
+                // 3. Global Y rotation (inlined)
+                const finalX = nx * cosY + z1 * sinY;
+                const finalZ = -nx * sinY + z1 * cosY;
+
+                // 4. Perspective Projection
+                const zPos = finalZ + zOffset;
 
                 if (zPos > 0) {
-                    let scale = fov / zPos;
-                    let projX = width / 2 + p.x * scale;
-                    let projY = height / 2 + p.y * scale;
+                    const scale = fov / zPos;
+                    const projX = halfW + finalX * scale;
+                    const projY = halfH + y1 * scale;
 
-                    projectedStars.push({
-                        px: projX,
-                        py: projY,
-                        pz: p.z,
-                        scale: scale,
-                        ref: s
-                    });
+                    // Simple bounds check before assigning to render list
+                    if (projX > -50 && projX < width + 50 && projY > -50 && projY < height + 50) {
+                        let rl = renderList[visibleCount];
+                        rl.px = projX;
+                        rl.py = projY;
+                        rl.pz = finalZ;
+                        rl.scale = scale;
+                        rl.ref = s;
+                        visibleCount++;
+                    }
                 }
             }
 
-            // Sort back to front
-            projectedStars.sort((a, b) => b.pz - a.pz);
+            // Slice the active part of the list and sort Z
+            let activeRenderList = renderList.slice(0, visibleCount);
+            activeRenderList.sort((a, b) => b.pz - a.pz);
 
-            // Draw
-            for (let i = 0; i < projectedStars.length; i++) {
-                let p = projectedStars[i];
+            // Draw Batching (grouped by opacity instead of changing globalAlpha constantly)
+            for (let i = 0; i < visibleCount; i++) {
+                let p = activeRenderList[i];
                 let s = p.ref;
-                let scaledSize = s.size * p.scale;
+                let finalScale = s.baseScale * p.scale;
 
-                // Skip if offscreen
-                if (p.px < 0 || p.px > width || p.py < 0 || p.py > height) continue;
+                // Compute size and position based on pre-rendered sprite
+                let drawRadius = s.spriteRadius * finalScale;
 
-                ctx.beginPath();
-                ctx.arc(p.px, p.py, scaledSize, 0, Math.PI * 2);
+                // Determine opacity
+                let distAlpha = Math.min(1, Math.max(0.1, p.scale * 1.5));
+                let finalAlpha = s.isNebula ? distAlpha * 0.15 : distAlpha * 0.8;
 
-                // Simulate distance opacity
-                let alpha = Math.min(1, Math.max(0.1, p.scale * 1.5));
-
-                if (s.isNebula) {
-                    // Nebula: highly blurred, low opacity
-                    ctx.shadowBlur = 20;
-                    ctx.shadowColor = s.color;
-                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.1})`;
-                } else {
-                    // Crisp star
-                    ctx.shadowBlur = scaledSize * 2;
-                    ctx.shadowColor = s.color;
-                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-                }
-
-                ctx.fill();
+                ctx.globalAlpha = finalAlpha;
+                ctx.drawImage(s.spriteCanvas, p.px - drawRadius, p.py - drawRadius, drawRadius * 2, drawRadius * 2);
             }
 
-            ctx.globalCompositeOperation = 'source-over'; // reset
-            ctx.shadowBlur = 0; // reset
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.globalAlpha = 1.0;
 
             requestAnimationFrame(animateGalaxy);
         }
@@ -709,7 +721,6 @@
             isHoveringPixel = false;
         });
 
-
         // --------------------------------------------------------
         // Ghost & Void Transitions Logic
         // --------------------------------------------------------
@@ -731,9 +742,8 @@
             blackHole.style.left = `${centerX}px`;
             blackHole.style.top = `${centerY}px`;
 
-            // Trigger Phase 1 Exits
             heroWrapper.classList.add('ghost');
-            phase1Text.classList.add('ghost'); // Elegant text exit
+            phase1Text.classList.add('ghost');
 
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
@@ -754,7 +764,7 @@
             setTimeout(() => {
                 blackHole.classList.remove('active');
                 heroWrapper.classList.remove('ghost');
-                phase1Text.classList.remove('ghost'); // Elegant text return
+                phase1Text.classList.remove('ghost');
             }, 800);
         });
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEURAL LINK // VOID PROTOCOL v6.1 (60FPS Engine)</title>
+    <title>NEURAL LINK // VOID PROTOCOL v7 (Abyssal Constellation)</title>
     <style>
         @font-face {
             font-family: 'EuropaGrotesk-Medium';
@@ -25,7 +25,8 @@
         }
 
         :root {
-            --bg-color: #020024;
+            /* v7: Deep Abyssal Background */
+            --bg-color: #030108;
             --cyan: #06b6d4;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
@@ -46,7 +47,8 @@
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            background: radial-gradient(circle at center, #0a0014 0%, var(--bg-color) 100%);
+            /* v7: Extreme dark void to contrast with the dense star core */
+            background: radial-gradient(circle at center, #050212 0%, var(--bg-color) 100%);
             color: var(--text-main);
             font-family: var(--font-medium);
         }
@@ -76,6 +78,9 @@
             filter: blur(0px);
             transition: transform 0.8s ease, opacity 0.8s ease, filter 0.8s ease;
             pointer-events: none;
+
+            /* v7: Strong dark shadow to pop out from dense star core */
+            text-shadow: 0 0 20px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 0, 0, 0.8);
         }
 
         #phase-1-text.ghost {
@@ -89,7 +94,8 @@
             font-size: 4rem;
             letter-spacing: 0.2em;
             color: #fff;
-            text-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+            /* Enhance cyan core over the black shadow */
+            text-shadow: 0 0 20px rgba(6, 182, 212, 0.6), 0 0 40px rgba(0, 0, 0, 1);
         }
 
         .phase1-subtitle {
@@ -444,17 +450,16 @@
 
     <script>
         // --------------------------------------------------------
-        // v6.1: 60FPS Galaxy Engine (Offscreen Canvas Batching)
+        // v7: Abyssal Constellation Galaxy Engine
         // --------------------------------------------------------
         const canvas = document.getElementById('bg-canvas');
-        const ctx = canvas.getContext('2d', { alpha: false }); // Optimization: opaque canvas
+        const ctx = canvas.getContext('2d', { alpha: false });
 
         let width, height;
         let halfW, halfH;
         let stars = [];
         let renderList = [];
 
-        // Settings for 60FPS Target
         const STAR_COUNT = 1200;
         const GALAXY_RADIUS = 1500;
         const SPIRAL_ARMS = 4;
@@ -466,37 +471,38 @@
         let currentRotY = targetRotY;
         let autoRotY = 0;
 
+        // v7: Removed white core color, strictly Deep Void colors
         const starColors = [
             '#06b6d4', // Cyan
             '#8b5cf6', // Violet
             '#3b82f6', // Electric Blue
-            '#ffffff'  // Pure White
+            '#0284c7'  // Deep Blue
         ];
 
-        // Otimization: Pre-render star types to offscreen canvases
         const spriteCache = {};
 
-        function createStarSprite(color, isNebula) {
+        function createStarSprite(color, type) {
             const c = document.createElement('canvas');
             const cCtx = c.getContext('2d');
 
-            // Size mapping based on type
-            const radius = isNebula ? 40 : 10;
+            // v7: Gas clouds are massive
+            const radius = type === 'gas' ? 80 : (type === 'nebula' ? 30 : 8);
             c.width = radius * 2;
             c.height = radius * 2;
 
             const grad = cCtx.createRadialGradient(radius, radius, 0, radius, radius, radius);
 
-            if (isNebula) {
-                // Nebula sprite: Soft center fading out smoothly
+            if (type === 'gas') {
+                grad.addColorStop(0, color);
+                grad.addColorStop(1, 'transparent');
+            } else if (type === 'nebula') {
                 grad.addColorStop(0, color);
                 grad.addColorStop(0.3, color);
                 grad.addColorStop(1, 'transparent');
             } else {
-                // Crisp star sprite: Hot white center fading to color
-                grad.addColorStop(0, '#ffffff');
-                grad.addColorStop(0.1, color);
-                grad.addColorStop(0.6, 'transparent');
+                // Dimmer core, no white blowout
+                grad.addColorStop(0, color);
+                grad.addColorStop(0.2, color);
                 grad.addColorStop(1, 'transparent');
             }
 
@@ -511,8 +517,9 @@
 
         function preRenderSprites() {
             starColors.forEach(color => {
-                spriteCache[color + '_star'] = createStarSprite(color, false);
-                spriteCache[color + '_nebula'] = createStarSprite(color, true);
+                spriteCache[color + '_star'] = createStarSprite(color, 'star');
+                spriteCache[color + '_nebula'] = createStarSprite(color, 'nebula');
+                spriteCache[color + '_gas'] = createStarSprite(color, 'gas');
             });
         }
         preRenderSprites();
@@ -524,7 +531,6 @@
             halfH = height / 2;
 
             stars = [];
-            // Pre-allocate the render list for memory optimization
             renderList = new Array(STAR_COUNT);
 
             for (let i = 0; i < STAR_COUNT; i++) {
@@ -542,29 +548,37 @@
 
                 const color = starColors[Math.floor(Math.random() * starColors.length)];
 
-                // Increase nebula percentage to ~25% to fill space cheaply
-                const isNebula = Math.random() > 0.75;
-                const baseScale = isNebula ? Math.random() * 4 + 2 : Math.random() * 1.5 + 0.5;
+                // v7: Type Distribution - 10% massive gas, 20% nebulas, 70% crisp stars
+                const roll = Math.random();
+                let type, baseScale;
 
-                // Pre-calculate orbit sines/cosines since speed is constant
+                if (roll > 0.9) {
+                    type = 'gas';
+                    baseScale = Math.random() * 4 + 3; // Huge
+                } else if (roll > 0.7) {
+                    type = 'nebula';
+                    baseScale = Math.random() * 2 + 1;
+                } else {
+                    type = 'star';
+                    baseScale = Math.random() * 1.2 + 0.3;
+                }
+
                 const speed = 0.001 + (0.005 * (1 - distance / GALAXY_RADIUS));
                 const orbitCos = Math.cos(speed);
                 const orbitSin = Math.sin(speed);
 
-                // Cache sprite reference
-                const spriteKey = color + (isNebula ? '_nebula' : '_star');
+                const spriteKey = color + '_' + type;
                 const sprite = spriteCache[spriteKey];
 
                 stars.push({
                     ox, oy, oz,
                     baseScale,
-                    isNebula,
+                    type,
                     orbitCos, orbitSin,
                     spriteCanvas: sprite.canvas,
                     spriteRadius: sprite.radius
                 });
 
-                // Initialize render list objects to avoid GC pressure
                 renderList[i] = { px: 0, py: 0, pz: 0, scale: 0, ref: stars[i] };
             }
         }
@@ -578,18 +592,24 @@
 
         window.addEventListener('resize', initGalaxy);
 
+        // v7: Logic for dynamically pausing/slowing canvas
+        let animFrameId = null;
+        let globalTimeScale = 1.0;
+        let isGalaxyPaused = false;
+
         function animateGalaxy() {
-            // Fill opaque background to clear frame (faster than clearRect with alpha)
-            ctx.fillStyle = '#0a0014'; // Closest to center gradient color
+            if (isGalaxyPaused) return; // Prevent heavy math when hidden
+
+            // v7: Abyssal center gradient
+            ctx.fillStyle = '#050212';
             ctx.fillRect(0, 0, width, height);
 
             ctx.globalCompositeOperation = 'lighter';
 
-            currentRotX += (targetRotX - currentRotX) * 0.05;
-            currentRotY += (targetRotY - currentRotY) * 0.05;
-            autoRotY += 0.0005;
+            currentRotX += (targetRotX - currentRotX) * 0.05 * globalTimeScale;
+            currentRotY += (targetRotY - currentRotY) * 0.05 * globalTimeScale;
+            autoRotY += 0.0005 * globalTimeScale;
 
-            // Pre-calculate frame-wide rotation math once
             const totalRotY = currentRotY + autoRotY;
             const cosX = Math.cos(currentRotX);
             const sinX = Math.sin(currentRotX);
@@ -604,21 +624,23 @@
             for (let i = 0; i < STAR_COUNT; i++) {
                 let s = stars[i];
 
-                // 1. Orbital transform (inlined and precalculated trig)
-                const nx = s.ox * s.orbitCos - s.oz * s.orbitSin;
-                const nz = s.ox * s.orbitSin + s.oz * s.orbitCos;
-                s.ox = nx;
-                s.oz = nz;
+                // Orbit only moves if we are actively time scaling
+                if (globalTimeScale > 0.01) {
+                    // Apply speed scaled by time
+                    const scaledCos = Math.cos(Math.acos(s.orbitCos) * globalTimeScale);
+                    const scaledSin = Math.sin(Math.asin(s.orbitSin) * globalTimeScale);
+                    const nx = s.ox * scaledCos - s.oz * scaledSin;
+                    const nz = s.ox * scaledSin + s.oz * scaledCos;
+                    s.ox = nx;
+                    s.oz = nz;
+                }
 
-                // 2. Global X rotation (inlined)
-                const y1 = s.oy * cosX - nz * sinX;
-                const z1 = s.oy * sinX + nz * cosX;
+                const y1 = s.oy * cosX - s.oz * sinX;
+                const z1 = s.oy * sinX + s.oz * cosX;
 
-                // 3. Global Y rotation (inlined)
-                const finalX = nx * cosY + z1 * sinY;
-                const finalZ = -nx * sinY + z1 * cosY;
+                const finalX = s.ox * cosY + z1 * sinY;
+                const finalZ = -s.ox * sinY + z1 * cosY;
 
-                // 4. Perspective Projection
                 const zPos = finalZ + zOffset;
 
                 if (zPos > 0) {
@@ -626,8 +648,7 @@
                     const projX = halfW + finalX * scale;
                     const projY = halfH + y1 * scale;
 
-                    // Simple bounds check before assigning to render list
-                    if (projX > -50 && projX < width + 50 && projY > -50 && projY < height + 50) {
+                    if (projX > -100 && projX < width + 100 && projY > -100 && projY < height + 100) {
                         let rl = renderList[visibleCount];
                         rl.px = projX;
                         rl.py = projY;
@@ -639,22 +660,21 @@
                 }
             }
 
-            // Slice the active part of the list and sort Z
             let activeRenderList = renderList.slice(0, visibleCount);
             activeRenderList.sort((a, b) => b.pz - a.pz);
 
-            // Draw Batching (grouped by opacity instead of changing globalAlpha constantly)
             for (let i = 0; i < visibleCount; i++) {
                 let p = activeRenderList[i];
                 let s = p.ref;
                 let finalScale = s.baseScale * p.scale;
-
-                // Compute size and position based on pre-rendered sprite
                 let drawRadius = s.spriteRadius * finalScale;
+                let distAlpha = Math.min(1, Math.max(0.05, p.scale * 1.5));
 
-                // Determine opacity
-                let distAlpha = Math.min(1, Math.max(0.1, p.scale * 1.5));
-                let finalAlpha = s.isNebula ? distAlpha * 0.15 : distAlpha * 0.8;
+                // v7: Fine-tuned alphas to prevent blowout
+                let finalAlpha;
+                if (s.type === 'gas') finalAlpha = distAlpha * 0.03; // Very subtle
+                else if (s.type === 'nebula') finalAlpha = distAlpha * 0.2;
+                else finalAlpha = distAlpha * 0.6;
 
                 ctx.globalAlpha = finalAlpha;
                 ctx.drawImage(s.spriteCanvas, p.px - drawRadius, p.py - drawRadius, drawRadius * 2, drawRadius * 2);
@@ -663,7 +683,7 @@
             ctx.globalCompositeOperation = 'source-over';
             ctx.globalAlpha = 1.0;
 
-            requestAnimationFrame(animateGalaxy);
+            animFrameId = requestAnimationFrame(animateGalaxy);
         }
 
         initGalaxy();
@@ -722,7 +742,7 @@
         });
 
         // --------------------------------------------------------
-        // Ghost & Void Transitions Logic
+        // v7: Zero-Lag Ghost & Void Transitions Logic
         // --------------------------------------------------------
         const blackHole = document.getElementById('black-hole');
         const phase2 = document.getElementById('phase-2');
@@ -731,6 +751,8 @@
         const darkTextsContainer = document.getElementById('dark-texts-container');
         const heroPhase2 = document.getElementById('hero-phase2');
         const phase1Text = document.getElementById('phase-1-text');
+
+        let decelerationInterval;
 
         heroAction.addEventListener('click', (e) => {
             if (!isHoveringPixel) return;
@@ -745,6 +767,12 @@
             heroWrapper.classList.add('ghost');
             phase1Text.classList.add('ghost');
 
+            // v7: Dynamically decelerate canvas to prevent CSS stutter
+            clearInterval(decelerationInterval);
+            decelerationInterval = setInterval(() => {
+                globalTimeScale = Math.max(0, globalTimeScale - 0.1);
+            }, 50);
+
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                     blackHole.classList.add('active');
@@ -754,12 +782,26 @@
             setTimeout(() => {
                 phase2.classList.add('active');
                 heroPhase2.classList.add('glitch-entry');
+
+                // v7: Full stop the canvas when Phase 2 is completely active
+                isGalaxyPaused = true;
+                cancelAnimationFrame(animFrameId);
             }, 1000);
         });
 
         btnReturn.addEventListener('click', () => {
             phase2.classList.remove('active');
             heroPhase2.classList.remove('glitch-entry');
+
+            // v7: Restart Canvas Render
+            isGalaxyPaused = false;
+            animateGalaxy();
+
+            // Accelerate back gracefully
+            clearInterval(decelerationInterval);
+            decelerationInterval = setInterval(() => {
+                globalTimeScale = Math.min(1.0, globalTimeScale + 0.05);
+            }, 50);
 
             setTimeout(() => {
                 blackHole.classList.remove('active');

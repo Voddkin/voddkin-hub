@@ -73,22 +73,22 @@
             z-index: 5;
         }
 
-        /* v8: Custom Inverted Cursor */
+        /* v9: Solid Custom Cursor */
         .custom-cursor {
             position: fixed;
             top: 0; left: 0;
             width: 20px; height: 20px;
-            background-color: white;
+            background-color: #ffffff;
             border-radius: 50%;
             pointer-events: none;
             z-index: 9999;
-            mix-blend-mode: difference;
             transform: translate(-50%, -50%) scale(1);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Elastic feel */
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.3s ease;
         }
 
         .custom-cursor.hovering {
-            transform: translate(-50%, -50%) scale(3); /* Expand over hitboxes */
+            transform: translate(-50%, -50%) scale(3);
+            background-color: rgba(255, 255, 255, 0.5); /* v9: Translucent on hover */
         }
 
         /* Phase 1 Elegant Typography */
@@ -254,8 +254,9 @@
             text-transform: uppercase;
             letter-spacing: -0.02em;
 
-            transform: translateY(110%);
-            /* v8: Expand horizontal polygons heavily to not clip the glow */
+            /* v9: Increased push to compensate for clip-wrapper padding and prevent leakage */
+            transform: translateY(150%);
+            /* Expand horizontal polygons heavily to not clip the glow */
             clip-path: polygon(-20% 0, 120% 0, 120% 100%, -20% 100%);
             transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
             text-shadow: 0 0 0px rgba(255, 255, 255, 0);

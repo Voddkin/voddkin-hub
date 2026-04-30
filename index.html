@@ -484,6 +484,35 @@
             width: 100%;
         }
 
+        /* Phase 3 Styles */
+        #phase-3 {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #0b0316;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 2s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: opacity;
+        }
+
+        #phase-3.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #phase-3 h1 {
+            font-family: var(--font-bold);
+            font-size: 8vw;
+            color: #ffffff;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
     </style>
 </head>
 <body>
@@ -533,7 +562,99 @@
         </div>
     </div>
 
+    <!-- Phase 3 Content -->
+    <div id="phase-3">
+        <h1>ACCESS GRANTED</h1>
+    </div>
+
     <script>
+        // --------------------------------------------------------
+        // Keylogger "VODDKIN" & Musical Logic
+        // --------------------------------------------------------
+        let hasExploded = false;
+        const targetWord = "voddkin";
+        const exceptionArray = ['v', 'o', 'd', 'k', 'i', 'n'];
+        let currentSequenceIndex = 0;
+        const sequenceNotes = [
+            FREQUENCIES.C, FREQUENCIES.D, FREQUENCIES.E, FREQUENCIES.F,
+            FREQUENCIES.G, FREQUENCIES.A, FREQUENCIES.B
+        ];
+
+        window.addEventListener('keydown', (e) => {
+            if (hasExploded) return; // Abort immediately if already exploded
+
+            const key = e.key.toLowerCase();
+
+            if (key === targetWord[currentSequenceIndex]) {
+                playTone(sequenceNotes[currentSequenceIndex]);
+                currentSequenceIndex++;
+
+                if (currentSequenceIndex === targetWord.length) {
+                    hasExploded = true;
+                    triggerGalaxyExplosion();
+                    // Optional: remove listener if we wanted, but boolean check suffices
+                }
+            } else {
+                currentSequenceIndex = 0; // Reset
+                if (exceptionArray.includes(key)) {
+                    playTone(FREQUENCIES.C);
+                } else {
+                    playTone(FREQUENCIES.LOW_C);
+                }
+            }
+        });
+
+        // --------------------------------------------------------
+        // Web Audio API Synthesizer (8-Bit)
+        // --------------------------------------------------------
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        const FREQUENCIES = {
+            'LOW_C': 130.81,
+            'C': 261.63,
+            'D': 293.66,
+            'E': 329.63,
+            'F': 349.23,
+            'G': 392.00,
+            'A': 440.00,
+            'B': 493.88
+        };
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playTone(freq) {
+            if (!audioCtx) initAudio();
+
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+            // Short envelope (fast fade out) to sound like a retro "beep"
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
+
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.4);
+        }
+
+        // Initialize audio context on first user interaction to comply with browser autoplay policies
+        window.addEventListener('click', initAudio, { once: true });
+        window.addEventListener('keydown', initAudio, { once: true });
+
+
         // --------------------------------------------------------
         // Custom Cursor Logic
         // --------------------------------------------------------
@@ -616,7 +737,7 @@
         let stars = [];
         let renderList = [];
 
-        const STAR_COUNT = 1200;
+        let STAR_COUNT = 1200;
         const GALAXY_RADIUS = 1500;
         const SPIRAL_ARMS = 4;
         const ARM_SPREAD = 0.6;
@@ -717,6 +838,47 @@
         let animFrameId = null;
         let globalTimeScale = 1.0;
         let isGalaxyPaused = false;
+        let isExploded = false;
+        const BOUND = 3000;
+
+        function triggerGalaxyExplosion() {
+            isExploded = true;
+
+            // Multiply particles
+            const currentCount = stars.length;
+            const newCount = currentCount * 3; // Triple the particles
+
+            for (let i = 0; i < currentCount * 2; i++) {
+                const baseStar = stars[i % currentCount];
+                stars.push({
+                    ox: baseStar.ox + (Math.random() - 0.5) * 500,
+                    oy: baseStar.oy + (Math.random() - 0.5) * 500,
+                    oz: baseStar.oz + (Math.random() - 0.5) * 500,
+                    baseScale: baseStar.baseScale * (Math.random() * 0.5 + 0.5),
+                    type: baseStar.type,
+                    orbitCos: baseStar.orbitCos,
+                    orbitSin: baseStar.orbitSin,
+                    spriteCanvas: baseStar.spriteCanvas,
+                    spriteRadius: baseStar.spriteRadius,
+                    vx: (Math.random() - 0.5) * 80,
+                    vy: (Math.random() - 0.5) * 80,
+                    vz: (Math.random() - 0.5) * 80
+                });
+            }
+
+            // Give original stars chaotic velocity too
+            for (let i = 0; i < currentCount; i++) {
+                stars[i].vx = (Math.random() - 0.5) * 80;
+                stars[i].vy = (Math.random() - 0.5) * 80;
+                stars[i].vz = (Math.random() - 0.5) * 80;
+            }
+
+            STAR_COUNT = stars.length;
+            renderList = new Array(STAR_COUNT);
+            for (let i = 0; i < STAR_COUNT; i++) {
+                renderList[i] = { px: 0, py: 0, pz: 0, scale: 0, ref: stars[i] };
+            }
+        }
 
         function animateGalaxy() {
             if (isGalaxyPaused) return;
@@ -743,7 +905,15 @@
             for (let i = 0; i < STAR_COUNT; i++) {
                 let s = stars[i];
 
-                if (globalTimeScale > 0.01) {
+                if (isExploded) {
+                    s.ox += s.vx * globalTimeScale;
+                    s.oy += s.vy * globalTimeScale;
+                    s.oz += s.vz * globalTimeScale;
+
+                    if (Math.abs(s.ox) > BOUND) s.vx *= -1;
+                    if (Math.abs(s.oy) > BOUND) s.vy *= -1;
+                    if (Math.abs(s.oz) > BOUND) s.vz *= -1;
+                } else if (globalTimeScale > 0.01) {
                     const scaledCos = Math.cos(Math.acos(s.orbitCos) * globalTimeScale);
                     const scaledSin = Math.sin(Math.asin(s.orbitSin) * globalTimeScale);
                     const nx = s.ox * scaledCos - s.oz * scaledSin;
@@ -911,6 +1081,53 @@
                 phase1Text.classList.remove('ghost');
             }, 800);
         });
+
+        // --------------------------------------------------------
+        // Phase 3 Long Press Trigger Logic
+        // --------------------------------------------------------
+        const phase3 = document.getElementById('phase-3');
+        let longPressTimer;
+        let glitchInterval;
+        let pressDuration = 0;
+
+        function startLongPress() {
+            pressDuration = 0;
+
+            glitchInterval = setInterval(() => {
+                pressDuration += 1;
+                // Add slight glitch effect every second
+                const randomX = (Math.random() - 0.5) * 10;
+                const randomY = (Math.random() - 0.5) * 10;
+                const randomSkew = (Math.random() - 0.5) * 5;
+                heroPhase2.style.transform = `translate(${randomX}px, ${randomY}px) skewX(${randomSkew}deg) translateZ(0)`;
+
+                setTimeout(() => {
+                    heroPhase2.style.transform = '';
+                }, 100);
+            }, 1000);
+
+            longPressTimer = setTimeout(() => {
+                clearInterval(glitchInterval);
+                heroPhase2.style.transform = '';
+
+                // Hide Phase 2 and show Phase 3
+                phase2.classList.remove('active');
+                phase3.classList.add('active');
+            }, 3000);
+        }
+
+        function cancelLongPress() {
+            clearTimeout(longPressTimer);
+            clearInterval(glitchInterval);
+            heroPhase2.style.transform = '';
+        }
+
+        heroPhase2.addEventListener('mousedown', startLongPress);
+        heroPhase2.addEventListener('mouseup', cancelLongPress);
+        heroPhase2.addEventListener('mouseleave', cancelLongPress);
+        heroPhase2.addEventListener('touchstart', (e) => { e.preventDefault(); startLongPress(); }, {passive: false});
+        heroPhase2.addEventListener('touchend', cancelLongPress);
+
 
         // --------------------------------------------------------
         // Magnetic Button Effect for RETURN & Cursor Scale

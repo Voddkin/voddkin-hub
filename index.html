@@ -329,17 +329,29 @@
             max-height: 900px;
             display: block;
 
-            /* Exit state: pure hardware accelerated transform and opacity */
+            /* Estado inicial: Invisível, levemente ampliado e com blur */
             opacity: 0;
-            transform: translateY(40px) scale(1.02) translateZ(0);
-            transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: scale(1.03) translateZ(0);
+            filter: blur(15px);
             transform-origin: bottom center;
-            will-change: transform, opacity, clip-path;
+
+            /* MÁSCARA PREMIUM: Cria um degradê na base da imagem para o corte sumir suavemente no vazio */
+            -webkit-mask-image: linear-gradient(to top, transparent 0%, rgba(0,0,0,0.2) 5%, black 15%, black 100%);
+            mask-image: linear-gradient(to top, transparent 0%, rgba(0,0,0,0.2) 5%, black 15%, black 100%);
+
+            /* Transição longa, suave e cinematográfica */
+            transition: opacity 1.8s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                        transform 1.8s cubic-bezier(0.2, 0.8, 0.2, 1),
+                        filter 1.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+            
+            will-change: transform, opacity, filter;
         }
 
         .glitch-entry {
-            /* v10: Fast slice glitch resolving to stability */
-            animation: gpuGlitchSlices 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            /* Estado final ativado pelo JS: totalmente visível, nítido e em tamanho real */
+            opacity: 1 !important;
+            transform: scale(1) translateZ(0) !important;
+            filter: blur(0px) !important;
         }
 
         @keyframes gpuGlitchSlices {

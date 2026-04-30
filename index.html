@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEURAL LINK // VOID PROTOCOL v10 (Zero-Lag Engine)</title>
+    <title>NEURAL LINK // VOID PROTOCOL v11 (Ultimate Engine)</title>
     <style>
         @font-face {
             font-family: 'EuropaGrotesk-Medium';
@@ -32,8 +32,12 @@
             --font-medium: 'EuropaGrotesk-Medium', sans-serif;
             --font-demibold: 'EuropaGrotesk-Demibold', sans-serif;
             --font-bold: 'EuropaGrotesk-Bold', sans-serif;
-
             --void-timing: 1.2s cubic-bezier(0.7, 0, 0.3, 1);
+            
+            /* Variáveis globais geridas pelo JS para Zero-Lag */
+            --skew-voddkin: 0deg;
+            --parallax-x: 0px;
+            --parallax-y: -50%;
         }
 
         * {
@@ -52,7 +56,6 @@
             font-family: var(--font-medium);
         }
 
-        /* v10: Visible Preload (Decodes Image into GPU Memory Immediately) */
         .gpu-preload {
             position: absolute;
             left: -9999px;
@@ -66,161 +69,103 @@
 
         #bg-canvas {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none;
         }
 
         .vignette {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
-            pointer-events: none;
-            z-index: 5;
+            pointer-events: none; z-index: 5;
         }
 
         .custom-cursor {
-            position: fixed;
-            top: 0; left: 0;
+            position: fixed; top: 0; left: 0;
             width: 20px; height: 20px;
             background-color: #ffffff;
-            border-radius: 50%;
-            pointer-events: none;
+            border-radius: 50%; pointer-events: none;
             z-index: 9999;
-            transform: translate(-50%, -50%) scale(1) translateZ(0); /* v10: Hardware Accel */
+            transform: translate(-50%, -50%) scale(1) translateZ(0);
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.3s ease;
             will-change: transform;
         }
-
         .custom-cursor.hovering {
             transform: translate(-50%, -50%) scale(3) translateZ(0);
             background-color: rgba(255, 255, 255, 0.5);
         }
 
         #phase-1-text {
-            position: absolute;
-            left: 12%;
-            top: 50%;
+            position: absolute; left: 12%; top: 50%;
             transform: translateY(-50%) translateX(0px) translateZ(0);
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            opacity: 1;
-            filter: blur(0px); /* We keep this minor blur as it only affects small text */
+            z-index: 10; display: flex; flex-direction: column; gap: 0.5rem;
+            opacity: 1; filter: blur(0px);
             transition: transform 0.8s ease, opacity 0.8s ease, filter 0.8s ease;
             pointer-events: none;
             text-shadow: 0 0 20px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 0, 0, 0.8);
             will-change: transform, opacity;
         }
-
         #phase-1-text.ghost {
             transform: translateY(-50%) translateX(-40px) translateZ(0);
-            opacity: 0;
-            filter: blur(10px);
+            opacity: 0; filter: blur(10px);
         }
 
         .phase1-title {
-            font-family: var(--font-demibold);
-            font-size: 4rem;
-            letter-spacing: 0.2em;
-            color: #fff;
-            text-shadow: 0 0 20px rgba(6, 182, 212, 0.6), 0 0 40px rgba(0, 0, 0, 1);
+            font-family: var(--font-demibold); font-size: 4rem; letter-spacing: 0.2em;
+            color: #fff; text-shadow: 0 0 20px rgba(6, 182, 212, 0.6), 0 0 40px rgba(0, 0, 0, 1);
         }
-
         .phase1-subtitle {
-            font-family: var(--font-medium);
-            font-size: 1rem;
-            letter-spacing: 0.4em;
-            color: var(--cyan);
-            text-transform: uppercase;
+            font-family: var(--font-medium); font-size: 1rem; letter-spacing: 0.4em;
+            color: var(--cyan); text-transform: uppercase;
         }
 
-        /* Character Phase 1 */
         .hero-wrapper {
-            position: absolute;
-            top: 50%;
-            right: 8%;
-            margin-top: -22.5vh;
-            z-index: 20;
+            position: absolute; top: 50%; right: 8%;
+            margin-top: -22.5vh; z-index: 20;
             transition: transform var(--void-timing), opacity 0.5s ease-out;
-            transform-origin: center center;
-            pointer-events: auto;
-            /* v10: Extreme Hardware Acceleration */
+            transform-origin: center center; pointer-events: auto;
             will-change: transform, opacity;
             transform: scale(1) translateZ(0);
         }
-
         .hero-character {
-            height: 45vh;
-            max-height: 450px;
-            display: block;
+            height: 45vh; max-height: 450px; display: block;
             animation: complexFloat 5s ease-in-out infinite;
-            user-select: none;
-            -webkit-user-drag: none;
-            /* v10: Pass context to GPU immediately */
+            user-select: none; -webkit-user-drag: none;
             will-change: transform;
             transform: translateY(0px) rotate(0deg) translateZ(0);
         }
-
         @keyframes complexFloat {
             0% { transform: translateY(0px) rotate(0deg) translateZ(0); }
             50% { transform: translateY(-15px) rotate(1deg) translateZ(0); }
             100% { transform: translateY(0px) rotate(0deg) translateZ(0); }
         }
-
         .hero-wrapper.ghost {
-            /* Keep translateZ(0) to maintain composite layer */
-            transform: scale(1.8) translateZ(0);
-            opacity: 0;
-            pointer-events: none;
+            transform: scale(1.8) translateZ(0); opacity: 0; pointer-events: none;
         }
-        .hero-wrapper.ghost .hero-character {
-            animation-play-state: paused;
-        }
+        .hero-wrapper.ghost .hero-character { animation-play-state: paused; }
 
-        /* Black Hole - The Void */
         #black-hole {
-            position: absolute;
-            width: 1px;
-            height: 1px;
+            position: absolute; width: 1px; height: 1px;
             background: radial-gradient(circle, #000000 0%, #010308 100%);
-            border-radius: 50%;
-            transform: translate(-50%, -50%) scale(1) translateZ(0);
-            z-index: 15;
-            pointer-events: none;
+            border-radius: 50%; transform: translate(-50%, -50%) scale(1) translateZ(0);
+            z-index: 15; pointer-events: none;
             transition: transform var(--void-timing), box-shadow var(--void-timing);
-            box-shadow: 0 0 0px rgba(6, 182, 212, 0);
-            will-change: transform;
+            box-shadow: 0 0 0px rgba(6, 182, 212, 0); will-change: transform;
         }
         #black-hole.active {
             transform: translate(-50%, -50%) scale(10000) translateZ(0);
-            pointer-events: auto;
-            box-shadow: 0 0 100px rgba(6, 182, 212, 0.15);
+            pointer-events: auto; box-shadow: 0 0 100px rgba(6, 182, 212, 0.15);
         }
 
-        /* Animated Film Grain Overlay */
         .film-grain {
-            position: absolute;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
+            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
             background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
-            opacity: 0;
-            pointer-events: none;
-            z-index: 24;
-            mix-blend-mode: overlay;
-            transition: opacity 1s ease;
-            will-change: transform, opacity;
+            opacity: 0; pointer-events: none; z-index: 24; mix-blend-mode: overlay;
+            transition: opacity 1s ease; will-change: transform, opacity;
         }
-
         #phase-2.active .film-grain {
-            opacity: 0.15;
-            animation: grainShift 0.2s steps(2) infinite;
+            opacity: 0.15; animation: grainShift 0.2s steps(2) infinite;
         }
-
         @keyframes grainShift {
             0%, 100% { transform: translate(0, 0) translateZ(0); }
             10% { transform: translate(-2%, -2%) translateZ(0); }
@@ -235,51 +180,34 @@
         }
 
         #phase-2 {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 25;
-            pointer-events: none;
-            will-change: transform;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 25; pointer-events: none; will-change: transform;
+        }
+        #phase-2.fade-out {
+            opacity: 0; pointer-events: none; transition: opacity 1s ease;
         }
 
-        /* Typography Phase 2 */
         .dark-texts {
-            position: absolute;
-            right: 8%;
-            top: 50%;
-            transform: translateY(-50%) translateZ(0);
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 1.5rem;
-            text-align: right;
-            transition: transform 0.1s linear; /* Fast JS Parallax update */
-            will-change: transform;
+            position: absolute; right: 8%; top: 50%;
+            display: flex; flex-direction: column; align-items: flex-end;
+            gap: 1.5rem; text-align: right; will-change: transform;
+            /* Lógica CSS Variables limpa e fluida */
+            transform: translate(var(--parallax-x), var(--parallax-y)) skewX(calc(var(--skew-voddkin) * -2)) translateZ(0);
+        }
+        #phase-2.active .dark-texts {
+            opacity: 1 !important; pointer-events: auto;
         }
 
-        .clip-wrapper {
-            overflow: hidden;
-            padding: 30px;
-            margin: -30px;
-        }
+        .clip-wrapper { overflow: hidden; padding: 30px; margin: -30px; }
 
         .dark-text-line {
-            font-family: var(--font-bold);
-            font-size: 8vw;
-            line-height: 0.85;
-            color: #ffffff;
-            text-transform: uppercase;
-            letter-spacing: -0.02em;
-
-            /* Add translateZ(0) to promote to GPU layer */
+            font-family: var(--font-bold); font-size: 8vw; line-height: 0.85;
+            color: #ffffff; text-transform: uppercase; letter-spacing: -0.02em;
             transform: translateY(150%) translateZ(0);
             clip-path: polygon(-20% 0, 120% 0, 120% 100%, -20% 100%);
             transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-            text-shadow: 0 0 0px rgba(255, 255, 255, 0);
             will-change: transform, text-shadow;
         }
-
-        /* Cascading exit */
         .clip-wrapper:nth-child(1) .dark-text-line { transition-delay: 0s; }
         .clip-wrapper:nth-child(2) .dark-text-line { transition-delay: 0.1s; }
         .clip-wrapper:nth-child(3) .dark-text-line { transition-delay: 0.2s; }
@@ -289,8 +217,6 @@
             transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
             animation: textPulseWhite 1.2s infinite ease-in-out alternate;
         }
-
-        /* Cascading enter */
         #phase-2.active .clip-wrapper:nth-child(1) .dark-text-line { transition-delay: 0.8s; }
         #phase-2.active .clip-wrapper:nth-child(2) .dark-text-line { transition-delay: 0.95s; }
         #phase-2.active .clip-wrapper:nth-child(3) .dark-text-line { transition-delay: 1.1s; }
@@ -300,190 +226,98 @@
             100% { text-shadow: 0 0 15px rgba(255, 255, 255, 0.3); }
         }
 
-        /* New Character Phase 2 Wrapper */
         .hero-phase2-wrapper {
-            position: absolute;
-            left: 2%;
-            bottom: 0;
-            pointer-events: none;
-            transform-origin: bottom center;
+            position: absolute; left: 2%; bottom: 0;
+            pointer-events: none; transform-origin: bottom center;
             will-change: transform;
+            /* Removido o skewX para não seguir mais o mouse */
             transform: translateZ(0);
-            /* Fast transition for kinetic skew glitch */
-            transition: transform 0.1s linear;
         }
-
         #phase-2.active .hero-phase2-wrapper {
             animation: phase2Breathe 4s ease-in-out infinite 1.5s;
         }
-
         @keyframes phase2Breathe {
+            /* Removido o skewX daqui também. Agora ele só respira. */
             0% { transform: scaleY(1) scaleX(1) translateZ(0); }
             50% { transform: scaleY(1.015) scaleX(0.99) translateZ(0); }
             100% { transform: scaleY(1) scaleX(1) translateZ(0); }
         }
 
-        /* v10: GPU-Friendly Glitch Image (Zero Filters) */
+        /* Cinematographic Voddkin Entry */
         .hero-character-phase2 {
-            height: 85vh;
-            max-height: 900px;
-            display: block;
-
-            /* Estado inicial: Invisível, levemente ampliado e com blur */
-            opacity: 0;
-            transform: scale(1.03) translateZ(0);
-            filter: blur(15px);
+            height: 85vh; max-height: 900px; display: block;
+            pointer-events: auto; /* IMPORTANTE PARA O LONG PRESS FUNCIONAR */
+            opacity: 0; transform: scale(1.03) translateZ(0); filter: blur(15px);
             transform-origin: bottom center;
-
-            /* MÁSCARA PREMIUM: Cria um degradê na base da imagem para o corte sumir suavemente no vazio */
             -webkit-mask-image: linear-gradient(to top, transparent 0%, rgba(0,0,0,0.2) 5%, black 15%, black 100%);
             mask-image: linear-gradient(to top, transparent 0%, rgba(0,0,0,0.2) 5%, black 15%, black 100%);
-
-            /* Transição longa, suave e cinematográfica */
-            transition: opacity 1.8s cubic-bezier(0.2, 0.8, 0.2, 1), 
-                        transform 1.8s cubic-bezier(0.2, 0.8, 0.2, 1),
-                        filter 1.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-            
+            transition: opacity 1.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 1.8s cubic-bezier(0.2, 0.8, 0.2, 1), filter 1.8s cubic-bezier(0.2, 0.8, 0.2, 1);
             will-change: transform, opacity, filter;
         }
-
         .glitch-entry {
-            /* Estado final ativado pelo JS: totalmente visível, nítido e em tamanho real */
-            opacity: 1 !important;
-            transform: scale(1) translateZ(0) !important;
-            filter: blur(0px) !important;
+            opacity: 1 !important; transform: scale(1) translateZ(0) !important; filter: blur(0px) !important;
+        }
+        .minor-glitch {
+            transform: scale(1.02) translateX(5px) skewX(2deg) !important;
+            filter: brightness(1.5) contrast(1.2) hue-rotate(90deg) !important;
+            transition: none !important;
         }
 
-        @keyframes gpuGlitchSlices {
-            0% {
-                opacity: 0;
-                transform: translateX(-20px) translateY(0px) scale(1.05) translateZ(0);
-                clip-path: inset(10% 0 80% 0);
-            }
-            10% {
-                opacity: 0.5;
-                transform: translateX(10px) scale(1.04) translateZ(0);
-                clip-path: inset(50% 0 10% 0);
-            }
-            20% {
-                opacity: 0.8;
-                transform: translateX(-10px) scale(1.03) translateZ(0);
-                clip-path: inset(20% 0 50% 0);
-            }
-            30% {
-                opacity: 0.9;
-                transform: translateX(5px) scale(1.02) translateZ(0);
-                clip-path: inset(0% 0 0% 0);
-            }
-            35% {
-                transform: translateX(-5px) scale(1.01) translateZ(0);
-                clip-path: inset(60% 0 20% 0);
-            }
-            40% {
-                opacity: 1;
-                transform: translateX(0px) scale(1.01) translateZ(0);
-                clip-path: inset(0% 0 0% 0);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0px) scale(1) translateZ(0);
-                clip-path: inset(0% 0 0% 0);
-            }
-        }
-
-        /* Magnetic Return Button */
         .btn-return-wrapper {
-            position: absolute;
-            bottom: 8%;
-            left: 50%;
+            position: absolute; bottom: 8%; left: 50%;
             transform: translateX(-50%) translateZ(0);
-            width: 200px;
-            height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none;
-            z-index: 30;
-            will-change: transform;
+            width: 200px; height: 80px; display: flex;
+            align-items: center; justify-content: center;
+            pointer-events: none; z-index: 30; will-change: transform;
         }
-
         .btn-return {
-            position: relative;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            opacity: 0;
-            transition: opacity 0.3s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-            padding: 1rem 2rem;
-            background: transparent;
-            border: none;
-            outline: none;
-            will-change: transform, opacity;
-            transform: translateZ(0);
+            position: relative; display: flex; align-items: center; gap: 1rem;
+            opacity: 0; transition: opacity 0.3s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+            padding: 1rem 2rem; background: transparent; border: none; outline: none;
+            will-change: transform, opacity; transform: translateZ(0);
         }
-
-        #phase-2.active .btn-return-wrapper {
-            pointer-events: auto;
-        }
+        #phase-2.active .btn-return-wrapper { pointer-events: auto; }
         #phase-2.active .btn-return {
-            opacity: 1;
-            transition: opacity 1s ease 2s, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+            opacity: 1; transition: opacity 1s ease 2s, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
         .btn-text {
-            font-family: var(--font-medium);
-            font-size: 0.9rem;
-            letter-spacing: 0.4em;
-            color: rgba(255, 255, 255, 0.7);
-            text-transform: uppercase;
-            transition: color 0.4s ease;
-            position: relative;
-            z-index: 2;
+            font-family: var(--font-medium); font-size: 0.9rem; letter-spacing: 0.4em;
+            color: rgba(255, 255, 255, 0.7); text-transform: uppercase;
+            transition: color 0.4s ease; position: relative; z-index: 2;
         }
-
         .btn-bg-glow {
-            position: absolute;
-            top: 50%;
-            left: 50%;
+            position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%) scale(0.8) translateZ(0);
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             background: radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%, transparent 70%);
-            border-radius: 50px;
-            opacity: 0;
-            transition: opacity 0.4s ease, transform 0.4s ease;
-            z-index: 1;
-            filter: blur(10px);
+            border-radius: 50px; opacity: 0;
+            transition: opacity 0.4s ease, transform 0.4s ease; z-index: 1; filter: blur(10px);
             will-change: transform, opacity;
         }
-
         .btn-line-top, .btn-line-bottom {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%) translateZ(0);
-            width: 0;
-            height: 1px;
-            background: rgba(255, 255, 255, 0.8);
+            position: absolute; left: 50%; transform: translateX(-50%) translateZ(0);
+            width: 0; height: 1px; background: rgba(255, 255, 255, 0.8);
             transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-            will-change: width;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); will-change: width;
         }
         .btn-line-top { top: 0; }
         .btn-line-bottom { bottom: 0; }
+        .btn-return:hover .btn-text { color: #fff; text-shadow: 0 0 15px rgba(255, 255, 255, 0.8); }
+        .btn-return:hover .btn-bg-glow { opacity: 1; transform: translate(-50%, -50%) scale(1.2) translateZ(0); }
+        .btn-return:hover .btn-line-top, .btn-return:hover .btn-line-bottom { width: 100%; }
 
-        .btn-return:hover .btn-text {
-            color: #fff;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+        /* Estrutura da Fase 3 */
+        #phase-3 {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: #0a0000; display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 2s ease; z-index: 1000; 
         }
-        .btn-return:hover .btn-bg-glow {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1.2) translateZ(0);
+        #phase-3.active { opacity: 1; pointer-events: auto; }
+        #phase-3 h1 {
+            color: #ff0000; font-family: var(--font-bold); font-size: 4rem;
+            letter-spacing: 10px; text-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
         }
-        .btn-return:hover .btn-line-top,
-        .btn-return:hover .btn-line-bottom {
-            width: 100%;
-        }
-
     </style>
 </head>
 <body>
@@ -491,27 +325,21 @@
     <div class="vignette"></div>
     <div id="custom-cursor" class="custom-cursor"></div>
 
-    <!-- v10: Visible Preload forcing Image onto GPU immediately -->
     <img src="VKpng.png" class="gpu-preload" alt="Preload Phase 2">
-
     <canvas id="bg-canvas"></canvas>
     <div class="film-grain"></div>
 
-    <!-- Phase 1 Elegant Typography -->
     <div id="phase-1-text">
         <div class="phase1-title">AURORA SYSTEM</div>
         <div class="phase1-subtitle">Awaiting Uplink // Standby</div>
     </div>
 
-    <!-- Phase 1 Content -->
     <div id="hero-action-wrapper" class="hero-wrapper">
         <img src="chibiVKpng.png" id="hero-action" class="hero-character" alt="Character" crossorigin="anonymous">
     </div>
 
-    <!-- The Void (Black Hole) -->
     <div id="black-hole"></div>
 
-    <!-- Phase 2 Content -->
     <div id="phase-2">
         <div id="hero-phase2-wrapper" class="hero-phase2-wrapper">
             <img src="VKpng.png" id="hero-phase2" class="hero-character-phase2" alt="Materialized Character">
@@ -533,10 +361,9 @@
         </div>
     </div>
 
+    <div id="phase-3"><h1>ACCESS GRANTED</h1></div>
+
     <script>
-        // --------------------------------------------------------
-        // Custom Cursor Logic
-        // --------------------------------------------------------
         const customCursor = document.getElementById('custom-cursor');
         let rawMouseX = window.innerWidth / 2;
         let rawMouseY = window.innerHeight / 2;
@@ -552,14 +379,10 @@
         }
         requestAnimationFrame(renderCursor);
 
-        // --------------------------------------------------------
-        // Kinetic Variables & Loop
-        // --------------------------------------------------------
+        // KINETIC LOOP - ZERO LAG COM VARIÁVEIS CSS
         let lastMouseX = rawMouseX;
         let velocityX = 0;
-        const heroPhase2Wrapper = document.getElementById('hero-phase2-wrapper');
-        const darkTextsContainer = document.getElementById('dark-texts-container');
-
+        let currentSkew = 0; 
         const phase2 = document.getElementById('phase-2');
 
         function uiInteractionLoop() {
@@ -567,52 +390,40 @@
             lastMouseX = rawMouseX;
 
             if (phase2.classList.contains('active')) {
-                // v10: High Performance GPU Kinetic Glitch (Replaced Drop-Shadow with Skew Transform)
                 const absVel = Math.abs(velocityX);
-                let skewAngle = 0;
-
+                let targetSkew = 0;
                 if (absVel > 10) {
-                    const direction = velocityX > 0 ? 1 : -1;
-                    skewAngle = Math.min(absVel * 0.1, 8) * direction; // Cap at 8 degrees
+                    targetSkew = Math.min(absVel * 0.1, 8) * (velocityX > 0 ? 1 : -1);
                 }
+                currentSkew += (targetSkew - currentSkew) * 0.1;
 
-                const screenX = window.innerWidth;
-                const screenY = window.innerHeight;
-                const xPercent = (rawMouseX / screenX) * 2 - 1;
-                const yPercent = (rawMouseY / screenY) * 2 - 1;
+                const xPercent = (rawMouseX / window.innerWidth) * 2 - 1;
+                const yPercent = (rawMouseY / window.innerHeight) * 2 - 1;
 
-                const parallaxX = xPercent * -20;
-                const parallaxY = -50 + (yPercent * -10);
-
-                // Group transforms (Translate + Skew) strictly in one property to avoid composite layer invalidation
-                darkTextsContainer.style.transform = `translate(${parallaxX}px, ${parallaxY}%) skewX(${skewAngle}deg) translateZ(0)`;
-                // Phase 2 Character only skews
-                heroPhase2Wrapper.style.transform = `skewX(${-skewAngle * 0.5}deg) translateZ(0)`;
+                document.documentElement.style.setProperty('--skew-voddkin', `${currentSkew}deg`);
+                document.documentElement.style.setProperty('--parallax-x', `${xPercent * -20}px`);
+                document.documentElement.style.setProperty('--parallax-y', `${-50 + (yPercent * -10)}%`);
             }
-
             requestAnimationFrame(uiInteractionLoop);
         }
         requestAnimationFrame(uiInteractionLoop);
 
-        // Update generic mouse variables globally
         window.addEventListener('mousemove', (e) => {
             rawMouseX = e.clientX;
             rawMouseY = e.clientY;
 
-            const nx = (e.clientX / width) * 2 - 1;
-            const ny = (e.clientY / height) * 2 - 1;
-            targetRotX = (Math.PI / 3) + ny * 0.3;
-            targetRotY = nx * 0.5;
+            if(width && height) {
+                const nx = (e.clientX / width) * 2 - 1;
+                const ny = (e.clientY / height) * 2 - 1;
+                targetRotX = (Math.PI / 3) + ny * 0.3;
+                targetRotY = nx * 0.5;
+            }
         });
 
-        // --------------------------------------------------------
-        // 60FPS Galaxy Engine
-        // --------------------------------------------------------
+        // 60FPS GALAXY ENGINE + CATACLISMO
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d', { alpha: false });
-
-        let width, height;
-        let halfW, halfH;
+        let width, height, halfW, halfH;
         let stars = [];
         let renderList = [];
 
@@ -621,43 +432,25 @@
         const SPIRAL_ARMS = 4;
         const ARM_SPREAD = 0.6;
 
-        // Define Rotation State Variables
         let targetRotX = Math.PI / 3;
         let targetRotY = 0;
         let currentRotX = targetRotX;
         let currentRotY = targetRotY;
         let autoRotY = 0;
 
-        const starColors = [
-            '#06b6d4', '#8b5cf6', '#3b82f6', '#0284c7'
-        ];
-
+        const starColors = ['#06b6d4', '#8b5cf6', '#3b82f6', '#0284c7'];
         const spriteCache = {};
 
         function createStarSprite(color, type) {
             const c = document.createElement('canvas');
             const cCtx = c.getContext('2d');
             const radius = type === 'gas' ? 80 : (type === 'nebula' ? 30 : 8);
-            c.width = radius * 2;
-            c.height = radius * 2;
-
+            c.width = radius * 2; c.height = radius * 2;
             const grad = cCtx.createRadialGradient(radius, radius, 0, radius, radius, radius);
-
-            if (type === 'gas') {
-                grad.addColorStop(0, color);
-                grad.addColorStop(1, 'transparent');
-            } else if (type === 'nebula') {
-                grad.addColorStop(0, color);
-                grad.addColorStop(0.3, color);
-                grad.addColorStop(1, 'transparent');
-            } else {
-                grad.addColorStop(0, color);
-                grad.addColorStop(0.2, color);
-                grad.addColorStop(1, 'transparent');
-            }
-
-            cCtx.fillStyle = grad;
-            cCtx.fillRect(0, 0, c.width, c.height);
+            if (type === 'gas') { grad.addColorStop(0, color); grad.addColorStop(1, 'transparent'); } 
+            else if (type === 'nebula') { grad.addColorStop(0, color); grad.addColorStop(0.3, color); grad.addColorStop(1, 'transparent'); } 
+            else { grad.addColorStop(0, color); grad.addColorStop(0.2, color); grad.addColorStop(1, 'transparent'); }
+            cCtx.fillStyle = grad; cCtx.fillRect(0, 0, c.width, c.height);
             return { canvas: c, radius: radius };
         }
 
@@ -673,57 +466,48 @@
         function initGalaxy() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            halfW = width / 2;
-            halfH = height / 2;
-
+            halfW = width / 2; halfH = height / 2;
             stars = [];
             renderList = new Array(STAR_COUNT);
 
             for (let i = 0; i < STAR_COUNT; i++) {
                 const distance = Math.pow(Math.random(), 3) * GALAXY_RADIUS;
                 const armOffset = (Math.PI * 2 / SPIRAL_ARMS) * Math.floor(Math.random() * SPIRAL_ARMS);
-                const spiralAngle = distance * 0.004;
-                const scatterAngle = (Math.random() - 0.5) * ARM_SPREAD;
-                const finalAngle = spiralAngle + armOffset + scatterAngle;
+                const finalAngle = distance * 0.004 + armOffset + (Math.random() - 0.5) * ARM_SPREAD;
 
                 const ox = Math.cos(finalAngle) * distance;
                 const oz = Math.sin(finalAngle) * distance;
-                const thickness = (1 - (distance / GALAXY_RADIUS)) * 100;
-                const oy = (Math.random() - 0.5) * thickness;
+                const oy = (Math.random() - 0.5) * ((1 - (distance / GALAXY_RADIUS)) * 100);
                 const color = starColors[Math.floor(Math.random() * starColors.length)];
 
                 const roll = Math.random();
-                let type, baseScale;
-
-                if (roll > 0.9) { type = 'gas'; baseScale = Math.random() * 4 + 3; }
-                else if (roll > 0.7) { type = 'nebula'; baseScale = Math.random() * 2 + 1; }
-                else { type = 'star'; baseScale = Math.random() * 1.2 + 0.3; }
-
+                let type = roll > 0.9 ? 'gas' : (roll > 0.7 ? 'nebula' : 'star');
+                let baseScale = roll > 0.9 ? Math.random() * 4 + 3 : (roll > 0.7 ? Math.random() * 2 + 1 : Math.random() * 1.2 + 0.3);
+                
                 const speed = 0.001 + (0.005 * (1 - distance / GALAXY_RADIUS));
-                const spriteKey = color + '_' + type;
-                const sprite = spriteCache[spriteKey];
+                const sprite = spriteCache[color + '_' + type];
 
                 stars.push({
                     ox, oy, oz, baseScale, type,
-                    orbitCos: Math.cos(speed), orbitSin: Math.sin(speed),
-                    spriteCanvas: sprite.canvas, spriteRadius: sprite.radius
+                    speed: speed, // OTIMIZAÇÃO: Salva a velocidade base direta
+                    spriteCanvas: sprite.canvas, spriteRadius: sprite.radius,
+                    vx: 0, vy: 0, vz: 0
                 });
                 renderList[i] = { px: 0, py: 0, pz: 0, scale: 0, ref: stars[i] };
             }
         }
-
         window.addEventListener('resize', initGalaxy);
 
         let animFrameId = null;
         let globalTimeScale = 1.0;
         let isGalaxyPaused = false;
+        let isCataclysmActive = false;
 
         function animateGalaxy() {
             if (isGalaxyPaused) return;
 
             ctx.fillStyle = '#050212';
             ctx.fillRect(0, 0, width, height);
-
             ctx.globalCompositeOperation = 'lighter';
 
             currentRotX += (targetRotX - currentRotX) * 0.05 * globalTimeScale;
@@ -736,19 +520,28 @@
             const cosY = Math.cos(totalRotY);
             const sinY = Math.sin(totalRotY);
 
-            const fov = 800;
-            const zOffset = 1000;
+            const fov = 800; const zOffset = 1000;
             let visibleCount = 0;
 
             for (let i = 0; i < STAR_COUNT; i++) {
                 let s = stars[i];
 
-                if (globalTimeScale > 0.01) {
-                    const scaledCos = Math.cos(Math.acos(s.orbitCos) * globalTimeScale);
-                    const scaledSin = Math.sin(Math.asin(s.orbitSin) * globalTimeScale);
-                    const nx = s.ox * scaledCos - s.oz * scaledSin;
-                    const nz = s.ox * scaledSin + s.oz * scaledCos;
-                    s.ox = nx; s.oz = nz;
+                if (isCataclysmActive) {
+                    s.ox += s.vx; s.oy += s.vy; s.oz += s.vz;
+                    const limit = 4000;
+                    if (s.ox > limit || s.ox < -limit) s.vx *= -1;
+                    if (s.oy > limit || s.oy < -limit) s.vy *= -1;
+                    if (s.oz > limit || s.oz < -limit) s.vz *= -1;
+                } else {
+                    if (globalTimeScale > 0.01) {
+                        // OTIMIZAÇÃO: Sem trigonometria inversa pesada (acos/asin)
+                        const currentSpeed = s.speed * globalTimeScale;
+                        const scaledCos = Math.cos(currentSpeed);
+                        const scaledSin = Math.sin(currentSpeed);
+                        const nx = s.ox * scaledCos - s.oz * scaledSin;
+                        const nz = s.ox * scaledSin + s.oz * scaledCos;
+                        s.ox = nx; s.oz = nz;
+                    }
                 }
 
                 const y1 = s.oy * cosX - s.oz * sinX;
@@ -756,7 +549,7 @@
                 const finalX = s.ox * cosY + z1 * sinY;
                 const finalZ = -s.ox * sinY + z1 * cosY;
                 const zPos = finalZ + zOffset;
-
+                
                 if (zPos > 0) {
                     const scale = fov / zPos;
                     const projX = halfW + finalX * scale;
@@ -764,15 +557,19 @@
 
                     if (projX > -100 && projX < width + 100 && projY > -100 && projY < height + 100) {
                         let rl = renderList[visibleCount];
-                        rl.px = projX; rl.py = projY; rl.pz = finalZ;
+                        // OTIMIZAÇÃO: Math.trunc mata o sub-pixel rendering e alivia a GPU
+                        rl.px = Math.trunc(projX); 
+                        rl.py = Math.trunc(projY); 
+                        rl.pz = finalZ;
                         rl.scale = scale; rl.ref = s;
                         visibleCount++;
                     }
                 }
             }
 
+            // OTIMIZAÇÃO: Array.sort() REMOVIDO!
+            // No modo 'lighter', a ordem dos fatores não altera a soma. Z-Sorting era inútil e pesado.
             let activeRenderList = renderList.slice(0, visibleCount);
-            activeRenderList.sort((a, b) => b.pz - a.pz);
 
             for (let i = 0; i < visibleCount; i++) {
                 let p = activeRenderList[i];
@@ -780,11 +577,11 @@
                 let finalScale = s.baseScale * p.scale;
                 let drawRadius = s.spriteRadius * finalScale;
                 let distAlpha = Math.min(1, Math.max(0.05, p.scale * 1.5));
-
                 let finalAlpha = s.type === 'gas' ? distAlpha * 0.03 : (s.type === 'nebula' ? distAlpha * 0.2 : distAlpha * 0.6);
 
                 ctx.globalAlpha = finalAlpha;
-                ctx.drawImage(s.spriteCanvas, p.px - drawRadius, p.py - drawRadius, drawRadius * 2, drawRadius * 2);
+                // OTIMIZAÇÃO: Sub-pixel rendering block no tamanho também
+                ctx.drawImage(s.spriteCanvas, p.px - drawRadius, p.py - drawRadius, Math.trunc(drawRadius * 2), Math.trunc(drawRadius * 2));
             }
 
             ctx.globalCompositeOperation = 'source-over';
@@ -796,7 +593,7 @@
         animateGalaxy();
 
         // --------------------------------------------------------
-        // Pixel-Perfect Hitbox (Alpha Channel)
+        // Hitbox & CORS SAFE Fallback
         // --------------------------------------------------------
         const heroAction = document.getElementById('hero-action');
         const heroWrapper = document.getElementById('hero-action-wrapper');
@@ -807,9 +604,9 @@
         let isImageLoaded = false;
 
         heroAction.onload = () => {
-            offscreenCanvas.width = heroAction.naturalWidth;
-            offscreenCanvas.height = heroAction.naturalHeight;
-            offCtx.drawImage(heroAction, 0, 0);
+            offscreenCanvas.width = heroAction.naturalWidth || 1;
+            offscreenCanvas.height = heroAction.naturalHeight || 1;
+            try { offCtx.drawImage(heroAction, 0, 0); } catch(e) {}
             isImageLoaded = true;
         };
         if(heroAction.complete) heroAction.onload();
@@ -820,27 +617,27 @@
             if (!isImageLoaded || heroWrapper.classList.contains('ghost')) return;
 
             const rect = heroAction.getBoundingClientRect();
-            const scaleX = heroAction.naturalWidth / rect.width;
-            const scaleY = heroAction.naturalHeight / rect.height;
+            isHoveringPixel = true; // Fallback Seguro: Se o mouse tá em cima da imagem, permite o clique.
 
-            const x = Math.round((e.clientX - rect.left) * scaleX);
-            const y = Math.round((e.clientY - rect.top) * scaleY);
+            try {
+                // Tenta ler o alpha do pixel (funciona em servidor/Vercel)
+                const scaleX = heroAction.naturalWidth / rect.width;
+                const scaleY = heroAction.naturalHeight / rect.height;
+                const x = Math.round((e.clientX - rect.left) * scaleX);
+                const y = Math.round((e.clientY - rect.top) * scaleY);
 
-            if (x >= 0 && x < offscreenCanvas.width && y >= 0 && y < offscreenCanvas.height) {
-                const pixelData = offCtx.getImageData(x, y, 1, 1).data;
-                const alpha = pixelData[3];
-
-                if (alpha > 0) {
-                    isHoveringPixel = true;
-                    customCursor.classList.add('hovering');
+                if (x >= 0 && x < offscreenCanvas.width && y >= 0 && y < offscreenCanvas.height) {
+                    const pixelData = offCtx.getImageData(x, y, 1, 1).data;
+                    isHoveringPixel = pixelData[3] > 0;
                 } else {
                     isHoveringPixel = false;
-                    customCursor.classList.remove('hovering');
                 }
-            } else {
-                isHoveringPixel = false;
-                customCursor.classList.remove('hovering');
+            } catch (err) {
+                // Se der erro de CORS (rodando no PC local), engole o erro e deixa o isHoveringPixel = true
             }
+
+            if (isHoveringPixel) customCursor.classList.add('hovering');
+            else customCursor.classList.remove('hovering');
         });
 
         heroAction.addEventListener('mouseleave', () => {
@@ -849,13 +646,12 @@
         });
 
         // --------------------------------------------------------
-        // Ghost & Void Transitions Logic
+        // Transitions
         // --------------------------------------------------------
         const blackHole = document.getElementById('black-hole');
         const btnReturn = document.getElementById('btn-return');
         const heroPhase2 = document.getElementById('hero-phase2');
         const phase1Text = document.getElementById('phase-1-text');
-
         let decelerationInterval;
 
         heroAction.addEventListener('click', (e) => {
@@ -863,30 +659,20 @@
             customCursor.classList.remove('hovering');
 
             const rect = heroWrapper.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-
-            blackHole.style.left = `${centerX}px`;
-            blackHole.style.top = `${centerY}px`;
+            blackHole.style.left = `${rect.left + rect.width / 2}px`;
+            blackHole.style.top = `${rect.top + rect.height / 2}px`;
 
             heroWrapper.classList.add('ghost');
             phase1Text.classList.add('ghost');
 
             clearInterval(decelerationInterval);
-            decelerationInterval = setInterval(() => {
-                globalTimeScale = Math.max(0, globalTimeScale - 0.1);
-            }, 50);
+            decelerationInterval = setInterval(() => { globalTimeScale = Math.max(0, globalTimeScale - 0.1); }, 50);
 
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    blackHole.classList.add('active');
-                });
-            });
+            requestAnimationFrame(() => requestAnimationFrame(() => blackHole.classList.add('active') ));
 
             setTimeout(() => {
                 phase2.classList.add('active');
                 heroPhase2.classList.add('glitch-entry');
-
                 isGalaxyPaused = true;
                 cancelAnimationFrame(animFrameId);
             }, 1000);
@@ -901,9 +687,7 @@
             animateGalaxy();
 
             clearInterval(decelerationInterval);
-            decelerationInterval = setInterval(() => {
-                globalTimeScale = Math.min(1.0, globalTimeScale + 0.05);
-            }, 50);
+            decelerationInterval = setInterval(() => { globalTimeScale = Math.min(1.0, globalTimeScale + 0.05); }, 50);
 
             setTimeout(() => {
                 blackHole.classList.remove('active');
@@ -912,16 +696,9 @@
             }, 800);
         });
 
-        // --------------------------------------------------------
-        // Magnetic Button Effect for RETURN & Cursor Scale
-        // --------------------------------------------------------
         btnReturnWrapper.addEventListener('mousemove', (e) => {
             const rect = btnReturnWrapper.getBoundingClientRect();
-            const x = e.clientX - rect.left - rect.width / 2;
-            const y = e.clientY - rect.top - rect.height / 2;
-
-            // Apply GPU translation
-            btnReturn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px) translateZ(0)`;
+            btnReturn.style.transform = `translate(${(e.clientX - rect.left - rect.width / 2) * 0.3}px, ${(e.clientY - rect.top - rect.height / 2) * 0.3}px) translateZ(0)`;
             customCursor.classList.add('hovering');
         });
 
@@ -930,6 +707,112 @@
             customCursor.classList.remove('hovering');
         });
 
+        // --------------------------------------------------------
+        // VODDKIN KEYLOGGER & WEB AUDIO
+        // --------------------------------------------------------
+        const AudioContextObj = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+        const FREQ = { LOW_C: 130.81, C: 261.63, D: 293.66, E: 329.63, F: 349.23, G: 392.00, A: 440.00, B: 493.88 };
+        const SCALE = [FREQ.C, FREQ.D, FREQ.E, FREQ.F, FREQ.G, FREQ.A, FREQ.B];
+        const EXCEPTION_KEYS = ['v', 'o', 'd', 'k', 'i', 'n'];
+
+        function playRetroBeep(frequency) {
+            if (!audioCtx) audioCtx = new AudioContextObj();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.type = 'square'; 
+            osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); 
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
+            osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+        }
+
+        const TARGET_WORD = "voddkin";
+        let currentKeyIndex = 0;
+        let easterEggTriggered = false;
+
+        const successAudio = new Audio("https://cdn.freesound.org/previews/772/772277_12520441-lq.mp3");
+        successAudio.volume = 0.8;
+
+        window.addEventListener('keydown', (e) => {
+            if (easterEggTriggered) return;
+            const key = e.key.toLowerCase();
+
+            if (key === TARGET_WORD[currentKeyIndex]) {
+                playRetroBeep(SCALE[currentKeyIndex]);
+                currentKeyIndex++;
+
+                if (currentKeyIndex === TARGET_WORD.length) {
+                    easterEggTriggered = true;
+                    setTimeout(() => {
+                        successAudio.play().catch(e => console.log("Áudio bloqueado pelo navegador", e));
+                        triggerGalaxyExplosion();
+                    }, 150);
+                }
+            } else {
+                currentKeyIndex = 0;
+                if (key === TARGET_WORD[0]) {
+                    playRetroBeep(SCALE[0]);
+                    currentKeyIndex = 1;
+                } else if (EXCEPTION_KEYS.includes(key)) {
+                    playRetroBeep(FREQ.C);
+                } else {
+                    playRetroBeep(FREQ.LOW_C);
+                }
+            }
+        });
+
+        function triggerGalaxyExplosion() {
+            isCataclysmActive = true;
+            if (isGalaxyPaused) {
+                isGalaxyPaused = false;
+                animateGalaxy();
+            }
+            stars.forEach(s => {
+                s.vx = (Math.random() - 0.5) * 80;
+                s.vy = (Math.random() - 0.5) * 80;
+                s.vz = (Math.random() - 0.5) * 80;
+                s.baseScale = s.baseScale * 4;
+            });
+        }
+
+        // --------------------------------------------------------
+        // FASE 3 GATILHO (LONG PRESS)
+        // --------------------------------------------------------
+        const voddkinCharacter = document.querySelector('.hero-character-phase2');
+        const phase2Container = document.getElementById('phase-2');
+        const phase3Container = document.getElementById('phase-3'); 
+        let holdTimer; let holdSeconds = 0;
+
+        if (voddkinCharacter) {
+            voddkinCharacter.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                holdSeconds = 0;
+                holdTimer = setInterval(() => {
+                    holdSeconds++;
+                    if (holdSeconds >= 3) {
+                        clearInterval(holdTimer);
+                        phase2Container.classList.add('fade-out');
+                        phase3Container.classList.add('active');
+                    } else {
+                        voddkinCharacter.classList.add('minor-glitch');
+                        setTimeout(() => voddkinCharacter.classList.remove('minor-glitch'), 150);
+                    }
+                }, 1000);
+            });
+
+            const cancelHold = () => {
+                clearInterval(holdTimer);
+                holdSeconds = 0;
+                voddkinCharacter.classList.remove('minor-glitch');
+            };
+
+            voddkinCharacter.addEventListener('mouseup', cancelHold);
+            voddkinCharacter.addEventListener('mouseleave', cancelHold);
+        }
     </script>
 </body>
 </html>

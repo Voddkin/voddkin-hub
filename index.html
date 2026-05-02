@@ -317,10 +317,19 @@
         /* Estrutura da Fase 3 - Premium Minimalist */
         #phase-3 {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: var(--bg-color); /* Fundo liso preto */
+            background: radial-gradient(circle at center, #080812 0%, #010103 100%);
             display: flex; flex-direction: column; justify-content: center;
             opacity: 0; pointer-events: none; transition: opacity 1.5s ease; z-index: 1000;
         }
+
+        /* Noise Overlay elegante */
+        #phase-3::before {
+            content: "";
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.04; pointer-events: none; mix-blend-mode: overlay;
+        }
+
         #phase-3.active { opacity: 1; pointer-events: auto; }
         
         .phase3-top-title {
@@ -334,24 +343,31 @@
         }
         
         .phase3-left { 
-            width: 45%; 
-            padding-left: 10%; z-index: 10;
+            width: 35%; /* Reduzido para empurrar para extremidade */
+            padding-left: 5%; /* Reduzido para encostar na esquerda */
+            z-index: 10;
         }
         
         .phase3-layout {
             display: flex; width: 100%; height: 100%; align-items: center; justify-content: space-between;
         }
         
+        #phase3-text-dynamic {
+            will-change: transform, opacity, filter;
+        }
+
         .phase3-main-title {
             font-family: var(--font-bold); font-size: 6.5vw; line-height: 0.85; color: #fff;
             text-transform: uppercase; letter-spacing: -0.02em;
+            text-align: left; margin: 0; display: inline-block; white-space: nowrap;
             transform: translateX(-50px); opacity: 0; filter: blur(15px);
             transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s, opacity 1.5s ease 0.2s, filter 1.5s ease 0.2s;
         }
         
         /* O palco do Carrossel */
         .phase3-right {
-            position: relative; width: 60%; height: 100vh; 
+            position: relative; width: 65%; /* Aumentado para empurrar cards mais pra direita */
+            height: 100vh;
             perspective: 2000px; /* Profundidade 3D */
             display: flex; align-items: center;
         }
@@ -368,25 +384,47 @@
             will-change: transform, opacity;
             opacity: 0; 
         }
+
+        /* ENTRADA CINEMATOGRÁFICA CARDS */
+        .card-entrance-wrapper {
+            width: 100%; height: 100%; position: relative;
+            transform: translateY(15vh) scale(0.9); opacity: 0; filter: blur(15px);
+            transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        #phase-3.active .project-card:nth-child(1) .card-entrance-wrapper { transition-delay: 0.4s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
+        #phase-3.active .project-card:nth-child(2) .card-entrance-wrapper { transition-delay: 0.6s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
+        #phase-3.active .project-card:nth-child(3) .card-entrance-wrapper { transition-delay: 0.8s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
         
         .card-img-wrapper {
-            width: 100%; height: 100%; border-radius: 12px; overflow: hidden;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+            width: 100%; height: 100%; border-radius: 16px; overflow: hidden; /* Borda arredondada (Awwwards feel) */
+            border: 1px solid rgba(255, 255, 255, 0.08); /* Borda 1px super sutil */
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.05); /* Sombras profundas e inner shadow glass */
+            background: rgba(20,20,25,0.4);
+            backdrop-filter: blur(20px);
         }
         
-        .card-img { width: 100%; height: 100%; object-fit: cover; }
+        .card-img {
+            width: 100%; height: 100%; object-fit: cover; opacity: 0.8;
+            transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.5s ease;
+        }
+
+        .project-card:hover .card-img {
+            transform: scale(1.08); opacity: 1;
+        }
         
         /* Retângulo Inclinado Vazando pra fora */
         .card-diagonal-overlay {
-            position: absolute; bottom: 15%; left: -10%; width: 120%; /* Vaza 10% pra cada lado */
-            background: rgba(10, 5, 20, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            transform: rotate(-10deg); padding: 1.5rem 0; text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            position: absolute; bottom: 10%; right: -15%; left: auto; width: auto; /* Vaza MUITO para a direita */
+            background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15); /* Acabamento 1px elevado */
+            transform: skewX(-15deg); padding: 2vw 4vw; text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
         }
         .card-diagonal-overlay span {
             display: block; font-family: var(--font-bold); font-size: 1rem; letter-spacing: 0.3em; 
             color: #fff;
+            transform: skewX(15deg); /* Desfaz o skew no texto para legibilidade */
         }
 
         /* Animações de Entrada */
@@ -446,31 +484,39 @@
         
         <div class="phase3-layout">
             <div class="phase3-left">
-                <!-- Título corrigido: Duas linhas perfeitas e o cursor no lugar certo -->
-                <h1 class="phase3-main-title">PROJETOS<br>A&nbsp;CAMINHO</h1>
+                <!-- Título corrigido com Wrapper JS: Duas linhas perfeitas e o cursor no lugar certo -->
+                <div id="phase3-text-dynamic">
+                    <h1 class="phase3-main-title">PROJETOS<br>A&nbsp;CAMINHO</h1>
+                </div>
             </div>
             
             <div class="phase3-right" id="carousel-container">
                 <!-- CARDS -->
                 <div class="project-card card-1">
-                    <div class="card-img-wrapper">
-                        <div class="card-img" style="background: linear-gradient(135deg, #0a0a0a, #1a1a2e);"></div>
+                    <div class="card-entrance-wrapper">
+                        <div class="card-img-wrapper">
+                            <div class="card-img" style="background: linear-gradient(135deg, #0a0a0a, #1a1a2e);"></div>
+                        </div>
+                        <div class="card-diagonal-overlay"><span>SGLM-O</span></div>
                     </div>
-                    <div class="card-diagonal-overlay"><span>SGLM-O</span></div>
                 </div>
                 
                 <div class="project-card card-2">
-                    <div class="card-img-wrapper">
-                        <div class="card-img" style="background: linear-gradient(135deg, #1e1b4b, #312e81);"></div>
+                    <div class="card-entrance-wrapper">
+                        <div class="card-img-wrapper">
+                            <div class="card-img" style="background: linear-gradient(135deg, #1e1b4b, #312e81);"></div>
+                        </div>
+                        <div class="card-diagonal-overlay"><span>ALBUM VOID</span></div>
                     </div>
-                    <div class="card-diagonal-overlay"><span>ALBUM VOID</span></div>
                 </div>
                 
                 <div class="project-card card-3">
-                    <div class="card-img-wrapper">
-                        <div class="card-img" style="background: linear-gradient(135deg, #0284c7, #06b6d4);"></div>
+                    <div class="card-entrance-wrapper">
+                        <div class="card-img-wrapper">
+                            <div class="card-img" style="background: linear-gradient(135deg, #0284c7, #06b6d4);"></div>
+                        </div>
+                        <div class="card-diagonal-overlay"><span>FAST PHARMA</span></div>
                     </div>
-                    <div class="card-diagonal-overlay"><span>FAST PHARMA</span></div>
                 </div>
             </div>
         </div>
@@ -507,21 +553,22 @@
         let currentSkew = 0; 
         const phase2 = document.getElementById('phase-2');
 
-        // Captura o scroll do mouse para mover o carrossel horizontalmente
-        window.addEventListener('wheel', (e) => {
-            if(document.getElementById('phase-3').classList.contains('active')) {
-                scrollTarget += e.deltaY * 0.8;
-                // Limita a rolagem entre o primeiro e o último card
-                const maxScroll = (cards.length - 1) * cardSpacing;
-                scrollTarget = Math.max(0, Math.min(scrollTarget, maxScroll));
-            }
-        });
-        
         // VARIÁVEIS DO CARROSSEL FASE 3
         let scrollTarget = 0;
         let scrollCurrent = 0;
         const cards = document.querySelectorAll('.project-card');
         const cardSpacing = window.innerWidth * 0.35; // Distância entre os cards
+        const initialOffset = window.innerWidth * 0.4; // O primeiro card inicia parcialmente fora da tela
+
+        // Captura o scroll do mouse para mover o carrossel horizontalmente
+        window.addEventListener('wheel', (e) => {
+            if(document.getElementById('phase-3').classList.contains('active')) {
+                scrollTarget += e.deltaY * 0.8;
+                // Limita a rolagem entre o primeiro e o último card
+                const maxScroll = initialOffset + ((cards.length - 1) * cardSpacing);
+                scrollTarget = Math.max(0, Math.min(scrollTarget, maxScroll));
+            }
+        });
 
         function uiInteractionLoop() {
             velocityX = rawMouseX - lastMouseX;
@@ -550,7 +597,7 @@
 
                 cards.forEach((card, i) => {
                     // Calcula a posição ideal de cada card
-                    let x0 = i * cardSpacing;
+                    let x0 = initialOffset + (i * cardSpacing);
                     let xPos = x0 - scrollCurrent; // Posição atual baseada no scroll
                     
                     // Distância do card em relação ao centro (0 = no centro)
@@ -565,6 +612,22 @@
                     card.style.transform = `translateX(${xPos}px) scale(${scale}) rotateY(${rotateY}deg) translateZ(0)`;
                     card.style.opacity = opacity;
                 });
+
+                // ATRELAMENTO DO SCROLL AO TEXTO DA ESQUERDA
+                const dynamicText = document.getElementById('phase3-text-dynamic');
+                if (dynamicText) {
+                    let textOpacity = Math.max(0, 1 - (scrollCurrent / 600));
+
+                    // Opcional: Efeito de Blur conforme o texto some
+                    let blurFactor = Math.max(0, Math.min((scrollCurrent - 100) * 0.05, 15));
+
+                    // Move lentamente para a esquerda
+                    let translateFactor = -(scrollCurrent * 0.15);
+
+                    dynamicText.style.opacity = textOpacity;
+                    dynamicText.style.filter = `blur(${blurFactor}px)`;
+                    dynamicText.style.transform = `translateX(${translateFactor}px)`;
+                }
             }
 
             requestAnimationFrame(uiInteractionLoop);

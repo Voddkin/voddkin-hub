@@ -517,225 +517,253 @@
         </div>
     </div>
 
-    <script>
-        const customCursor = document.getElementById('custom-cursor');
-        let rawMouseX = window.innerWidth / 2;
-        let rawMouseY = window.innerHeight / 2;
-        let cursorX = rawMouseX;
-        let cursorY = rawMouseY;
+<script>
+(() => {
+    'use strict';
 
-        function renderCursor() {
-            cursorX += (rawMouseX - cursorX) * 0.2;
-            cursorY += (rawMouseY - cursorY) * 0.2;
-            customCursor.style.left = `${cursorX}px`;
-            customCursor.style.top = `${cursorY}px`;
-            requestAnimationFrame(renderCursor);
+    // ==========================================
+    // 1. FINITE STATE MACHINE (FSM)
+    // ==========================================
+    const STATES = {
+        STANDBY: 'STANDBY',             // Phase 1
+        TRANSITIONING: 'TRANSITIONING', // Any animation between phases
+        ACTIVE_VOID: 'ACTIVE_VOID',     // Phase 2
+        ARCHIVES: 'ARCHIVES'            // Phase 3
+    };
+    let currentState = STATES.STANDBY;
+
+    // ==========================================
+    // 2. DOM ELEMENTS CACHE
+    // ==========================================
+    const DOM = {
+        customCursor: document.getElementById('custom-cursor'),
+        phase2: document.getElementById('phase-2'),
+        phase3: document.getElementById('phase-3'),
+        bgCanvas: document.getElementById('bg-canvas'),
+        heroAction: document.getElementById('hero-action'),
+        heroWrapper: document.getElementById('hero-action-wrapper'),
+        blackHole: document.getElementById('black-hole'),
+        btnReturn: document.getElementById('btn-return'),
+        heroPhase2: document.querySelector('.hero-character-phase2'),
+        phase1Text: document.getElementById('phase-1-text'),
+        btnReturnWrapper: document.getElementById('btn-return-wrapper'),
+        btnReturnP3: document.getElementById('btn-return-p3'),
+        btnReturnWrapperP3: document.getElementById('btn-return-wrapper-p3'),
+        phase3TextDynamic: document.getElementById('phase3-text-dynamic'),
+        cards: document.querySelectorAll('.project-card')
+    };
+
+    // ==========================================
+    // 3. GLOBAL VARIABLES & STATE
+    // ==========================================
+    // Mouse Tracking
+    let rawMouseX = window.innerWidth / 2;
+    let rawMouseY = window.innerHeight / 2;
+    let cursorX = rawMouseX;
+    let cursorY = rawMouseY;
+    let lastMouseX = rawMouseX;
+    let velocityX = 0;
+    let currentSkew = 0;
+
+    // Carousel Phase 3
+    let scrollTarget = 0;
+    let scrollCurrent = 0;
+    const cardSpacing = window.innerWidth * 0.38;
+    const initialOffset = window.innerWidth * 0.25;
+    const maxScroll = initialOffset + ((DOM.cards.length - 1) * cardSpacing);
+    let isDragging = false;
+    let startX = 0;
+    let scrollStart = 0;
+
+    // Hitbox / CORS Fallback
+    const offscreenCanvas = document.createElement('canvas');
+    const offCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
+    let isImageLoaded = false;
+    let isHoveringPixel = false;
+    let isCORSBlocked = false;
+
+    // Galaxy Engine
+    const ctx = DOM.bgCanvas.getContext('2d', { alpha: false });
+    let width, height, halfW, halfH;
+    let stars = [];
+    let renderList = [];
+    const STAR_COUNT = 1200;
+    const GALAXY_RADIUS = 1500;
+    const SPIRAL_ARMS = 4;
+    const ARM_SPREAD = 0.6;
+    let targetRotX = Math.PI / 3;
+    let targetRotY = 0;
+    let currentRotX = targetRotX;
+    let currentRotY = targetRotY;
+    let autoRotY = 0;
+    const starColors = ['#06b6d4', '#8b5cf6', '#3b82f6', '#0284c7'];
+    const spriteCache = {};
+    let globalTimeScale = 1.0;
+    let isGalaxyPaused = false;
+    let isCataclysmActive = false;
+    let decelerationInterval = null;
+
+    // Void Hold Phase 2 -> 3
+    let holdTimer = null;
+    let holdSeconds = 0;
+
+    // Easter Egg
+    const TARGET_WORD = "voddkin";
+    let currentKeyIndex = 0;
+    let easterEggTriggered = false;
+    const AudioContextObj = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+    const FREQ = { LOW_C: 130.81, C: 261.63, D: 293.66, E: 329.63, F: 349.23, G: 392.00, A: 440.00, B: 493.88 };
+    const SCALE = [FREQ.C, FREQ.D, FREQ.E, FREQ.F, FREQ.G, FREQ.A, FREQ.B];
+    const EXCEPTION_KEYS = ['v', 'o', 'd', 'k', 'i', 'n'];
+    const successAudio = new Audio("https://cdn.freesound.org/previews/772/772277_12520441-lq.mp3");
+    successAudio.volume = 1.0;
+
+    // ==========================================
+    // 4. INITIALIZATION (Sprites & Galaxy)
+    // ==========================================
+    function createStarSprite(color, type) {
+        const c = document.createElement('canvas');
+        const cCtx = c.getContext('2d');
+        const radius = type === 'gas' ? 80 : (type === 'nebula' ? 30 : 8);
+        c.width = radius * 2; c.height = radius * 2;
+        const grad = cCtx.createRadialGradient(radius, radius, 0, radius, radius, radius);
+        if (type === 'gas') { grad.addColorStop(0, color); grad.addColorStop(1, 'transparent'); }
+        else if (type === 'nebula') { grad.addColorStop(0, color); grad.addColorStop(0.3, color); grad.addColorStop(1, 'transparent'); }
+        else { grad.addColorStop(0, color); grad.addColorStop(0.2, color); grad.addColorStop(1, 'transparent'); }
+        cCtx.fillStyle = grad; cCtx.fillRect(0, 0, c.width, c.height);
+        return { canvas: c, radius: radius };
+    }
+
+    function preRenderSprites() {
+        starColors.forEach(color => {
+            spriteCache[color + '_star'] = createStarSprite(color, 'star');
+            spriteCache[color + '_nebula'] = createStarSprite(color, 'nebula');
+            spriteCache[color + '_gas'] = createStarSprite(color, 'gas');
+        });
+    }
+
+    function initGalaxy() {
+        width = DOM.bgCanvas.width = window.innerWidth;
+        height = DOM.bgCanvas.height = window.innerHeight;
+        halfW = width / 2; halfH = height / 2;
+        stars = [];
+        renderList = new Array(STAR_COUNT);
+
+        for (let i = 0; i < STAR_COUNT; i++) {
+            const distance = Math.pow(Math.random(), 3) * GALAXY_RADIUS;
+            const armOffset = (Math.PI * 2 / SPIRAL_ARMS) * Math.floor(Math.random() * SPIRAL_ARMS);
+            const finalAngle = distance * 0.004 + armOffset + (Math.random() - 0.5) * ARM_SPREAD;
+
+            const ox = Math.cos(finalAngle) * distance;
+            const oz = Math.sin(finalAngle) * distance;
+            const oy = (Math.random() - 0.5) * ((1 - (distance / GALAXY_RADIUS)) * 100);
+            const color = starColors[Math.floor(Math.random() * starColors.length)];
+
+            const roll = Math.random();
+            let type = roll > 0.9 ? 'gas' : (roll > 0.7 ? 'nebula' : 'star');
+            let baseScale = roll > 0.9 ? Math.random() * 4 + 3 : (roll > 0.7 ? Math.random() * 2 + 1 : Math.random() * 1.2 + 0.3);
+
+            const speed = 0.001 + (0.005 * (1 - distance / GALAXY_RADIUS));
+            const sprite = spriteCache[color + '_' + type];
+
+            stars.push({
+                ox, oy, oz, baseScale, type,
+                speed: speed,
+                spriteCanvas: sprite.canvas, spriteRadius: sprite.radius,
+                vx: 0, vy: 0, vz: 0
+            });
+            renderList[i] = { px: 0, py: 0, pz: 0, scale: 0, ref: stars[i] };
         }
-        requestAnimationFrame(renderCursor);
+    }
 
-        // KINETIC LOOP - ZERO LAG COM VARIÁVEIS CSS
-        let lastMouseX = rawMouseX;
-        let velocityX = 0;
-        let currentSkew = 0; 
-        const phase2 = document.getElementById('phase-2');
+    // Hitbox init
+    DOM.heroAction.onload = () => {
+        offscreenCanvas.width = DOM.heroAction.naturalWidth || 1;
+        offscreenCanvas.height = DOM.heroAction.naturalHeight || 1;
+        try { offCtx.drawImage(DOM.heroAction, 0, 0); } catch (e) { /* CORS error swallowed on init */ }
+        isImageLoaded = true;
+    };
+    if (DOM.heroAction.complete) DOM.heroAction.onload();
 
-        // VARIÁVEIS DO CARROSSEL FASE 3
-        let scrollTarget = 0;
-        let scrollCurrent = 0;
-        const cards = document.querySelectorAll('.project-card');
-        const cardSpacing = window.innerWidth * 0.38; // Espaçamento maior entre cards
-        const initialOffset = window.innerWidth * 0.25; // O primeiro card não nasce no centro
-        const maxScroll = initialOffset + ((cards.length - 1) * cardSpacing);
+    preRenderSprites();
+    initGalaxy();
 
-        let isDragging = false;
-        let startX = 0;
-        let scrollStart = 0;
-        const phase3Element = document.getElementById('phase-3');
+    // ==========================================
+    // 5. UNIFIED KINETIC MASTER LOOP
+    // ==========================================
+    let lastTime = performance.now();
+    let animFrameId = null;
 
-        // Drag (Mouse)
-        phase3Element.addEventListener('mousedown', (e) => {
-            if(phase3Element.classList.contains('active') && !phase3Element.classList.contains('fade-out')) {
-                isDragging = true; startX = e.clientX; scrollStart = scrollTarget;
-                customCursor.style.transform = `translate(-50%, -50%) scale(0.5) translateZ(0)`;
-            }
-        });
-        window.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            scrollTarget = scrollStart + ((startX - e.clientX) * 1.5);
-            scrollTarget = Math.max(0, Math.min(scrollTarget, maxScroll));
-        });
-        window.addEventListener('mouseup', () => {
-            if (isDragging) {
-                isDragging = false;
-                customCursor.style.transform = `translate(-50%, -50%) scale(1) translateZ(0)`;
-            }
-        });
+    function engineTick(timestamp) {
+        // Delta time (max 50ms to prevent huge jumps if tab was inactive)
+        let dt = timestamp - lastTime;
+        if (dt > 50) dt = 16.6;
+        lastTime = timestamp;
 
-        // Scroll do mouse
-        window.addEventListener('wheel', (e) => {
-            if(phase3Element.classList.contains('active') && !phase3Element.classList.contains('fade-out')) {
-                scrollTarget += e.deltaY * 0.8;
-                scrollTarget = Math.max(0, Math.min(scrollTarget, maxScroll));
-            }
-        });
+        // Use dt normalization factor (based on 60fps ~ 16.6ms)
+        const timeFactor = dt / 16.666;
 
-        function uiInteractionLoop() {
-            velocityX = rawMouseX - lastMouseX;
-            lastMouseX = rawMouseX;
+        // --- 5.1. Cursor Interpolation ---
+        cursorX += (rawMouseX - cursorX) * 0.2 * timeFactor;
+        cursorY += (rawMouseY - cursorY) * 0.2 * timeFactor;
+        DOM.customCursor.style.left = `${cursorX}px`;
+        DOM.customCursor.style.top = `${cursorY}px`;
 
-            if (phase2.classList.contains('active')) {
-                const absVel = Math.abs(velocityX);
-                let targetSkew = 0;
-                if (absVel > 10) { targetSkew = Math.min(absVel * 0.1, 8) * (velocityX > 0 ? 1 : -1); }
-                currentSkew += (targetSkew - currentSkew) * 0.1;
+        // --- 5.2. UI Interaction (Skew & Parallax) ---
+        velocityX = rawMouseX - lastMouseX;
+        lastMouseX = rawMouseX;
 
-                const xPercent = (rawMouseX / window.innerWidth) * 2 - 1;
-                const yPercent = (rawMouseY / window.innerHeight) * 2 - 1;
+        if (currentState === STATES.ACTIVE_VOID) {
+            const absVel = Math.abs(velocityX);
+            let targetSkew = 0;
+            if (absVel > 10) { targetSkew = Math.min(absVel * 0.1, 8) * (velocityX > 0 ? 1 : -1); }
+            // Interpolate skew
+            currentSkew += (targetSkew - currentSkew) * 0.1 * timeFactor;
 
-                document.documentElement.style.setProperty('--skew-voddkin', `${currentSkew}deg`);
-                document.documentElement.style.setProperty('--parallax-x', `${xPercent * -20}px`);
-                document.documentElement.style.setProperty('--parallax-y', `${-50 + (yPercent * -10)}%`);
-            }
+            const xPercent = (rawMouseX / window.innerWidth) * 2 - 1;
+            const yPercent = (rawMouseY / window.innerHeight) * 2 - 1;
 
-            // --- MOTOR DO CARROSSEL 3D E OPACIDADE (FASE 3) ---
-            const phase3Active = phase3Element.classList.contains('active');
-            const phase3Fading = phase3Element.classList.contains('fade-out');
-
-            if (phase3Active && !phase3Fading) {
-                scrollCurrent += (scrollTarget - scrollCurrent) * 0.08;
-
-                // Animação de fade do título baseada no scroll (Sobe e desaparece)
-                const dynamicText = document.getElementById('phase3-text-dynamic');
-                if (dynamicText) {
-                    let textOpacity = Math.max(0, 1 - (scrollCurrent / 600));
-                    let translateFactor = -(scrollCurrent * 0.15);
-                    dynamicText.style.opacity = textOpacity;
-                    dynamicText.style.transform = `translateX(${translateFactor}px) translateZ(0)`;
-                }
-
-                cards.forEach((card, i) => {
-                    let x0 = initialOffset + (i * cardSpacing);
-                    let xPos = x0 - scrollCurrent; 
-                    let absX = Math.abs(xPos);
-
-                    let scale = 1 - Math.min(absX / 1500, 0.4); 
-                    let opacity = 1 - Math.min(absX / 800, 1); 
-                    let rotateY = xPos * -0.02; 
-
-                    card.style.transform = `translateX(${xPos}px) scale(${scale}) rotateY(${rotateY}deg) translateZ(0)`;
-                    card.style.opacity = opacity;
-                });
-            }
-
-            requestAnimationFrame(uiInteractionLoop);
-        }
-        requestAnimationFrame(uiInteractionLoop);
-
-        window.addEventListener('mousemove', (e) => {
-            rawMouseX = e.clientX;
-            rawMouseY = e.clientY;
-
-            if(width && height) {
-                const nx = (e.clientX / width) * 2 - 1;
-                const ny = (e.clientY / height) * 2 - 1;
-                targetRotX = (Math.PI / 3) + ny * 0.3;
-                targetRotY = nx * 0.5;
-            }
-        });
-
-        // 60FPS GALAXY ENGINE + CATACLISMO
-        const canvas = document.getElementById('bg-canvas');
-        const ctx = canvas.getContext('2d', { alpha: false });
-        let width, height, halfW, halfH;
-        let stars = [];
-        let renderList = [];
-
-        const STAR_COUNT = 1200;
-        const GALAXY_RADIUS = 1500;
-        const SPIRAL_ARMS = 4;
-        const ARM_SPREAD = 0.6;
-
-        let targetRotX = Math.PI / 3;
-        let targetRotY = 0;
-        let currentRotX = targetRotX;
-        let currentRotY = targetRotY;
-        let autoRotY = 0;
-
-        const starColors = ['#06b6d4', '#8b5cf6', '#3b82f6', '#0284c7'];
-        const spriteCache = {};
-
-        function createStarSprite(color, type) {
-            const c = document.createElement('canvas');
-            const cCtx = c.getContext('2d');
-            const radius = type === 'gas' ? 80 : (type === 'nebula' ? 30 : 8);
-            c.width = radius * 2; c.height = radius * 2;
-            const grad = cCtx.createRadialGradient(radius, radius, 0, radius, radius, radius);
-            if (type === 'gas') { grad.addColorStop(0, color); grad.addColorStop(1, 'transparent'); } 
-            else if (type === 'nebula') { grad.addColorStop(0, color); grad.addColorStop(0.3, color); grad.addColorStop(1, 'transparent'); } 
-            else { grad.addColorStop(0, color); grad.addColorStop(0.2, color); grad.addColorStop(1, 'transparent'); }
-            cCtx.fillStyle = grad; cCtx.fillRect(0, 0, c.width, c.height);
-            return { canvas: c, radius: radius };
+            document.documentElement.style.setProperty('--skew-voddkin', `${currentSkew}deg`);
+            document.documentElement.style.setProperty('--parallax-x', `${xPercent * -20}px`);
+            document.documentElement.style.setProperty('--parallax-y', `${-50 + (yPercent * -10)}%`);
         }
 
-        function preRenderSprites() {
-            starColors.forEach(color => {
-                spriteCache[color + '_star'] = createStarSprite(color, 'star');
-                spriteCache[color + '_nebula'] = createStarSprite(color, 'nebula');
-                spriteCache[color + '_gas'] = createStarSprite(color, 'gas');
+        // --- 5.3. Phase 3 Carousel ---
+        if (currentState === STATES.ARCHIVES && DOM.phase3.classList.contains('active') && !DOM.phase3.classList.contains('fade-out')) {
+            scrollCurrent += (scrollTarget - scrollCurrent) * 0.08 * timeFactor;
+
+            const dynamicText = DOM.phase3TextDynamic;
+            if (dynamicText) {
+                let textOpacity = Math.max(0, 1 - (scrollCurrent / 600));
+                let translateFactor = -(scrollCurrent * 0.15);
+                dynamicText.style.opacity = textOpacity;
+                dynamicText.style.transform = `translateX(${translateFactor}px) translateZ(0)`;
+            }
+
+            DOM.cards.forEach((card, i) => {
+                let x0 = initialOffset + (i * cardSpacing);
+                let xPos = x0 - scrollCurrent;
+                let absX = Math.abs(xPos);
+
+                let scale = 1 - Math.min(absX / 1500, 0.4);
+                let opacity = 1 - Math.min(absX / 800, 1);
+                let rotateY = xPos * -0.02;
+
+                card.style.transform = `translateX(${xPos}px) scale(${scale}) rotateY(${rotateY}deg) translateZ(0)`;
+                card.style.opacity = opacity;
             });
         }
-        preRenderSprites();
 
-        function initGalaxy() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            halfW = width / 2; halfH = height / 2;
-            stars = [];
-            renderList = new Array(STAR_COUNT);
-
-            for (let i = 0; i < STAR_COUNT; i++) {
-                const distance = Math.pow(Math.random(), 3) * GALAXY_RADIUS;
-                const armOffset = (Math.PI * 2 / SPIRAL_ARMS) * Math.floor(Math.random() * SPIRAL_ARMS);
-                const finalAngle = distance * 0.004 + armOffset + (Math.random() - 0.5) * ARM_SPREAD;
-
-                const ox = Math.cos(finalAngle) * distance;
-                const oz = Math.sin(finalAngle) * distance;
-                const oy = (Math.random() - 0.5) * ((1 - (distance / GALAXY_RADIUS)) * 100);
-                const color = starColors[Math.floor(Math.random() * starColors.length)];
-
-                const roll = Math.random();
-                let type = roll > 0.9 ? 'gas' : (roll > 0.7 ? 'nebula' : 'star');
-                let baseScale = roll > 0.9 ? Math.random() * 4 + 3 : (roll > 0.7 ? Math.random() * 2 + 1 : Math.random() * 1.2 + 0.3);
-                
-                const speed = 0.001 + (0.005 * (1 - distance / GALAXY_RADIUS));
-                const sprite = spriteCache[color + '_' + type];
-
-                stars.push({
-                    ox, oy, oz, baseScale, type,
-                    speed: speed, // OTIMIZAÇÃO: Salva a velocidade base direta
-                    spriteCanvas: sprite.canvas, spriteRadius: sprite.radius,
-                    vx: 0, vy: 0, vz: 0
-                });
-                renderList[i] = { px: 0, py: 0, pz: 0, scale: 0, ref: stars[i] };
-            }
-        }
-        window.addEventListener('resize', initGalaxy);
-
-        let animFrameId = null;
-        let globalTimeScale = 1.0;
-        let isGalaxyPaused = false;
-        let isCataclysmActive = false;
-
-        function animateGalaxy() {
-            if (isGalaxyPaused) return;
-
+        // --- 5.4. Galaxy Engine ---
+        if (!isGalaxyPaused) {
             ctx.fillStyle = '#050212';
             ctx.fillRect(0, 0, width, height);
             ctx.globalCompositeOperation = 'lighter';
 
-            currentRotX += (targetRotX - currentRotX) * 0.05 * globalTimeScale;
-            currentRotY += (targetRotY - currentRotY) * 0.05 * globalTimeScale;
-            autoRotY += 0.0005 * globalTimeScale;
+            currentRotX += (targetRotX - currentRotX) * 0.05 * globalTimeScale * timeFactor;
+            currentRotY += (targetRotY - currentRotY) * 0.05 * globalTimeScale * timeFactor;
+            autoRotY += 0.0005 * globalTimeScale * timeFactor;
 
             const totalRotY = currentRotY + autoRotY;
             const cosX = Math.cos(currentRotX);
@@ -750,16 +778,16 @@
                 let s = stars[i];
 
                 if (isCataclysmActive) {
-                    // CAOS TOTAL
-                    s.ox += s.vx; s.oy += s.vy; s.oz += s.vz;
+                    s.ox += s.vx * timeFactor;
+                    s.oy += s.vy * timeFactor;
+                    s.oz += s.vz * timeFactor;
                     const limit = 4000;
                     if (s.ox > limit || s.ox < -limit) s.vx *= -1;
                     if (s.oy > limit || s.oy < -limit) s.vy *= -1;
                     if (s.oz > limit || s.oz < -limit) s.vz *= -1;
                 } else {
-                    // ORBITA NORMAL
                     if (globalTimeScale > 0.01) {
-                        const currentSpeed = s.speed * globalTimeScale;
+                        const currentSpeed = s.speed * globalTimeScale * timeFactor;
                         const scaledCos = Math.cos(currentSpeed);
                         const scaledSin = Math.sin(currentSpeed);
                         const nx = s.ox * scaledCos - s.oz * scaledSin;
@@ -773,7 +801,7 @@
                 const finalX = s.ox * cosY + z1 * sinY;
                 const finalZ = -s.ox * sinY + z1 * cosY;
                 const zPos = finalZ + zOffset;
-                
+
                 if (zPos > 0) {
                     const scale = fov / zPos;
                     const projX = halfW + finalX * scale;
@@ -781,9 +809,8 @@
 
                     if (projX > -100 && projX < width + 100 && projY > -100 && projY < height + 100) {
                         let rl = renderList[visibleCount];
-                        // OTIMIZAÇÃO: Math.trunc mata o sub-pixel rendering e alivia a GPU
-                        rl.px = Math.trunc(projX); 
-                        rl.py = Math.trunc(projY); 
+                        rl.px = Math.trunc(projX);
+                        rl.py = Math.trunc(projY);
                         rl.pz = finalZ;
                         rl.scale = scale; rl.ref = s;
                         visibleCount++;
@@ -791,8 +818,6 @@
                 }
             }
 
-            // OTIMIZAÇÃO: Array.sort() REMOVIDO!
-            // No modo 'lighter', a ordem dos fatores não altera a soma. Z-Sorting era inútil e pesado.
             let activeRenderList = renderList.slice(0, visibleCount);
 
             for (let i = 0; i < visibleCount; i++) {
@@ -804,300 +829,292 @@
                 let finalAlpha = s.type === 'gas' ? distAlpha * 0.03 : (s.type === 'nebula' ? distAlpha * 0.2 : distAlpha * 0.6);
 
                 ctx.globalAlpha = finalAlpha;
-                // OTIMIZAÇÃO: Sub-pixel rendering block no tamanho também
                 ctx.drawImage(s.spriteCanvas, p.px - drawRadius, p.py - drawRadius, Math.trunc(drawRadius * 2), Math.trunc(drawRadius * 2));
             }
 
             ctx.globalCompositeOperation = 'source-over';
             ctx.globalAlpha = 1.0;
-            animFrameId = requestAnimationFrame(animateGalaxy);
         }
 
+        animFrameId = requestAnimationFrame(engineTick);
+    }
+
+    // Start master loop
+    animFrameId = requestAnimationFrame(engineTick);
+
+    // ==========================================
+    // 6. EVENT DELEGATION
+    // ==========================================
+
+    window.addEventListener('resize', () => {
         initGalaxy();
-        animateGalaxy();
+    });
 
-        // --------------------------------------------------------
-        // Hitbox & CORS SAFE Fallback
-        // --------------------------------------------------------
-        const heroAction = document.getElementById('hero-action');
-        const heroWrapper = document.getElementById('hero-action-wrapper');
-        const btnReturnWrapper = document.getElementById('btn-return-wrapper');
+    window.addEventListener('mousemove', (e) => {
+        rawMouseX = e.clientX;
+        rawMouseY = e.clientY;
 
-        const offscreenCanvas = document.createElement('canvas');
-        const offCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
-        let isImageLoaded = false;
+        // Galaxy Target Rotation Update
+        if(width && height) {
+            const nx = (e.clientX / width) * 2 - 1;
+            const ny = (e.clientY / height) * 2 - 1;
+            targetRotX = (Math.PI / 3) + ny * 0.3;
+            targetRotY = nx * 0.5;
+        }
 
-        heroAction.onload = () => {
-            offscreenCanvas.width = heroAction.naturalWidth || 1;
-            offscreenCanvas.height = heroAction.naturalHeight || 1;
-            try { offCtx.drawImage(heroAction, 0, 0); } catch(e) {}
-            isImageLoaded = true;
-        };
-        if(heroAction.complete) heroAction.onload();
+        // --- Global Mouse Move Handlers ---
+        if (currentState === STATES.STANDBY) {
+            if (isImageLoaded && !DOM.heroWrapper.classList.contains('ghost')) {
+                const rect = DOM.heroAction.getBoundingClientRect();
+                if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                    isHoveringPixel = true; // Fallback Seguro
+                    if (!isCORSBlocked) {
+                        try {
+                            const scaleX = DOM.heroAction.naturalWidth / rect.width;
+                            const scaleY = DOM.heroAction.naturalHeight / rect.height;
+                            const x = Math.round((e.clientX - rect.left) * scaleX);
+                            const y = Math.round((e.clientY - rect.top) * scaleY);
 
-        let isHoveringPixel = false;
-
-        heroAction.addEventListener('mousemove', (e) => {
-            if (!isImageLoaded || heroWrapper.classList.contains('ghost')) return;
-
-            const rect = heroAction.getBoundingClientRect();
-            isHoveringPixel = true; // Fallback Seguro: Se o mouse tá em cima da imagem, permite o clique.
-
-            try {
-                // Tenta ler o alpha do pixel (funciona em servidor/Vercel)
-                const scaleX = heroAction.naturalWidth / rect.width;
-                const scaleY = heroAction.naturalHeight / rect.height;
-                const x = Math.round((e.clientX - rect.left) * scaleX);
-                const y = Math.round((e.clientY - rect.top) * scaleY);
-
-                if (x >= 0 && x < offscreenCanvas.width && y >= 0 && y < offscreenCanvas.height) {
-                    const pixelData = offCtx.getImageData(x, y, 1, 1).data;
-                    isHoveringPixel = pixelData[3] > 0;
+                            if (x >= 0 && x < offscreenCanvas.width && y >= 0 && y < offscreenCanvas.height) {
+                                const pixelData = offCtx.getImageData(x, y, 1, 1).data;
+                                isHoveringPixel = pixelData[3] > 0;
+                            } else {
+                                isHoveringPixel = false;
+                            }
+                        } catch (err) {
+                            // CORS block - default to true if inside bounding box and stop trying
+                            isCORSBlocked = true;
+                        }
+                    }
+                    if (isHoveringPixel) DOM.customCursor.classList.add('hovering');
+                    else DOM.customCursor.classList.remove('hovering');
                 } else {
                     isHoveringPixel = false;
+                    DOM.customCursor.classList.remove('hovering');
                 }
-            } catch (err) {
-                // Se der erro de CORS (rodando no PC local), engole o erro e deixa o isHoveringPixel = true
+            }
+        } else if (currentState === STATES.ACTIVE_VOID) {
+            // Check button hover
+            const rect = DOM.btnReturnWrapper.getBoundingClientRect();
+            if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                DOM.btnReturn.style.transform = `translate(${(e.clientX - rect.left - rect.width / 2) * 0.3}px, ${(e.clientY - rect.top - rect.height / 2) * 0.3}px) translateZ(0)`;
+                DOM.customCursor.classList.add('hovering');
+            } else {
+                DOM.btnReturn.style.transform = `translate(0px, 0px) translateZ(0)`;
+                // Don't remove hover if we are dragging in another phase, but in phase 2 we can.
+                // Exception: maybe we hover voddkin character? Phase 2 hero doesn't have custom hitbox.
+                DOM.customCursor.classList.remove('hovering');
+            }
+        } else if (currentState === STATES.ARCHIVES) {
+            // Drag logic
+            if (isDragging) {
+                scrollTarget = scrollStart + ((startX - e.clientX) * 1.5);
+                scrollTarget = Math.max(0, Math.min(scrollTarget, maxScroll));
             }
 
-            if (isHoveringPixel) customCursor.classList.add('hovering');
-            else customCursor.classList.remove('hovering');
-        });
+            // Phase 3 return button hover
+            const r3Rect = DOM.btnReturnWrapperP3.getBoundingClientRect();
+            if (e.clientX >= r3Rect.left && e.clientX <= r3Rect.right && e.clientY >= r3Rect.top && e.clientY <= r3Rect.bottom) {
+                DOM.btnReturnP3.style.transform = `translate(${(e.clientX - r3Rect.left - r3Rect.width / 2) * 0.3}px, ${(e.clientY - r3Rect.top - r3Rect.height / 2) * 0.3}px) translateZ(0)`;
+                DOM.customCursor.classList.add('hovering');
+            } else {
+                DOM.btnReturnP3.style.transform = `translate(0px, 0px) translateZ(0)`;
+                if(!isDragging) DOM.customCursor.classList.remove('hovering');
+            }
+        }
+    });
 
-        heroAction.addEventListener('mouseleave', () => {
-            isHoveringPixel = false;
-            customCursor.classList.remove('hovering');
-        });
+    window.addEventListener('mouseup', () => {
+        if (currentState === STATES.ARCHIVES && isDragging) {
+            isDragging = false;
+            DOM.customCursor.style.transform = `translate(-50%, -50%) scale(1) translateZ(0)`;
+        }
+    });
 
-        // --------------------------------------------------------
-        // Transitions
-        // --------------------------------------------------------
-        const blackHole = document.getElementById('black-hole');
-        const btnReturn = document.getElementById('btn-return');
-        const heroPhase2 = document.getElementById('hero-phase2');
-        const phase1Text = document.getElementById('phase-1-text');
-        let decelerationInterval;
+    window.addEventListener('wheel', (e) => {
+        if (currentState === STATES.ARCHIVES && DOM.phase3.classList.contains('active') && !DOM.phase3.classList.contains('fade-out')) {
+            scrollTarget += e.deltaY * 0.8;
+            scrollTarget = Math.max(0, Math.min(scrollTarget, maxScroll));
+        }
+    });
 
-        heroAction.addEventListener('click', (e) => {
-            if (!isHoveringPixel) return;
-            customCursor.classList.remove('hovering');
+    // ==========================================
+    // 7. TRANSITIONS & CLICKS
+    // ==========================================
 
-            const rect = heroWrapper.getBoundingClientRect();
-            blackHole.style.left = `${rect.left + rect.width / 2}px`;
-            blackHole.style.top = `${rect.top + rect.height / 2}px`;
+    DOM.heroAction.addEventListener('click', () => {
+        if (currentState !== STATES.STANDBY || !isHoveringPixel) return;
 
-            heroWrapper.classList.add('ghost');
-            phase1Text.classList.add('ghost');
+        currentState = STATES.TRANSITIONING;
+        DOM.customCursor.classList.remove('hovering');
 
-            clearInterval(decelerationInterval);
-            decelerationInterval = setInterval(() => { globalTimeScale = Math.max(0, globalTimeScale - 0.1); }, 50);
+        const rect = DOM.heroWrapper.getBoundingClientRect();
+        DOM.blackHole.style.left = `${rect.left + rect.width / 2}px`;
+        DOM.blackHole.style.top = `${rect.top + rect.height / 2}px`;
 
-            requestAnimationFrame(() => requestAnimationFrame(() => blackHole.classList.add('active') ));
+        DOM.heroWrapper.classList.add('ghost');
+        DOM.phase1Text.classList.add('ghost');
 
-            setTimeout(() => {
-                phase2.classList.add('active');
-                heroPhase2.classList.add('glitch-entry');
-                isGalaxyPaused = true;
-                cancelAnimationFrame(animFrameId);
+        if(decelerationInterval) clearInterval(decelerationInterval);
+        decelerationInterval = setInterval(() => { globalTimeScale = Math.max(0, globalTimeScale - 0.1); }, 50);
+
+        requestAnimationFrame(() => requestAnimationFrame(() => DOM.blackHole.classList.add('active') ));
+
+        setTimeout(() => {
+            DOM.phase2.classList.add('active');
+            DOM.heroPhase2.classList.add('glitch-entry');
+            isGalaxyPaused = true;
+            currentState = STATES.ACTIVE_VOID;
+        }, 1000);
+    });
+
+    DOM.btnReturn.addEventListener('click', () => {
+        if (currentState !== STATES.ACTIVE_VOID) return;
+        currentState = STATES.TRANSITIONING;
+        DOM.customCursor.classList.remove('hovering');
+
+        DOM.phase2.classList.remove('active');
+        DOM.heroPhase2.classList.remove('glitch-entry');
+
+        isGalaxyPaused = false;
+
+        if(decelerationInterval) clearInterval(decelerationInterval);
+        decelerationInterval = setInterval(() => { globalTimeScale = Math.min(1.0, globalTimeScale + 0.05); }, 50);
+
+        setTimeout(() => {
+            DOM.blackHole.classList.remove('active');
+            DOM.heroWrapper.classList.remove('ghost');
+            DOM.phase1Text.classList.remove('ghost');
+            currentState = STATES.STANDBY;
+        }, 800);
+    });
+
+    // --- PHASE 2 -> 3: VOID CHARGE (LONG PRESS) ---
+    function cancelHold() {
+        if (holdTimer) {
+            clearInterval(holdTimer);
+            holdTimer = null;
+        }
+        holdSeconds = 0;
+        if(DOM.heroPhase2) DOM.heroPhase2.classList.remove('void-hold');
+    }
+
+    if (DOM.heroPhase2) {
+        DOM.heroPhase2.addEventListener('mousedown', (e) => {
+            if (currentState !== STATES.ACTIVE_VOID) return;
+            e.preventDefault();
+            holdSeconds = 0;
+            DOM.heroPhase2.classList.add('void-hold');
+            
+            holdTimer = setInterval(() => {
+                holdSeconds++;
+                if (holdSeconds >= 3) {
+                    cancelHold();
+                    currentState = STATES.TRANSITIONING;
+                    DOM.phase2.classList.add('fade-out');
+                    DOM.phase3.classList.add('active');
+                    setTimeout(() => { currentState = STATES.ARCHIVES; }, 1500); // Wait for transition
+                }
             }, 1000);
         });
 
-        btnReturn.addEventListener('click', () => {
-            customCursor.classList.remove('hovering');
-            phase2.classList.remove('active');
-            heroPhase2.classList.remove('glitch-entry');
+        DOM.heroPhase2.addEventListener('mouseup', cancelHold);
+        DOM.heroPhase2.addEventListener('mouseleave', cancelHold);
+    }
 
-            isGalaxyPaused = false;
-            // FIX CRÍTICO: Cancela qualquer loop fantasma antes de religar a galáxia
-            cancelAnimationFrame(animFrameId);
-            animateGalaxy();
-
-            clearInterval(decelerationInterval);
-            decelerationInterval = setInterval(() => { globalTimeScale = Math.min(1.0, globalTimeScale + 0.05); }, 50);
-
-            setTimeout(() => {
-                blackHole.classList.remove('active');
-                heroWrapper.classList.remove('ghost');
-                phase1Text.classList.remove('ghost');
-            }, 800);
-        });
-
-        btnReturnWrapper.addEventListener('mousemove', (e) => {
-            const rect = btnReturnWrapper.getBoundingClientRect();
-            btnReturn.style.transform = `translate(${(e.clientX - rect.left - rect.width / 2) * 0.3}px, ${(e.clientY - rect.top - rect.height / 2) * 0.3}px) translateZ(0)`;
-            customCursor.classList.add('hovering');
-        });
-
-        btnReturnWrapper.addEventListener('mouseleave', () => {
-            btnReturn.style.transform = `translate(0px, 0px) translateZ(0)`;
-            customCursor.classList.remove('hovering');
-        });
-
-        // --------------------------------------------------------
-        // VODDKIN KEYLOGGER & WEB AUDIO
-        // --------------------------------------------------------
-        const AudioContextObj = window.AudioContext || window.webkitAudioContext;
-        let audioCtx;
-        const FREQ = { LOW_C: 130.81, C: 261.63, D: 293.66, E: 329.63, F: 349.23, G: 392.00, A: 440.00, B: 493.88 };
-        const SCALE = [FREQ.C, FREQ.D, FREQ.E, FREQ.F, FREQ.G, FREQ.A, FREQ.B];
-        const EXCEPTION_KEYS = ['v', 'o', 'd', 'k', 'i', 'n'];
-
-        function playRetroBeep(frequency) {
-            if (!audioCtx) audioCtx = new AudioContextObj();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-
-            const osc = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            osc.type = 'square'; 
-            osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-            
-            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime); 
-            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
-            
-            osc.connect(gainNode); gainNode.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.35);
+    // --- PHASE 3 DRAG MOUSE DOWN ---
+    DOM.phase3.addEventListener('mousedown', (e) => {
+        if (currentState === STATES.ARCHIVES && DOM.phase3.classList.contains('active') && !DOM.phase3.classList.contains('fade-out')) {
+            isDragging = true; startX = e.clientX; scrollStart = scrollTarget;
+            DOM.customCursor.style.transform = `translate(-50%, -50%) scale(0.5) translateZ(0)`;
         }
+    });
 
-        const TARGET_WORD = "voddkin";
-        let currentKeyIndex = 0;
-        let easterEggTriggered = false;
+    // --- PHASE 3 -> RETURN TO 2 ---
+    DOM.btnReturnP3.addEventListener('click', () => {
+        if (currentState !== STATES.ARCHIVES) return;
+        currentState = STATES.TRANSITIONING;
+        DOM.customCursor.classList.remove('hovering');
 
-        const successAudio = new Audio("https://cdn.freesound.org/previews/772/772277_12520441-lq.mp3");
-        successAudio.volume = 1.0;
+        DOM.phase3.classList.add('fade-out');
 
-        window.addEventListener('keydown', (e) => {
-            if (easterEggTriggered) return;
-            
-            // FIX: Bloqueia o keylogger se o usuário estiver na Fase 2 ou Fase 3
-            if (phase2.classList.contains('active') || document.getElementById('phase-3').classList.contains('active')) {
-                return;
+        setTimeout(() => {
+            DOM.phase3.classList.remove('active');
+            DOM.phase3.classList.remove('fade-out');
+            DOM.phase2.classList.remove('fade-out');
+
+            scrollTarget = 0;
+            scrollCurrent = 0;
+            if (DOM.phase3TextDynamic) {
+                DOM.phase3TextDynamic.style.opacity = '';
+                DOM.phase3TextDynamic.style.transform = '';
             }
-            
-            const key = e.key.toLowerCase();
+            currentState = STATES.ACTIVE_VOID;
+        }, 1000);
+    });
 
-            if (key === TARGET_WORD[currentKeyIndex]) {
-                playRetroBeep(SCALE[currentKeyIndex]);
-                currentKeyIndex++;
+    // ==========================================
+    // 8. EASTER EGG & KEYLOGGER
+    // ==========================================
+    function playRetroBeep(frequency) {
+        if (!audioCtx) audioCtx = new AudioContextObj();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
 
-                if (currentKeyIndex === TARGET_WORD.length) {
-                    easterEggTriggered = true;
-                    setTimeout(() => {
-                        successAudio.play().catch(e => console.log("Áudio bloqueado pelo navegador", e));
-                        triggerGalaxyExplosion();
-                    }, 150);
-                }
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+
+        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
+
+        osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.35);
+    }
+
+    function triggerGalaxyExplosion() {
+        isCataclysmActive = true;
+        if (isGalaxyPaused) isGalaxyPaused = false;
+        stars.forEach(s => {
+            s.vx = (Math.random() - 0.5) * 15;
+            s.vy = (Math.random() - 0.5) * 15;
+            s.vz = (Math.random() - 0.5) * 15;
+            s.baseScale = s.baseScale * 3;
+        });
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (easterEggTriggered) return;
+
+        if (currentState !== STATES.STANDBY) return; // Only in phase 1
+
+        const key = e.key.toLowerCase();
+
+        if (key === TARGET_WORD[currentKeyIndex]) {
+            playRetroBeep(SCALE[currentKeyIndex]);
+            currentKeyIndex++;
+
+            if (currentKeyIndex === TARGET_WORD.length) {
+                easterEggTriggered = true;
+                setTimeout(() => {
+                    successAudio.play().catch(e => console.log("Áudio bloqueado pelo navegador", e));
+                    triggerGalaxyExplosion();
+                }, 150);
+            }
+        } else {
+            currentKeyIndex = 0;
+            if (key === TARGET_WORD[0]) {
+                playRetroBeep(SCALE[0]);
+                currentKeyIndex = 1;
+            } else if (EXCEPTION_KEYS.includes(key)) {
+                playRetroBeep(FREQ.C);
             } else {
-                currentKeyIndex = 0;
-                if (key === TARGET_WORD[0]) {
-                    playRetroBeep(SCALE[0]);
-                    currentKeyIndex = 1;
-                } else if (EXCEPTION_KEYS.includes(key)) {
-                    playRetroBeep(FREQ.C);
-                } else {
-                    playRetroBeep(FREQ.LOW_C);
-                }
+                playRetroBeep(FREQ.LOW_C);
             }
-        });
-
-        function triggerGalaxyExplosion() {
-            isCataclysmActive = true;
-            if (isGalaxyPaused) {
-                isGalaxyPaused = false;
-                // Prevenção extra para não duplicar o loop se a explosão acontecer na Fase 2
-                cancelAnimationFrame(animFrameId);
-                animateGalaxy();
-            }
-            stars.forEach(s => {
-                // Força reduzida de 80 para 15 para visualizar os detalhes
-                s.vx = (Math.random() - 0.5) * 15;
-                s.vy = (Math.random() - 0.5) * 15;
-                s.vz = (Math.random() - 0.5) * 15;
-                s.baseScale = s.baseScale * 3; // Brilho um pouco menor para não estourar a tela
-            });
         }
+    });
 
-        // --------------------------------------------------------
-        // FASE 3 GATILHO (LONG PRESS COM VOID CHARGE)
-        // --------------------------------------------------------
-        const voddkinCharacter = document.querySelector('.hero-character-phase2');
-        const phase2Container = document.getElementById('phase-2');
-        const phase3Container = document.getElementById('phase-3'); 
-        let holdTimer; let holdSeconds = 0;
-
-        if (voddkinCharacter) {
-            voddkinCharacter.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                holdSeconds = 0;
-                
-                // Dispara o Gravity Pull (Tensão elegante e fluida)
-                voddkinCharacter.classList.add('void-hold');
-                
-                holdTimer = setInterval(() => {
-                    holdSeconds++;
-                    if (holdSeconds >= 3) {
-                        clearInterval(holdTimer);
-                        phase2Container.classList.add('fade-out');
-                        phase3Container.classList.add('active');
-                        // Limpa o efeito
-                        voddkinCharacter.classList.remove('void-hold'); 
-                    }
-                }, 1000);
-            });
-
-            const cancelHold = () => {
-                clearInterval(holdTimer);
-                holdSeconds = 0;
-                // O usuário soltou antes de 3s: aborta a carga e ele volta suavemente
-                voddkinCharacter.classList.remove('void-hold');
-            };
-
-            voddkinCharacter.addEventListener('mouseup', cancelHold);
-            voddkinCharacter.addEventListener('mouseleave', cancelHold);
-
-        // --------------------------------------------------------
-        // BOTAO RETURN DA FASE 3 (ANIMAÇÃO E MAGNETISMO)
-        // --------------------------------------------------------
-        const btnReturnP3 = document.getElementById('btn-return-p3');
-        const btnReturnWrapperP3 = document.getElementById('btn-return-wrapper-p3');
-
-        btnReturnP3.addEventListener('click', () => {
-            customCursor.classList.remove('hovering');
-            
-            // Inicia Saída Cinematográfica
-            phase3Container.classList.add('fade-out');
-            
-            setTimeout(() => {
-                phase3Container.classList.remove('active');
-                phase3Container.classList.remove('fade-out');
-                phase2Container.classList.remove('fade-out');
-                
-                // Reset do Carrossel e Textos
-                scrollTarget = 0;
-                scrollCurrent = 0;
-                const dynamicText = document.getElementById('phase3-text-dynamic');
-                if (dynamicText) {
-                    dynamicText.style.opacity = '';
-                    dynamicText.style.transform = '';
-                }
-            }, 1000); // Tempo sincronizado com CSS
-        });
-
-        btnReturnWrapperP3.addEventListener('mousemove', (e) => {
-            const rect = btnReturnWrapperP3.getBoundingClientRect();
-            const x = e.clientX - rect.left - rect.width / 2;
-            const y = e.clientY - rect.top - rect.height / 2;
-            
-            btnReturnP3.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px) translateZ(0)`;
-            customCursor.classList.add('hovering');
-        });
-
-        btnReturnWrapperP3.addEventListener('mouseleave', () => {
-            btnReturnP3.style.transform = `translate(0px, 0px) translateZ(0)`;
-            customCursor.classList.remove('hovering');
-        });
-
-        }
-
-    </script>
+})();
+</script>
 </body>
 </html>

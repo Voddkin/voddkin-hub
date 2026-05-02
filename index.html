@@ -307,11 +307,12 @@
         .btn-return:hover .btn-bg-glow { opacity: 1; transform: translate(-50%, -50%) scale(1.2) translateZ(0); }
         .btn-return:hover .btn-line-top, .btn-return:hover .btn-line-bottom { width: 100%; }
 
-        /* Dica visual do clique segurado (Aberração Cromática Roxo/Preto) */
-        .minor-glitch {
-            transform: scale(1.01) translateX(3px) skewX(1deg) !important;
-            filter: drop-shadow(4px 0px 0px rgba(139, 92, 246, 0.8)) drop-shadow(-4px 0px 0px rgba(0, 0, 0, 0.9)) !important;
-            transition: none !important;
+        /* EFEITO DE HOLD PREMIUM (GRAVITY PULL) - Zero tremedeira, 100% fluido */
+        .hero-character-phase2.void-hold {
+            transform: scale(0.94) translateY(10px) translateZ(0) !important;
+            filter: drop-shadow(0 0 50px rgba(139, 92, 246, 0.7)) drop-shadow(0 0 100px rgba(0, 0, 0, 1)) brightness(0.8) contrast(1.3) !important;
+            /* A transição dita que o efeito leva exatos 3 segundos para atingir o ápice */
+            transition: all 3s cubic-bezier(0.25, 1, 0.5, 1) !important;
         }
 
         /* Estrutura da Fase 3 - Premium Minimalist */
@@ -322,10 +323,8 @@
             opacity: 0; pointer-events: none; transition: opacity 1.5s ease; z-index: 1000;
         }
 
-        /* Noise Overlay elegante */
         #phase-3::before {
-            content: "";
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
             opacity: 0.04; pointer-events: none; mix-blend-mode: overlay;
         }
@@ -334,7 +333,7 @@
         
         .phase3-top-title {
             position: absolute; top: 8%; left: 50%; transform: translateX(-50%) translateY(-30px);
-            /* FONTE CRAVADA: Usando var(--font-medium) e respeitando o peso 500 do @font-face */
+            /* FONTE CRAVADA PARA EUROPA GROTESK MEDIUM */
             font-family: var(--font-medium) !important; 
             font-weight: 500 !important;
             color: var(--text-muted); font-size: 0.8rem; letter-spacing: 0.5em;
@@ -342,19 +341,15 @@
             transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 1.5s ease, filter 1.5s ease;
         }
         
-        .phase3-left { 
-            width: 35%; /* Reduzido para empurrar para extremidade */
-            padding-left: 5%; /* Reduzido para encostar na esquerda */
-            z-index: 10;
-        }
-        
         .phase3-layout {
             display: flex; width: 100%; height: 100%; align-items: center; justify-content: space-between;
         }
         
-        #phase3-text-dynamic {
-            will-change: transform, opacity, filter;
+        .phase3-left { 
+            width: 40%; padding-left: 8%; z-index: 10;
         }
+        
+        #phase3-text-dynamic { will-change: transform, opacity, filter; }
 
         .phase3-main-title {
             font-family: var(--font-bold); font-size: 6.5vw; line-height: 0.85; color: #fff;
@@ -366,26 +361,18 @@
         
         /* O palco do Carrossel */
         .phase3-right {
-            position: relative; width: 65%; /* Aumentado para empurrar cards mais pra direita */
-            height: 100vh;
-            perspective: 2000px; /* Profundidade 3D */
-            display: flex; align-items: center;
+            position: relative; width: 60%; height: 100vh; 
+            perspective: 2000px; display: flex; align-items: center;
         }
         
         /* CARDS GIGANTES E VAZADOS */
         .project-card {
             position: absolute;
-            width: 28vw; /* Card bem maior */
-            max-width: 450px;
-            aspect-ratio: 3/4; 
-            /* O SEGREDO: overflow visible para a barra diagonal sair do card */
-            overflow: visible !important; 
-            transform-origin: center center;
-            will-change: transform, opacity;
-            opacity: 0; 
+            width: 28vw; max-width: 450px; aspect-ratio: 3/4; 
+            overflow: visible !important; transform-origin: center center;
+            will-change: transform, opacity; opacity: 0; 
         }
 
-        /* ENTRADA CINEMATOGRÁFICA CARDS */
         .card-entrance-wrapper {
             width: 100%; height: 100%; position: relative;
             transform: translateY(15vh) scale(0.9); opacity: 0; filter: blur(15px);
@@ -397,43 +384,43 @@
         #phase-3.active .project-card:nth-child(3) .card-entrance-wrapper { transition-delay: 0.8s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
         
         .card-img-wrapper {
-            width: 100%; height: 100%; border-radius: 16px; overflow: hidden; /* Borda arredondada (Awwwards feel) */
-            border: 1px solid rgba(255, 255, 255, 0.08); /* Borda 1px super sutil */
-            box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.05); /* Sombras profundas e inner shadow glass */
-            background: rgba(20,20,25,0.4);
-            backdrop-filter: blur(20px);
+            width: 100%; height: 100%; border-radius: 16px; overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.05); 
+            background: rgba(20,20,25,0.4); backdrop-filter: blur(20px);
         }
         
         .card-img {
             width: 100%; height: 100%; object-fit: cover; opacity: 0.8;
             transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.5s ease;
         }
-
-        .project-card:hover .card-img {
-            transform: scale(1.08); opacity: 1;
-        }
+        .project-card:hover .card-img { transform: scale(1.08); opacity: 1; }
         
         /* Retângulo Inclinado Vazando pra fora */
         .card-diagonal-overlay {
-            position: absolute; bottom: 10%; right: -15%; left: auto; width: auto; /* Vaza MUITO para a direita */
+            position: absolute; bottom: 10%; right: -15%; left: auto; width: auto; 
             background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.15); /* Acabamento 1px elevado */
-            transform: skewX(-15deg); padding: 2vw 4vw; text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.15); transform: skewX(-15deg); padding: 2vw 4vw; text-align: center;
             box-shadow: 0 15px 35px rgba(0,0,0,0.5);
         }
         .card-diagonal-overlay span {
             display: block; font-family: var(--font-bold); font-size: 1rem; letter-spacing: 0.3em; 
-            color: #fff;
-            transform: skewX(15deg); /* Desfaz o skew no texto para legibilidade */
+            color: #fff; transform: skewX(15deg);
         }
 
         /* Animações de Entrada */
         #phase-3.active .phase3-top-title { transform: translateX(-50%) translateY(0); opacity: 1; filter: blur(0); }
         #phase-3.active .phase3-main-title { transform: translateX(0); opacity: 1; filter: blur(0); }
 
+        /* Animações de Saída Cinematográficas */
+        #phase-3.fade-out .phase3-top-title { transform: translateX(-50%) translateY(-50px); opacity: 0; filter: blur(10px); transition: transform 1s cubic-bezier(0.8, 0, 0.2, 1), opacity 0.8s ease, filter 0.8s ease; }
+        #phase-3.fade-out .phase3-main-title { transform: translateX(-80px); opacity: 0; filter: blur(15px); transition: transform 1s cubic-bezier(0.8, 0, 0.2, 1), opacity 0.8s ease, filter 0.8s ease; }
+        #phase-3.fade-out .project-card { transform: translateY(100px) rotateX(20deg) !important; opacity: 0 !important; filter: blur(15px); transition: transform 1s cubic-bezier(0.8, 0, 0.2, 1), opacity 0.8s ease, filter 0.8s ease; }
+
         /* Botão Return da Fase 3 */
         .p3-return { z-index: 1010; bottom: 5%; }
         #phase-3.active .p3-return .btn-return { opacity: 1; pointer-events: auto; }
+        #phase-3.fade-out .p3-return .btn-return { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
 
     </style>
 </head>
@@ -472,7 +459,7 @@
             <button id="btn-return" class="btn-return">
                 <div class="btn-bg-glow"></div>
                 <div class="btn-line-top"></div>
-                <span class="btn-text">RETURN</span>
+                <span class="btn-text">VOLTAR</span>
                 <div class="btn-line-bottom"></div>
             </button>
         </div>
@@ -480,18 +467,17 @@
 
     <!-- Terminal Secreto / Fase 3 -->
     <div id="phase-3">
-        <div class="phase3-top-title">Já que INSISTE TANTO EM TENTAR DESCOBRIR ALGO...</div>
+        <div class="phase3-top-title">JÁ QUE INSISTE TANTO EM TENTAR DESCOBRIR ALGO...</div>
         
         <div class="phase3-layout">
             <div class="phase3-left">
-                <!-- Título corrigido com Wrapper JS: Duas linhas perfeitas e o cursor no lugar certo -->
                 <div id="phase3-text-dynamic">
+                    <!-- O &nbsp; cria um espaço inquebrável, garantindo que o "A" não pule de linha -->
                     <h1 class="phase3-main-title">PROJETOS<br>A&nbsp;CAMINHO</h1>
                 </div>
             </div>
             
             <div class="phase3-right" id="carousel-container">
-                <!-- CARDS -->
                 <div class="project-card card-1">
                     <div class="card-entrance-wrapper">
                         <div class="card-img-wrapper">
@@ -525,7 +511,7 @@
             <button id="btn-return-p3" class="btn-return">
                 <div class="btn-bg-glow"></div>
                 <div class="btn-line-top"></div>
-                <span class="btn-text">RETURN</span>
+                <span class="btn-text">VOLTAR</span>
                 <div class="btn-line-bottom"></div>
             </button>
         </div>
@@ -557,15 +543,38 @@
         let scrollTarget = 0;
         let scrollCurrent = 0;
         const cards = document.querySelectorAll('.project-card');
-        const cardSpacing = window.innerWidth * 0.35; // Distância entre os cards
-        const initialOffset = window.innerWidth * 0.4; // O primeiro card inicia parcialmente fora da tela
+        const cardSpacing = window.innerWidth * 0.38; // Espaçamento maior entre cards
+        const initialOffset = window.innerWidth * 0.25; // O primeiro card não nasce no centro
+        const maxScroll = initialOffset + ((cards.length - 1) * cardSpacing);
 
-        // Captura o scroll do mouse para mover o carrossel horizontalmente
+        let isDragging = false;
+        let startX = 0;
+        let scrollStart = 0;
+        const phase3Element = document.getElementById('phase-3');
+
+        // Drag (Mouse)
+        phase3Element.addEventListener('mousedown', (e) => {
+            if(phase3Element.classList.contains('active') && !phase3Element.classList.contains('fade-out')) {
+                isDragging = true; startX = e.clientX; scrollStart = scrollTarget;
+                customCursor.style.transform = `translate(-50%, -50%) scale(0.5) translateZ(0)`;
+            }
+        });
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            scrollTarget = scrollStart + ((startX - e.clientX) * 1.5);
+            scrollTarget = Math.max(0, Math.min(scrollTarget, maxScroll));
+        });
+        window.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                customCursor.style.transform = `translate(-50%, -50%) scale(1) translateZ(0)`;
+            }
+        });
+
+        // Scroll do mouse
         window.addEventListener('wheel', (e) => {
-            if(document.getElementById('phase-3').classList.contains('active')) {
+            if(phase3Element.classList.contains('active') && !phase3Element.classList.contains('fade-out')) {
                 scrollTarget += e.deltaY * 0.8;
-                // Limita a rolagem entre o primeiro e o último card
-                const maxScroll = initialOffset + ((cards.length - 1) * cardSpacing);
                 scrollTarget = Math.max(0, Math.min(scrollTarget, maxScroll));
             }
         });
@@ -577,9 +586,7 @@
             if (phase2.classList.contains('active')) {
                 const absVel = Math.abs(velocityX);
                 let targetSkew = 0;
-                if (absVel > 10) {
-                    targetSkew = Math.min(absVel * 0.1, 8) * (velocityX > 0 ? 1 : -1);
-                }
+                if (absVel > 10) { targetSkew = Math.min(absVel * 0.1, 8) * (velocityX > 0 ? 1 : -1); }
                 currentSkew += (targetSkew - currentSkew) * 0.1;
 
                 const xPercent = (rawMouseX / window.innerWidth) * 2 - 1;
@@ -590,44 +597,34 @@
                 document.documentElement.style.setProperty('--parallax-y', `${-50 + (yPercent * -10)}%`);
             }
 
-            // --- MOTOR DO CARROSSEL 3D (FASE 3) ---
-            if (document.getElementById('phase-3').classList.contains('active')) {
-                // Suavização do scroll (Lerp)
+            // --- MOTOR DO CARROSSEL 3D E OPACIDADE (FASE 3) ---
+            const phase3Active = phase3Element.classList.contains('active');
+            const phase3Fading = phase3Element.classList.contains('fade-out');
+
+            if (phase3Active && !phase3Fading) {
                 scrollCurrent += (scrollTarget - scrollCurrent) * 0.08;
 
-                cards.forEach((card, i) => {
-                    // Calcula a posição ideal de cada card
-                    let x0 = initialOffset + (i * cardSpacing);
-                    let xPos = x0 - scrollCurrent; // Posição atual baseada no scroll
-                    
-                    // Distância do card em relação ao centro (0 = no centro)
-                    let absX = Math.abs(xPos);
-
-                    // Efeito 3D e Opacidade baseados na distância
-                    let scale = 1 - Math.min(absX / 1500, 0.4); // Diminui conforme afasta
-                    let opacity = 1 - Math.min(absX / 800, 1); // Fica transparente se afastar muito
-                    let rotateY = xPos * -0.02; // Gira levemente criando o efeito Coverflow
-
-                    // Injeta direto no elemento para performance máxima
-                    card.style.transform = `translateX(${xPos}px) scale(${scale}) rotateY(${rotateY}deg) translateZ(0)`;
-                    card.style.opacity = opacity;
-                });
-
-                // ATRELAMENTO DO SCROLL AO TEXTO DA ESQUERDA
+                // Animação de fade do título baseada no scroll (Sobe e desaparece)
                 const dynamicText = document.getElementById('phase3-text-dynamic');
                 if (dynamicText) {
                     let textOpacity = Math.max(0, 1 - (scrollCurrent / 600));
-
-                    // Opcional: Efeito de Blur conforme o texto some
-                    let blurFactor = Math.max(0, Math.min((scrollCurrent - 100) * 0.05, 15));
-
-                    // Move lentamente para a esquerda
                     let translateFactor = -(scrollCurrent * 0.15);
-
                     dynamicText.style.opacity = textOpacity;
-                    dynamicText.style.filter = `blur(${blurFactor}px)`;
-                    dynamicText.style.transform = `translateX(${translateFactor}px)`;
+                    dynamicText.style.transform = `translateX(${translateFactor}px) translateZ(0)`;
                 }
+
+                cards.forEach((card, i) => {
+                    let x0 = initialOffset + (i * cardSpacing);
+                    let xPos = x0 - scrollCurrent; 
+                    let absX = Math.abs(xPos);
+
+                    let scale = 1 - Math.min(absX / 1500, 0.4); 
+                    let opacity = 1 - Math.min(absX / 800, 1); 
+                    let rotateY = xPos * -0.02; 
+
+                    card.style.transform = `translateX(${xPos}px) scale(${scale}) rotateY(${rotateY}deg) translateZ(0)`;
+                    card.style.opacity = opacity;
+                });
             }
 
             requestAnimationFrame(uiInteractionLoop);
@@ -954,8 +951,7 @@
             osc.type = 'square'; 
             osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
             
-            // FIX: Volume inicial alto (0.8) e tempo de queda mais longo (0.3s)
-            gainNode.gain.setValueAtTime(0.8, audioCtx.currentTime); 
+            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime); 
             gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
             
             osc.connect(gainNode); gainNode.connect(audioCtx.destination);
@@ -967,7 +963,7 @@
         let easterEggTriggered = false;
 
         const successAudio = new Audio("https://cdn.freesound.org/previews/772/772277_12520441-lq.mp3");
-        successAudio.volume = 0.8;
+        successAudio.volume = 1.0;
 
         window.addEventListener('keydown', (e) => {
             if (easterEggTriggered) return;
@@ -1021,7 +1017,7 @@
         }
 
         // --------------------------------------------------------
-        // FASE 3 GATILHO (LONG PRESS)
+        // FASE 3 GATILHO (LONG PRESS COM VOID CHARGE)
         // --------------------------------------------------------
         const voddkinCharacter = document.querySelector('.hero-character-phase2');
         const phase2Container = document.getElementById('phase-2');
@@ -1032,15 +1028,18 @@
             voddkinCharacter.addEventListener('mousedown', (e) => {
                 e.preventDefault();
                 holdSeconds = 0;
+                
+                // Dispara o Gravity Pull (Tensão elegante e fluida)
+                voddkinCharacter.classList.add('void-hold');
+                
                 holdTimer = setInterval(() => {
                     holdSeconds++;
                     if (holdSeconds >= 3) {
                         clearInterval(holdTimer);
                         phase2Container.classList.add('fade-out');
                         phase3Container.classList.add('active');
-                    } else {
-                        voddkinCharacter.classList.add('minor-glitch');
-                        setTimeout(() => voddkinCharacter.classList.remove('minor-glitch'), 150);
+                        // Limpa o efeito
+                        voddkinCharacter.classList.remove('void-hold'); 
                     }
                 }, 1000);
             });
@@ -1048,28 +1047,41 @@
             const cancelHold = () => {
                 clearInterval(holdTimer);
                 holdSeconds = 0;
-                voddkinCharacter.classList.remove('minor-glitch');
+                // O usuário soltou antes de 3s: aborta a carga e ele volta suavemente
+                voddkinCharacter.classList.remove('void-hold');
             };
 
             voddkinCharacter.addEventListener('mouseup', cancelHold);
             voddkinCharacter.addEventListener('mouseleave', cancelHold);
 
         // --------------------------------------------------------
-        // BOTAO RETURN DA FASE 3 (COM MAGNETISMO)
+        // BOTAO RETURN DA FASE 3 (ANIMAÇÃO E MAGNETISMO)
         // --------------------------------------------------------
         const btnReturnP3 = document.getElementById('btn-return-p3');
         const btnReturnWrapperP3 = document.getElementById('btn-return-wrapper-p3');
 
         btnReturnP3.addEventListener('click', () => {
             customCursor.classList.remove('hovering');
-            document.getElementById('phase-3').classList.remove('active');
-            phase2.classList.remove('fade-out');
             
-            // Reseta o scroll do carrossel para a próxima vez
-            scrollTarget = 0;
+            // Inicia Saída Cinematográfica
+            phase3Container.classList.add('fade-out');
+            
+            setTimeout(() => {
+                phase3Container.classList.remove('active');
+                phase3Container.classList.remove('fade-out');
+                phase2Container.classList.remove('fade-out');
+                
+                // Reset do Carrossel e Textos
+                scrollTarget = 0;
+                scrollCurrent = 0;
+                const dynamicText = document.getElementById('phase3-text-dynamic');
+                if (dynamicText) {
+                    dynamicText.style.opacity = '';
+                    dynamicText.style.transform = '';
+                }
+            }, 1000); // Tempo sincronizado com CSS
         });
 
-        // Magnetismo Idêntico ao da Fase 2
         btnReturnWrapperP3.addEventListener('mousemove', (e) => {
             const rect = btnReturnWrapperP3.getBoundingClientRect();
             const x = e.clientX - rect.left - rect.width / 2;
@@ -1085,6 +1097,7 @@
         });
 
         }
+
     </script>
 </body>
 </html>

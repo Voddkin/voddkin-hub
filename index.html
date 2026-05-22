@@ -27,6 +27,7 @@
         :root {
             --bg-color: #030108;
             --cyan: #06b6d4;
+            --purple: #8b5cf6;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --font-medium: 'EuropaGrotesk-Medium', sans-serif;
@@ -34,7 +35,6 @@
             --font-bold: 'EuropaGrotesk-Bold', sans-serif;
             --void-timing: 1.2s cubic-bezier(0.7, 0, 0.3, 1);
             
-            /* Variáveis globais geridas pelo JS para Zero-Lag */
             --skew-voddkin: 0deg;
             --parallax-x: 0px;
             --parallax-y: -50%;
@@ -80,19 +80,41 @@
             pointer-events: none; z-index: 5;
         }
 
+        /* CURSOR SYSTEM */
         .custom-cursor {
             position: fixed; top: 0; left: 0;
             width: 20px; height: 20px;
             background-color: #ffffff;
             border-radius: 50%; pointer-events: none;
-            z-index: 9999;
+            z-index: 99999;
             transform: translate(-50%, -50%) scale(1) translateZ(0);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.3s ease;
-            will-change: transform;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.3s ease, opacity 0.3s ease;
+            will-change: transform, opacity, background-color;
+            opacity: 1;
         }
         .custom-cursor.hovering {
             transform: translate(-50%, -50%) scale(3) translateZ(0);
             background-color: rgba(255, 255, 255, 0.5);
+        }
+        /* Classe exclusiva para arrastar na Fase 3 */
+        .custom-cursor.dragging {
+            transform: translate(-50%, -50%) scale(0.5) translateZ(0) !important;
+        }
+        /* Cor roxa progressiva ao longo dos 3 segundos */
+        .custom-cursor.holding {
+            transform: translate(-50%, -50%) scale(6) translateZ(0);
+            background-color: rgba(139, 92, 246, 0.8);
+            transition: transform 3s linear, background-color 3s linear;
+        }
+        /* Explosão mais lenta, mantendo o tom roxo antes de resetar */
+        .custom-cursor.exploding {
+            transform: translate(-50%, -50%) scale(35) translateZ(0);
+            background-color: rgba(139, 92, 246, 0.3);
+            opacity: 0;
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease-out, background-color 0.4s ease;
+        }
+        .custom-cursor.resetting {
+            transition: none !important;
         }
 
         #phase-1-text {
@@ -191,7 +213,6 @@
             position: absolute; right: 8%; top: 50%;
             display: flex; flex-direction: column; align-items: flex-end;
             gap: 1.5rem; text-align: right; will-change: transform;
-            /* Lógica CSS Variables limpa e fluida */
             transform: translate(var(--parallax-x), var(--parallax-y)) skewX(calc(var(--skew-voddkin) * -2)) translateZ(0);
         }
         #phase-2.active .dark-texts {
@@ -230,37 +251,30 @@
             position: absolute; left: 2%; bottom: 0;
             pointer-events: none; transform-origin: bottom center;
             will-change: transform;
-            /* Removido o skewX para não seguir mais o mouse */
             transform: translateZ(0);
         }
         #phase-2.active .hero-phase2-wrapper {
             animation: phase2Breathe 4s ease-in-out infinite 1.5s;
         }
         @keyframes phase2Breathe {
-            /* Removido o skewX daqui também. Agora ele só respira. */
             0% { transform: scaleY(1) scaleX(1) translateZ(0); }
             50% { transform: scaleY(1.015) scaleX(0.99) translateZ(0); }
             100% { transform: scaleY(1) scaleX(1) translateZ(0); }
         }
 
-        /* Cinematographic Voddkin Entry */
         .hero-character-phase2 {
             height: 85vh; max-height: 900px; display: block;
-            pointer-events: auto; /* IMPORTANTE PARA O LONG PRESS FUNCIONAR */
+            pointer-events: auto;
             opacity: 0; transform: scale(1.03) translateZ(0); filter: blur(15px);
             transform-origin: bottom center;
             -webkit-mask-image: linear-gradient(to top, transparent 0%, rgba(0,0,0,0.2) 5%, black 15%, black 100%);
             mask-image: linear-gradient(to top, transparent 0%, rgba(0,0,0,0.2) 5%, black 15%, black 100%);
             transition: opacity 1.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 1.8s cubic-bezier(0.2, 0.8, 0.2, 1), filter 1.8s cubic-bezier(0.2, 0.8, 0.2, 1);
             will-change: transform, opacity, filter;
+            user-select: none; -webkit-user-drag: none;
         }
         .glitch-entry {
             opacity: 1 !important; transform: scale(1) translateZ(0) !important; filter: blur(0px) !important;
-        }
-        .minor-glitch {
-            transform: scale(1.02) translateX(5px) skewX(2deg) !important;
-            filter: brightness(1.5) contrast(1.2) hue-rotate(90deg) !important;
-            transition: none !important;
         }
 
         .btn-return-wrapper {
@@ -307,14 +321,6 @@
         .btn-return:hover .btn-bg-glow { opacity: 1; transform: translate(-50%, -50%) scale(1.2) translateZ(0); }
         .btn-return:hover .btn-line-top, .btn-return:hover .btn-line-bottom { width: 100%; }
 
-        /* EFEITO DE HOLD PREMIUM (GRAVITY PULL) - Zero tremedeira, 100% fluido */
-        .hero-character-phase2.void-hold {
-            transform: scale(0.94) translateY(10px) translateZ(0) !important;
-            filter: drop-shadow(0 0 50px rgba(139, 92, 246, 0.7)) drop-shadow(0 0 100px rgba(0, 0, 0, 1)) brightness(0.8) contrast(1.3) !important;
-            /* A transição dita que o efeito leva exatos 3 segundos para atingir o ápice */
-            transition: all 3s cubic-bezier(0.25, 1, 0.5, 1) !important;
-        }
-
         /* Estrutura da Fase 3 - Premium Minimalist */
         #phase-3 {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -333,7 +339,6 @@
         
         .phase3-top-title {
             position: absolute; top: 8%; left: 50%; transform: translateX(-50%) translateY(-30px);
-            /* FONTE CRAVADA PARA EUROPA GROTESK MEDIUM */
             font-family: var(--font-medium) !important; 
             font-weight: 500 !important;
             color: var(--text-muted); font-size: 0.8rem; letter-spacing: 0.5em;
@@ -346,7 +351,7 @@
         }
         
         .phase3-left { 
-            width: 40%; padding-left: 8%; z-index: 10;
+            width: 35%; padding-left: 8%; z-index: 10;
         }
         
         #phase3-text-dynamic { will-change: transform, opacity, filter; }
@@ -359,16 +364,14 @@
             transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s, opacity 1.5s ease 0.2s, filter 1.5s ease 0.2s;
         }
         
-        /* O palco do Carrossel */
         .phase3-right {
-            position: relative; width: 60%; height: 100vh; 
+            position: relative; width: 65%; height: 100vh; 
             perspective: 2000px; display: flex; align-items: center;
         }
         
-        /* CARDS GIGANTES E VAZADOS */
         .project-card {
             position: absolute;
-            width: 28vw; max-width: 450px; aspect-ratio: 3/4; 
+            width: 25vw; max-width: 400px; aspect-ratio: 3/4; 
             overflow: visible !important; transform-origin: center center;
             will-change: transform, opacity; opacity: 0; 
         }
@@ -377,11 +380,13 @@
             width: 100%; height: 100%; position: relative;
             transform: translateY(15vh) scale(0.9); opacity: 0; filter: blur(15px);
             transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: auto; 
         }
 
         #phase-3.active .project-card:nth-child(1) .card-entrance-wrapper { transition-delay: 0.4s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
-        #phase-3.active .project-card:nth-child(2) .card-entrance-wrapper { transition-delay: 0.6s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
-        #phase-3.active .project-card:nth-child(3) .card-entrance-wrapper { transition-delay: 0.8s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
+        #phase-3.active .project-card:nth-child(2) .card-entrance-wrapper { transition-delay: 0.5s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
+        #phase-3.active .project-card:nth-child(3) .card-entrance-wrapper { transition-delay: 0.6s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
+        #phase-3.active .project-card:nth-child(4) .card-entrance-wrapper { transition-delay: 0.7s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
         
         .card-img-wrapper {
             width: 100%; height: 100%; border-radius: 16px; overflow: hidden;
@@ -396,31 +401,55 @@
         }
         .project-card:hover .card-img { transform: scale(1.08); opacity: 1; }
         
-        /* Retângulo Inclinado Vazando pra fora */
         .card-diagonal-overlay {
             position: absolute; bottom: 10%; right: -15%; left: auto; width: auto; 
             background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.15); transform: skewX(-15deg); padding: 2vw 4vw; text-align: center;
             box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            pointer-events: none;
         }
         .card-diagonal-overlay span {
             display: block; font-family: var(--font-bold); font-size: 1rem; letter-spacing: 0.3em; 
             color: #fff; transform: skewX(15deg);
         }
 
-        /* Animações de Entrada */
         #phase-3.active .phase3-top-title { transform: translateX(-50%) translateY(0); opacity: 1; filter: blur(0); }
         #phase-3.active .phase3-main-title { transform: translateX(0); opacity: 1; filter: blur(0); }
 
-        /* Animações de Saída Cinematográficas */
         #phase-3.fade-out .phase3-top-title { transform: translateX(-50%) translateY(-50px); opacity: 0; filter: blur(10px); transition: transform 1s cubic-bezier(0.8, 0, 0.2, 1), opacity 0.8s ease, filter 0.8s ease; }
         #phase-3.fade-out .phase3-main-title { transform: translateX(-80px); opacity: 0; filter: blur(15px); transition: transform 1s cubic-bezier(0.8, 0, 0.2, 1), opacity 0.8s ease, filter 0.8s ease; }
         #phase-3.fade-out .project-card { transform: translateY(100px) rotateX(20deg) !important; opacity: 0 !important; filter: blur(15px); transition: transform 1s cubic-bezier(0.8, 0, 0.2, 1), opacity 0.8s ease, filter 0.8s ease; }
 
-        /* Botão Return da Fase 3 */
         .p3-return { z-index: 1010; bottom: 5%; }
         #phase-3.active .p3-return .btn-return { opacity: 1; pointer-events: auto; }
         #phase-3.fade-out .p3-return .btn-return { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+
+        /* GLASS TOOLTIP AMPLIADA E AJUSTADA */
+        .glass-tooltip {
+            position: fixed;
+            width: 420px;
+            padding: 1.8rem;
+            background: rgba(10, 12, 20, 0.65);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            color: #e2e8f0;
+            font-family: var(--font-medium);
+            font-size: 1.15rem;
+            line-height: 1.6;
+            pointer-events: none;
+            z-index: 999999;
+            opacity: 0;
+            transform: translate(0, 0) scale(0.95);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.7), inset 0 0 20px rgba(255, 255, 255, 0.03);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+        }
+        .glass-tooltip.active {
+            opacity: 1;
+            transform: translate(0, 0) scale(1);
+        }
 
     </style>
 </head>
@@ -428,8 +457,9 @@
 
     <div class="vignette"></div>
     <div id="custom-cursor" class="custom-cursor"></div>
+    <div id="glass-tooltip" class="glass-tooltip"></div>
 
-    <img src="VKpng.png" class="gpu-preload" alt="Preload Phase 2">
+    <img src="assets/img/VKpng.png" id="gpu-preload-phase2" class="gpu-preload" alt="Preload Phase 2" crossorigin="anonymous">
     <canvas id="bg-canvas"></canvas>
     <div class="film-grain"></div>
 
@@ -439,14 +469,14 @@
     </div>
 
     <div id="hero-action-wrapper" class="hero-wrapper">
-        <img src="chibiVKpng.png" id="hero-action" class="hero-character" alt="Character" crossorigin="anonymous">
+        <img src="assets/img/chibiVKpng.png" id="hero-action" class="hero-character" alt="Character" crossorigin="anonymous">
     </div>
 
     <div id="black-hole"></div>
 
     <div id="phase-2">
         <div id="hero-phase2-wrapper" class="hero-phase2-wrapper">
-            <img src="VKpng.png" id="hero-phase2" class="hero-character-phase2" alt="Materialized Character">
+            <img src="assets/img/VKpng.png" id="hero-phase2" class="hero-character-phase2" alt="Materialized Character" crossorigin="anonymous">
         </div>
 
         <div id="dark-texts-container" class="dark-texts">
@@ -465,20 +495,18 @@
         </div>
     </div>
 
-    <!-- Terminal Secreto / Fase 3 -->
     <div id="phase-3">
         <div class="phase3-top-title">JÁ QUE INSISTE TANTO EM TENTAR DESCOBRIR ALGO...</div>
         
         <div class="phase3-layout">
             <div class="phase3-left">
                 <div id="phase3-text-dynamic">
-                    <!-- O &nbsp; cria um espaço inquebrável, garantindo que o "A" não pule de linha -->
                     <h1 class="phase3-main-title">PROJETOS<br>A&nbsp;CAMINHO</h1>
                 </div>
             </div>
             
             <div class="phase3-right" id="carousel-container">
-                <div class="project-card card-1">
+                <div class="project-card card-1" data-tooltip="Voddkin é um cientista renomado. Mas que ainda precisa de mais um tempo. E para ele será um prazer compartilhar alguns de seus feitos em testes de laboratório.">
                     <div class="card-entrance-wrapper">
                         <div class="card-img-wrapper">
                             <div class="card-img" style="background: linear-gradient(135deg, #0a0a0a, #1a1a2e);"></div>
@@ -487,7 +515,7 @@
                     </div>
                 </div>
                 
-                <div class="project-card card-2">
+                <div class="project-card card-2" data-tooltip="Como você pode observar, Voddkin já participou de turnês oficiais do Linkin Park, e já cantou ao vivo ao lado do grande Chester Bennington. É verdade!">
                     <div class="card-entrance-wrapper">
                         <div class="card-img-wrapper">
                             <div class="card-img" style="background: linear-gradient(135deg, #1e1b4b, #312e81);"></div>
@@ -496,12 +524,21 @@
                     </div>
                 </div>
                 
-                <div class="project-card card-3">
+                <div class="project-card card-3" data-tooltip="O quê? É verdade mesmo isso?! Então. E se Voddkin voltasse com os vídeos no YouTube? Não da mesma forma como antes, mas com a mesma essência Extrema.">
                     <div class="card-entrance-wrapper">
                         <div class="card-img-wrapper">
                             <img src="assets/img/GravandoVideos.png" class="card-img" alt="Vídeos com qualidade Extrema">
                         </div>
                         <div class="card-diagonal-overlay"><span>YOUTUBE</span></div>
+                    </div>
+                </div>
+
+                <div class="project-card card-4" data-tooltip="Quando o dever não lhe chama, Voddkin adora mergulhar em suas próprias ideias. E também se afoga. Mas no fim, é o orgulho e a dopamina mais real que poderia existir.">
+                    <div class="card-entrance-wrapper">
+                        <div class="card-img-wrapper">
+                            <div class="card-img" style="background: linear-gradient(135deg, #111827, #0f172a);"></div>
+                        </div>
+                        <div class="card-diagonal-overlay"><span>MINDSCAPE</span></div>
                     </div>
                 </div>
             </div>
@@ -521,22 +558,17 @@
 (() => {
     'use strict';
 
-    // ==========================================
-    // 1. FINITE STATE MACHINE (FSM)
-    // ==========================================
     const STATES = {
-        STANDBY: 'STANDBY',             // Phase 1
-        TRANSITIONING: 'TRANSITIONING', // Any animation between phases
-        ACTIVE_VOID: 'ACTIVE_VOID',     // Phase 2
-        ARCHIVES: 'ARCHIVES'            // Phase 3
+        STANDBY: 'STANDBY',             
+        TRANSITIONING: 'TRANSITIONING', 
+        ACTIVE_VOID: 'ACTIVE_VOID',     
+        ARCHIVES: 'ARCHIVES'            
     };
     let currentState = STATES.STANDBY;
 
-    // ==========================================
-    // 2. DOM ELEMENTS CACHE
-    // ==========================================
     const DOM = {
         customCursor: document.getElementById('custom-cursor'),
+        glassTooltip: document.getElementById('glass-tooltip'),
         phase2: document.getElementById('phase-2'),
         phase3: document.getElementById('phase-3'),
         bgCanvas: document.getElementById('bg-canvas'),
@@ -544,7 +576,7 @@
         heroWrapper: document.getElementById('hero-action-wrapper'),
         blackHole: document.getElementById('black-hole'),
         btnReturn: document.getElementById('btn-return'),
-        heroPhase2: document.querySelector('.hero-character-phase2'),
+        heroPhase2: document.getElementById('hero-phase2'),
         phase1Text: document.getElementById('phase-1-text'),
         btnReturnWrapper: document.getElementById('btn-return-wrapper'),
         btnReturnP3: document.getElementById('btn-return-p3'),
@@ -553,10 +585,6 @@
         cards: document.querySelectorAll('.project-card')
     };
 
-    // ==========================================
-    // 3. GLOBAL VARIABLES & STATE
-    // ==========================================
-    // Mouse Tracking
     let rawMouseX = window.innerWidth / 2;
     let rawMouseY = window.innerHeight / 2;
     let cursorX = rawMouseX;
@@ -565,24 +593,26 @@
     let velocityX = 0;
     let currentSkew = 0;
 
-    // Carousel Phase 3
     let scrollTarget = 0;
     let scrollCurrent = 0;
-    const cardSpacing = window.innerWidth * 0.38;
+    const cardSpacing = window.innerWidth * 0.35; 
     const initialOffset = window.innerWidth * 0.25;
     const maxScroll = initialOffset + ((DOM.cards.length - 1) * cardSpacing);
     let isDragging = false;
     let startX = 0;
     let scrollStart = 0;
 
-    // Hitbox / CORS Fallback
     const offscreenCanvas = document.createElement('canvas');
     const offCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
     let isImageLoaded = false;
     let isHoveringPixel = false;
     let isCORSBlocked = false;
 
-    // Galaxy Engine
+    const offscreenCanvas2 = document.createElement('canvas');
+    const offCtx2 = offscreenCanvas2.getContext('2d', { willReadFrequently: true });
+    let isImage2Loaded = false;
+    let isHoveringPixelPhase2 = false;
+
     const ctx = DOM.bgCanvas.getContext('2d', { alpha: false });
     let width, height, halfW, halfH;
     let stars = [];
@@ -603,11 +633,9 @@
     let isCataclysmActive = false;
     let decelerationInterval = null;
 
-    // Void Hold Phase 2 -> 3
-    let holdTimer = null;
-    let holdSeconds = 0;
+    let holdTimeout = null;
+    let isHoldingPhase2 = false; // NOVA TRAVA PARA O TIMER
 
-    // Easter Egg
     const TARGET_WORD = "voddkin";
     let currentKeyIndex = 0;
     let easterEggTriggered = false;
@@ -619,9 +647,6 @@
     const successAudio = new Audio("https://cdn.freesound.org/previews/772/772277_12520441-lq.mp3");
     successAudio.volume = 1.0;
 
-    // ==========================================
-    // 4. INITIALIZATION (Sprites & Galaxy)
-    // ==========================================
     function createStarSprite(color, type) {
         const c = document.createElement('canvas');
         const cCtx = c.getContext('2d');
@@ -677,40 +702,71 @@
         }
     }
 
-    // Hitbox init
     DOM.heroAction.onload = () => {
         offscreenCanvas.width = DOM.heroAction.naturalWidth || 1;
         offscreenCanvas.height = DOM.heroAction.naturalHeight || 1;
-        try { offCtx.drawImage(DOM.heroAction, 0, 0); } catch (e) { /* CORS error swallowed on init */ }
+        try { offCtx.drawImage(DOM.heroAction, 0, 0); } catch (e) { }
         isImageLoaded = true;
     };
     if (DOM.heroAction.complete) DOM.heroAction.onload();
 
+    DOM.heroPhase2.onload = () => {
+        offscreenCanvas2.width = DOM.heroPhase2.naturalWidth || 1;
+        offscreenCanvas2.height = DOM.heroPhase2.naturalHeight || 1;
+        try { offCtx2.drawImage(DOM.heroPhase2, 0, 0); } catch (e) { }
+        isImage2Loaded = true;
+    };
+    if (DOM.heroPhase2.complete) DOM.heroPhase2.onload();
+
     preRenderSprites();
     initGalaxy();
 
-    // ==========================================
-    // 5. UNIFIED KINETIC MASTER LOOP
-    // ==========================================
     let lastTime = performance.now();
     let animFrameId = null;
 
+    // MOTOR DA TOOLTIP ATUALIZADO (Dinâmico para lidar com o Scroll)
+    function updateTooltipPosition(x, y) {
+        if (currentState !== STATES.ARCHIVES || isDragging) {
+            DOM.glassTooltip.classList.remove('active');
+            return;
+        }
+
+        // Desativa eventos do mouse na tooltip para não bloquear o elemento de baixo
+        DOM.glassTooltip.style.pointerEvents = 'none'; 
+        const hoveredElement = document.elementFromPoint(x, y);
+        let hoveredCard = hoveredElement ? hoveredElement.closest('.project-card') : null;
+        
+        if (hoveredCard) {
+            const text = hoveredCard.getAttribute('data-tooltip');
+            if (text) {
+                DOM.glassTooltip.innerHTML = text;
+                DOM.glassTooltip.classList.add('active');
+                
+                let tx = x + 25;
+                let ty = y + 25;
+                if (tx + DOM.glassTooltip.offsetWidth > window.innerWidth) tx = x - DOM.glassTooltip.offsetWidth - 15;
+                if (ty + DOM.glassTooltip.offsetHeight > window.innerHeight) ty = y - DOM.glassTooltip.offsetHeight - 15;
+                
+                DOM.glassTooltip.style.left = tx + 'px';
+                DOM.glassTooltip.style.top = ty + 'px';
+            }
+        } else {
+            DOM.glassTooltip.classList.remove('active');
+        }
+    }
+
     function engineTick(timestamp) {
-        // Delta time (max 50ms to prevent huge jumps if tab was inactive)
         let dt = timestamp - lastTime;
         if (dt > 50) dt = 16.6;
         lastTime = timestamp;
 
-        // Use dt normalization factor (based on 60fps ~ 16.6ms)
         const timeFactor = dt / 16.666;
 
-        // --- 5.1. Cursor Interpolation ---
         cursorX += (rawMouseX - cursorX) * 0.2 * timeFactor;
         cursorY += (rawMouseY - cursorY) * 0.2 * timeFactor;
         DOM.customCursor.style.left = `${cursorX}px`;
         DOM.customCursor.style.top = `${cursorY}px`;
 
-        // --- 5.2. UI Interaction (Skew & Parallax) ---
         velocityX = rawMouseX - lastMouseX;
         lastMouseX = rawMouseX;
 
@@ -718,7 +774,6 @@
             const absVel = Math.abs(velocityX);
             let targetSkew = 0;
             if (absVel > 10) { targetSkew = Math.min(absVel * 0.1, 8) * (velocityX > 0 ? 1 : -1); }
-            // Interpolate skew
             currentSkew += (targetSkew - currentSkew) * 0.1 * timeFactor;
 
             const xPercent = (rawMouseX / window.innerWidth) * 2 - 1;
@@ -729,16 +784,14 @@
             document.documentElement.style.setProperty('--parallax-y', `${-50 + (yPercent * -10)}%`);
         }
 
-        // --- 5.3. Phase 3 Carousel ---
         if (currentState === STATES.ARCHIVES && DOM.phase3.classList.contains('active') && !DOM.phase3.classList.contains('fade-out')) {
             scrollCurrent += (scrollTarget - scrollCurrent) * 0.08 * timeFactor;
 
-            const dynamicText = DOM.phase3TextDynamic;
-            if (dynamicText) {
+            if (DOM.phase3TextDynamic) {
                 let textOpacity = Math.max(0, 1 - (scrollCurrent / 600));
                 let translateFactor = -(scrollCurrent * 0.15);
-                dynamicText.style.opacity = textOpacity;
-                dynamicText.style.transform = `translateX(${translateFactor}px) translateZ(0)`;
+                DOM.phase3TextDynamic.style.opacity = textOpacity;
+                DOM.phase3TextDynamic.style.transform = `translateX(${translateFactor}px) translateZ(0)`;
             }
 
             DOM.cards.forEach((card, i) => {
@@ -755,7 +808,6 @@
             });
         }
 
-        // --- 5.4. Galaxy Engine ---
         if (!isGalaxyPaused) {
             ctx.fillStyle = '#050212';
             ctx.fillRect(0, 0, width, height);
@@ -839,22 +891,14 @@
         animFrameId = requestAnimationFrame(engineTick);
     }
 
-    // Start master loop
     animFrameId = requestAnimationFrame(engineTick);
 
-    // ==========================================
-    // 6. EVENT DELEGATION
-    // ==========================================
-
-    window.addEventListener('resize', () => {
-        initGalaxy();
-    });
+    window.addEventListener('resize', () => { initGalaxy(); });
 
     window.addEventListener('mousemove', (e) => {
         rawMouseX = e.clientX;
         rawMouseY = e.clientY;
 
-        // Galaxy Target Rotation Update
         if(width && height) {
             const nx = (e.clientX / width) * 2 - 1;
             const ny = (e.clientY / height) * 2 - 1;
@@ -862,12 +906,11 @@
             targetRotY = nx * 0.5;
         }
 
-        // --- Global Mouse Move Handlers ---
         if (currentState === STATES.STANDBY) {
             if (isImageLoaded && !DOM.heroWrapper.classList.contains('ghost')) {
                 const rect = DOM.heroAction.getBoundingClientRect();
                 if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
-                    isHoveringPixel = true; // Fallback Seguro
+                    isHoveringPixel = true; 
                     if (!isCORSBlocked) {
                         try {
                             const scaleX = DOM.heroAction.naturalWidth / rect.width;
@@ -876,13 +919,11 @@
                             const y = Math.round((e.clientY - rect.top) * scaleY);
 
                             if (x >= 0 && x < offscreenCanvas.width && y >= 0 && y < offscreenCanvas.height) {
-                                const pixelData = offCtx.getImageData(x, y, 1, 1).data;
-                                isHoveringPixel = pixelData[3] > 0;
+                                isHoveringPixel = offCtx.getImageData(x, y, 1, 1).data[3] > 0;
                             } else {
                                 isHoveringPixel = false;
                             }
                         } catch (err) {
-                            // CORS block - default to true if inside bounding box and stop trying
                             isCORSBlocked = true;
                         }
                     }
@@ -894,25 +935,50 @@
                 }
             }
         } else if (currentState === STATES.ACTIVE_VOID) {
-            // Check button hover
+            if (isImage2Loaded && !DOM.phase2.classList.contains('fade-out')) {
+                const rect2 = DOM.heroPhase2.getBoundingClientRect();
+                if (e.clientX >= rect2.left && e.clientX <= rect2.right && e.clientY >= rect2.top && e.clientY <= rect2.bottom) {
+                    isHoveringPixelPhase2 = true;
+                    if (!isCORSBlocked) {
+                        try {
+                            const scaleX = DOM.heroPhase2.naturalWidth / rect2.width;
+                            const scaleY = DOM.heroPhase2.naturalHeight / rect2.height;
+                            const x = Math.round((e.clientX - rect2.left) * scaleX);
+                            const y = Math.round((e.clientY - rect2.top) * scaleY);
+                            if (x >= 0 && x < offscreenCanvas2.width && y >= 0 && y < offscreenCanvas2.height) {
+                                isHoveringPixelPhase2 = offCtx2.getImageData(x, y, 1, 1).data[3] > 0;
+                            } else {
+                                isHoveringPixelPhase2 = false;
+                            }
+                        } catch (err) {
+                            isCORSBlocked = true;
+                        }
+                    }
+                } else {
+                    isHoveringPixelPhase2 = false;
+                }
+
+                // Só cancela o timer SE o mouse sair totalmente E se não estiver no meio da Trava
+                if (!isHoveringPixelPhase2 && holdTimeout && !isHoldingPhase2) {
+                    cancelPhase2Hold();
+                }
+            }
+
             const rect = DOM.btnReturnWrapper.getBoundingClientRect();
             if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
                 DOM.btnReturn.style.transform = `translate(${(e.clientX - rect.left - rect.width / 2) * 0.3}px, ${(e.clientY - rect.top - rect.height / 2) * 0.3}px) translateZ(0)`;
                 DOM.customCursor.classList.add('hovering');
             } else {
                 DOM.btnReturn.style.transform = `translate(0px, 0px) translateZ(0)`;
-                // Don't remove hover if we are dragging in another phase, but in phase 2 we can.
-                // Exception: maybe we hover voddkin character? Phase 2 hero doesn't have custom hitbox.
-                DOM.customCursor.classList.remove('hovering');
+                if (!holdTimeout) DOM.customCursor.classList.remove('hovering');
             }
+
         } else if (currentState === STATES.ARCHIVES) {
-            // Drag logic
             if (isDragging) {
                 scrollTarget = scrollStart + ((startX - e.clientX) * 1.5);
                 scrollTarget = Math.max(0, Math.min(scrollTarget, maxScroll));
             }
 
-            // Phase 3 return button hover
             const r3Rect = DOM.btnReturnWrapperP3.getBoundingClientRect();
             if (e.clientX >= r3Rect.left && e.clientX <= r3Rect.right && e.clientY >= r3Rect.top && e.clientY <= r3Rect.bottom) {
                 DOM.btnReturnP3.style.transform = `translate(${(e.clientX - r3Rect.left - r3Rect.width / 2) * 0.3}px, ${(e.clientY - r3Rect.top - r3Rect.height / 2) * 0.3}px) translateZ(0)`;
@@ -921,13 +987,17 @@
                 DOM.btnReturnP3.style.transform = `translate(0px, 0px) translateZ(0)`;
                 if(!isDragging) DOM.customCursor.classList.remove('hovering');
             }
+
+            // Atualiza Tooltip
+            updateTooltipPosition(rawMouseX, rawMouseY);
         }
     });
 
     window.addEventListener('mouseup', () => {
         if (currentState === STATES.ARCHIVES && isDragging) {
             isDragging = false;
-            DOM.customCursor.style.transform = `translate(-50%, -50%) scale(1) translateZ(0)`;
+            DOM.customCursor.classList.remove('dragging');
+            updateTooltipPosition(rawMouseX, rawMouseY);
         }
     });
 
@@ -935,12 +1005,11 @@
         if (currentState === STATES.ARCHIVES && DOM.phase3.classList.contains('active') && !DOM.phase3.classList.contains('fade-out')) {
             scrollTarget += e.deltaY * 0.8;
             scrollTarget = Math.max(0, Math.min(scrollTarget, maxScroll));
+            
+            // Oculta a tooltip momentaneamente no scroll para evitar bugs visuais, ela reaparece no mousemove
+            DOM.glassTooltip.classList.remove('active'); 
         }
     });
-
-    // ==========================================
-    // 7. TRANSITIONS & CLICKS
-    // ==========================================
 
     DOM.heroAction.addEventListener('click', () => {
         if (currentState !== STATES.STANDBY || !isHoveringPixel) return;
@@ -989,52 +1058,62 @@
         }, 800);
     });
 
-    // --- PHASE 2 -> 3: VOID CHARGE (LONG PRESS) ---
-    function cancelHold() {
-        if (holdTimer) {
-            clearInterval(holdTimer);
-            holdTimer = null;
+    function cancelPhase2Hold() {
+        if (holdTimeout) {
+            clearTimeout(holdTimeout);
+            holdTimeout = null;
         }
-        holdSeconds = 0;
-        if(DOM.heroPhase2) DOM.heroPhase2.classList.remove('void-hold');
+        isHoldingPhase2 = false;
+        DOM.customCursor.classList.remove('holding');
     }
 
-    if (DOM.heroPhase2) {
-        DOM.heroPhase2.addEventListener('mousedown', (e) => {
-            if (currentState !== STATES.ACTIVE_VOID) return;
-            e.preventDefault();
-            holdSeconds = 0;
-            DOM.heroPhase2.classList.add('void-hold');
+    DOM.heroPhase2.addEventListener('mousedown', (e) => {
+        if (currentState !== STATES.ACTIVE_VOID || !isHoveringPixelPhase2) return;
+        e.preventDefault();
+        
+        isHoldingPhase2 = true; // Ativa a trava de segurar
+        DOM.customCursor.classList.add('holding');
+        
+        holdTimeout = setTimeout(() => {
+            DOM.customCursor.classList.remove('holding');
+            DOM.customCursor.classList.add('exploding');
             
-            holdTimer = setInterval(() => {
-                holdSeconds++;
-                if (holdSeconds >= 3) {
-                    cancelHold();
-                    currentState = STATES.TRANSITIONING;
-                    DOM.phase2.classList.add('fade-out');
-                    DOM.phase3.classList.add('active');
-                    setTimeout(() => { currentState = STATES.ARCHIVES; }, 1500); // Wait for transition
-                }
-            }, 1000);
-        });
+            currentState = STATES.TRANSITIONING;
+            DOM.phase2.classList.add('fade-out');
+            DOM.phase3.classList.add('active');
+            
+            setTimeout(() => { currentState = STATES.ARCHIVES; }, 1500); 
 
-        DOM.heroPhase2.addEventListener('mouseup', cancelHold);
-        DOM.heroPhase2.addEventListener('mouseleave', cancelHold);
-    }
+            setTimeout(() => {
+                DOM.customCursor.classList.add('resetting');
+                DOM.customCursor.classList.remove('exploding');
+                void DOM.customCursor.offsetWidth; 
+                DOM.customCursor.classList.remove('resetting');
+            }, 800); // Sincronizado com o novo tempo de explosão
 
-    // --- PHASE 3 DRAG MOUSE DOWN ---
+        }, 3000); 
+    });
+
+    DOM.heroPhase2.addEventListener('mouseup', cancelPhase2Hold);
+    
+    // Se tirar o mouse inteiro do canvas (janela), aí sim ele perde o hold
+    window.addEventListener('mouseup', () => {
+        if (isHoldingPhase2) cancelPhase2Hold();
+    });
+
     DOM.phase3.addEventListener('mousedown', (e) => {
         if (currentState === STATES.ARCHIVES && DOM.phase3.classList.contains('active') && !DOM.phase3.classList.contains('fade-out')) {
             isDragging = true; startX = e.clientX; scrollStart = scrollTarget;
-            DOM.customCursor.style.transform = `translate(-50%, -50%) scale(0.5) translateZ(0)`;
+            DOM.customCursor.classList.add('dragging'); // Usa a classe limpa ao invés de inline
+            DOM.glassTooltip.classList.remove('active'); 
         }
     });
 
-    // --- PHASE 3 -> RETURN TO 2 ---
     DOM.btnReturnP3.addEventListener('click', () => {
         if (currentState !== STATES.ARCHIVES) return;
         currentState = STATES.TRANSITIONING;
         DOM.customCursor.classList.remove('hovering');
+        DOM.glassTooltip.classList.remove('active');
 
         DOM.phase3.classList.add('fade-out');
 
@@ -1053,9 +1132,6 @@
         }, 1000);
     });
 
-    // ==========================================
-    // 8. EASTER EGG & KEYLOGGER
-    // ==========================================
     function playRetroBeep(frequency) {
         if (!audioCtx) audioCtx = new AudioContextObj();
         if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -1086,7 +1162,7 @@
     window.addEventListener('keydown', (e) => {
         if (easterEggTriggered) return;
 
-        if (currentState !== STATES.STANDBY) return; // Only in phase 1
+        if (currentState !== STATES.STANDBY) return; 
 
         const key = e.key.toLowerCase();
 

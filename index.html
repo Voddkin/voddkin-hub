@@ -88,31 +88,41 @@
             border-radius: 50%; pointer-events: none;
             z-index: 99999;
             transform: translate(-50%, -50%) scale(1) translateZ(0);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.3s ease, opacity 0.3s ease;
-            will-change: transform, opacity, background-color;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+            will-change: transform, opacity, background-color, box-shadow;
             opacity: 1;
+            box-shadow: 0 0 0 rgba(139, 92, 246, 0);
         }
         .custom-cursor.hovering {
             transform: translate(-50%, -50%) scale(3) translateZ(0);
             background-color: rgba(255, 255, 255, 0.5);
         }
-        /* Classe exclusiva para arrastar na Fase 3 */
         .custom-cursor.dragging {
             transform: translate(-50%, -50%) scale(0.5) translateZ(0) !important;
         }
-        /* Cor roxa progressiva ao longo dos 3 segundos */
+
+        /* ANIMAÇÃO DE CARGA - Fluida usando transitions */
         .custom-cursor.holding {
-            transform: translate(-50%, -50%) scale(6) translateZ(0);
-            background-color: rgba(139, 92, 246, 0.8);
-            transition: transform 3s linear, background-color 3s linear;
+            transform: translate(-50%, -50%) scale(6) translateZ(0) !important;
+            background-color: rgba(139, 92, 246, 0.95) !important;
+            box-shadow: 0 0 60px rgba(139, 92, 246, 0.8) !important;
+            transition: transform 3s cubic-bezier(0.5, 0, 0.2, 1), background-color 3s ease-in, box-shadow 3s ease-in !important;
         }
-        /* Explosão mais lenta, mantendo o tom roxo antes de resetar */
+
+        /* ANIMAÇÃO DE SOLTAR (ABORTAR) */
+        .custom-cursor.releasing {
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.4s ease, box-shadow 0.4s ease !important;
+        }
+
+        /* EXPLOSÃO LIMPA */
         .custom-cursor.exploding {
-            transform: translate(-50%, -50%) scale(35) translateZ(0);
-            background-color: rgba(139, 92, 246, 0.3);
-            opacity: 0;
-            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease-out, background-color 0.4s ease;
+            transform: translate(-50%, -50%) scale(40) translateZ(0) !important;
+            background-color: rgba(139, 92, 246, 0) !important;
+            box-shadow: 0 0 0px rgba(139, 92, 246, 0) !important;
+            opacity: 0 !important;
+            transition: transform 0.7s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.6s ease-out, background-color 0.6s ease, box-shadow 0.6s ease !important;
         }
+        
         .custom-cursor.resetting {
             transition: none !important;
         }
@@ -203,10 +213,27 @@
 
         #phase-2 {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 25; pointer-events: none; will-change: transform;
+            z-index: 25; pointer-events: none; opacity: 0;
+            transition: opacity 0.8s ease;
         }
+        #phase-2.active {
+            opacity: 1; pointer-events: auto;
+        }
+        
         #phase-2.fade-out {
-            opacity: 0; pointer-events: none; transition: opacity 1s ease;
+            opacity: 0 !important; pointer-events: none; transition: opacity 1.2s ease !important;
+        }
+        #phase-2.fade-out .hero-character-phase2 {
+            transform: scale(1.1) translateY(-20px) translateZ(0);
+            filter: blur(25px);
+            opacity: 0;
+            transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1), filter 1.2s ease, opacity 1s ease;
+        }
+        #phase-2.fade-out .dark-text-line {
+            transform: translateY(-100px) scale(0.9) translateZ(0);
+            filter: blur(15px);
+            opacity: 0;
+            transition: all 1s cubic-bezier(0.8, 0, 0.2, 1);
         }
 
         .dark-texts {
@@ -214,9 +241,6 @@
             display: flex; flex-direction: column; align-items: flex-end;
             gap: 1.5rem; text-align: right; will-change: transform;
             transform: translate(var(--parallax-x), var(--parallax-y)) skewX(calc(var(--skew-voddkin) * -2)) translateZ(0);
-        }
-        #phase-2.active .dark-texts {
-            opacity: 1 !important; pointer-events: auto;
         }
 
         .clip-wrapper { overflow: hidden; padding: 30px; margin: -30px; }
@@ -273,8 +297,8 @@
             will-change: transform, opacity, filter;
             user-select: none; -webkit-user-drag: none;
         }
-        .glitch-entry {
-            opacity: 1 !important; transform: scale(1) translateZ(0) !important; filter: blur(0px) !important;
+        #phase-2.active .hero-character-phase2 {
+            opacity: 1; transform: scale(1) translateZ(0); filter: blur(0px);
         }
 
         .btn-return-wrapper {
@@ -373,13 +397,13 @@
             position: absolute;
             width: 25vw; max-width: 400px; aspect-ratio: 3/4; 
             overflow: visible !important; transform-origin: center center;
-            will-change: transform, opacity; opacity: 0; 
+            will-change: transform, opacity;
         }
 
         .card-entrance-wrapper {
             width: 100%; height: 100%; position: relative;
             transform: translateY(15vh) scale(0.9); opacity: 0; filter: blur(15px);
-            transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: opacity 1.2s ease, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), filter 1.2s ease;
             pointer-events: auto; 
         }
 
@@ -387,12 +411,14 @@
         #phase-3.active .project-card:nth-child(2) .card-entrance-wrapper { transition-delay: 0.5s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
         #phase-3.active .project-card:nth-child(3) .card-entrance-wrapper { transition-delay: 0.6s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
         #phase-3.active .project-card:nth-child(4) .card-entrance-wrapper { transition-delay: 0.7s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
+        #phase-3.active .project-card:nth-child(5) .card-entrance-wrapper { transition-delay: 0.8s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
+        #phase-3.active .project-card:nth-child(6) .card-entrance-wrapper { transition-delay: 0.9s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
         
         .card-img-wrapper {
             width: 100%; height: 100%; border-radius: 16px; overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.08); 
             box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.05); 
-            background: rgba(20,20,25,0.4); backdrop-filter: blur(20px);
+            background: rgba(20,20,25,0.8); backdrop-filter: blur(20px);
         }
         
         .card-img {
@@ -413,18 +439,63 @@
             color: #fff; transform: skewX(15deg);
         }
 
+        /* VORTEX MASCOT (Fim da Lista) */
+        .end-mascot {
+            position: absolute;
+            width: 18vw;
+            max-width: 250px;
+            transform-origin: bottom center;
+            will-change: transform, opacity;
+            opacity: 0;
+            pointer-events: none; 
+        }
+        .end-mascot img {
+            width: 100%;
+            display: block;
+            animation: foxBreathe 3s ease-in-out infinite;
+            transform-origin: bottom center;
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5));
+        }
+        @keyframes foxBreathe {
+            0%, 100% { transform: scaleY(1) scaleX(1); }
+            50% { transform: scaleY(1.05) scaleX(0.97); }
+        }
+        #phase-3.active .end-mascot {
+            opacity: 0.5; /* Mantém sutil por não ser um card interativo */
+            transition: opacity 2s ease 1.5s;
+        }
+
         #phase-3.active .phase3-top-title { transform: translateX(-50%) translateY(0); opacity: 1; filter: blur(0); }
         #phase-3.active .phase3-main-title { transform: translateX(0); opacity: 1; filter: blur(0); }
 
-        #phase-3.fade-out .phase3-top-title { transform: translateX(-50%) translateY(-50px); opacity: 0; filter: blur(10px); transition: transform 1s cubic-bezier(0.8, 0, 0.2, 1), opacity 0.8s ease, filter 0.8s ease; }
-        #phase-3.fade-out .phase3-main-title { transform: translateX(-80px); opacity: 0; filter: blur(15px); transition: transform 1s cubic-bezier(0.8, 0, 0.2, 1), opacity 0.8s ease, filter 0.8s ease; }
-        #phase-3.fade-out .project-card { transform: translateY(100px) rotateX(20deg) !important; opacity: 0 !important; filter: blur(15px); transition: transform 1s cubic-bezier(0.8, 0, 0.2, 1), opacity 0.8s ease, filter 0.8s ease; }
+        #phase-3.exiting {
+            opacity: 0 !important;
+            pointer-events: none;
+            transition: opacity 1.2s ease 0.3s !important; 
+        }
+        #phase-3.exiting .card-entrance-wrapper {
+            transform: translateY(150px) scale(0.8) rotateX(10deg) !important;
+            opacity: 0 !important;
+            filter: blur(15px) !important;
+            transition: transform 1s cubic-bezier(0.8, 0, 0.2, 1), opacity 0.8s ease, filter 0.8s ease !important;
+        }
+        #phase-3.exiting .end-mascot {
+            opacity: 0 !important;
+            transition: opacity 0.8s ease !important;
+        }
+        #phase-3.exiting .phase3-main-title,
+        #phase-3.exiting .phase3-top-title {
+            transform: translateX(-100px) !important;
+            opacity: 0 !important;
+            filter: blur(20px) !important;
+            transition: transform 1s cubic-bezier(0.8, 0, 0.2, 1), opacity 0.8s ease, filter 0.8s ease !important;
+        }
 
         .p3-return { z-index: 1010; bottom: 5%; }
         #phase-3.active .p3-return .btn-return { opacity: 1; pointer-events: auto; }
-        #phase-3.fade-out .p3-return .btn-return { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+        #phase-3.exiting .p3-return .btn-return { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
 
-        /* GLASS TOOLTIP AMPLIADA E AJUSTADA */
+        /* GLASS TOOLTIP */
         .glass-tooltip {
             position: fixed;
             width: 420px;
@@ -496,7 +567,7 @@
     </div>
 
     <div id="phase-3">
-        <div class="phase3-top-title">JÁ QUE INSISTE TANTO EM TENTAR DESCOBRIR ALGO...</div>
+        <div class="phase3-top-title" id="phase3-top-title">JÁ QUE INSISTE TANTO EM TENTAR DESCOBRIR ALGO...</div>
         
         <div class="phase3-layout">
             <div class="phase3-left">
@@ -509,7 +580,7 @@
                 <div class="project-card card-1" data-tooltip="Voddkin é um cientista renomado. Mas que ainda precisa de mais um tempo. E para ele será um prazer compartilhar alguns de seus feitos em testes de laboratório.">
                     <div class="card-entrance-wrapper">
                         <div class="card-img-wrapper">
-                            <img src="assets/img/Testes de Laboratório.jpg" class="card-img" alt="Vídeos com qualidade Extrema">
+                            <img src="assets/img/Testes de Laboratório.jpg" class="card-img" alt="Realizando experimentos">
                         </div>
                         <div class="card-diagonal-overlay"><span>LABS</span></div>
                     </div>
@@ -518,13 +589,31 @@
                 <div class="project-card card-2" data-tooltip="Como você pode observar, Voddkin já participou de turnês oficiais do Linkin Park, e já cantou ao vivo ao lado do grande Chester Bennington. É verdade!">
                     <div class="card-entrance-wrapper">
                         <div class="card-img-wrapper">
-                            <img src="assets/img/Tocando Guitarra.jpg" class="card-img" alt="Vídeos com qualidade Extrema">
+                            <img src="assets/img/Tocando Guitarra.jpg" class="card-img" alt="Em Show Ao Vivo ao lado de Chester">
                         </div>
                         <div class="card-diagonal-overlay"><span>MÚSICA</span></div>
                     </div>
                 </div>
+
+                <div class="project-card card-3" data-tooltip="O início de uma era? O retorno dos conteúdos de edições do Voddkin no Instagram. Algumas coisas na vida nos fazem começar tudo de novo. Do 0.">
+                    <div class="card-entrance-wrapper">
+                        <div class="card-img-wrapper">
+                            <img src="assets/img/v0ddkin.jpg" class="card-img" alt="O '0' é o nada. Ao mesmo tempo que é o infinito.">
+                        </div>
+                        <div class="card-diagonal-overlay"><span>INSTAGRAM</span></div>
+                    </div>
+                </div>
+
+                <div class="project-card card-4" data-tooltip="Imagine ter sua própria caneca personalizada do Voddkin. Perfeita para o momento do café. Personalizações feitas para atender a todos os seus momentos.">
+                    <div class="card-entrance-wrapper">
+                        <div class="card-img-wrapper">
+                            <img src="assets/img/Caneca.jpg" class="card-img" alt="Caneca Personalizada">
+                        </div>
+                        <div class="card-diagonal-overlay"><span>PERSONALIZADOS</span></div>
+                    </div>
+                </div>
                 
-                <div class="project-card card-3" data-tooltip="O quê? É verdade mesmo isso?! Então. E se Voddkin voltasse com os vídeos no YouTube? Não da mesma forma como antes, mas com a mesma essência Extrema.">
+                <div class="project-card card-5" data-tooltip="O quê? É verdade mesmo isso?! Então. E se Voddkin voltasse com os vídeos no YouTube? Não da mesma forma como antes, mas com a mesma essência Extrema.">
                     <div class="card-entrance-wrapper">
                         <div class="card-img-wrapper">
                             <img src="assets/img/Gravando Vídeos.jpg" class="card-img" alt="Vídeos com qualidade Extrema">
@@ -533,13 +622,17 @@
                     </div>
                 </div>
 
-                <div class="project-card card-4" data-tooltip="Quando o dever não lhe chama, Voddkin adora mergulhar em suas próprias ideias. E também se afoga. Mas no fim, é o orgulho e a dopamina mais real que poderia existir.">
+                <div class="project-card card-6" data-tooltip="Quando o dever não lhe chama, Voddkin adora mergulhar em suas próprias ideias. E também se afoga. Mas no fim, é o orgulho e a dopamina mais real que poderia existir.">
                     <div class="card-entrance-wrapper">
                         <div class="card-img-wrapper">
-                            <img src="assets/img/Mergulhando em História.jpg" class="card-img" alt="Vídeos com qualidade Extrema">
+                            <img src="assets/img/Desenhando.jpg" class="card-img" alt="Meus personagens!">
                         </div>
                         <div class="card-diagonal-overlay"><span>PERSONAGENS</span></div>
                     </div>
+                </div>
+
+                <div id="vortex-fox" class="end-mascot">
+                    <img src="assets/img/Vortex.png" alt="Vortex descansando">
                 </div>
             </div>
         </div>
@@ -577,12 +670,15 @@
         blackHole: document.getElementById('black-hole'),
         btnReturn: document.getElementById('btn-return'),
         heroPhase2: document.getElementById('hero-phase2'),
+        heroPhase2Wrapper: document.getElementById('hero-phase2-wrapper'),
         phase1Text: document.getElementById('phase-1-text'),
         btnReturnWrapper: document.getElementById('btn-return-wrapper'),
         btnReturnP3: document.getElementById('btn-return-p3'),
         btnReturnWrapperP3: document.getElementById('btn-return-wrapper-p3'),
         phase3TextDynamic: document.getElementById('phase3-text-dynamic'),
-        cards: document.querySelectorAll('.project-card')
+        phase3TopTitle: document.getElementById('phase3-top-title'),
+        cards: document.querySelectorAll('.project-card'),
+        vortexFox: document.getElementById('vortex-fox')
     };
 
     let rawMouseX = window.innerWidth / 2;
@@ -597,7 +693,10 @@
     let scrollCurrent = 0;
     const cardSpacing = window.innerWidth * 0.35; 
     const initialOffset = window.innerWidth * 0.25;
-    const maxScroll = initialOffset + ((DOM.cards.length - 1) * cardSpacing);
+    
+    // Agora o scroll vai até a posição extra do Vortex, travando ele no meio da tela
+    const maxScroll = initialOffset + (DOM.cards.length * cardSpacing); 
+    
     let isDragging = false;
     let startX = 0;
     let scrollStart = 0;
@@ -634,7 +733,7 @@
     let decelerationInterval = null;
 
     let holdTimeout = null;
-    let isHoldingPhase2 = false; // NOVA TRAVA PARA O TIMER
+    let isHoldingPhase2 = false;
 
     const TARGET_WORD = "voddkin";
     let currentKeyIndex = 0;
@@ -724,14 +823,12 @@
     let lastTime = performance.now();
     let animFrameId = null;
 
-    // MOTOR DA TOOLTIP ATUALIZADO (Dinâmico para lidar com o Scroll)
     function updateTooltipPosition(x, y) {
         if (currentState !== STATES.ARCHIVES || isDragging) {
             DOM.glassTooltip.classList.remove('active');
             return;
         }
 
-        // Desativa eventos do mouse na tooltip para não bloquear o elemento de baixo
         DOM.glassTooltip.style.pointerEvents = 'none'; 
         const hoveredElement = document.elementFromPoint(x, y);
         let hoveredCard = hoveredElement ? hoveredElement.closest('.project-card') : null;
@@ -784,7 +881,7 @@
             document.documentElement.style.setProperty('--parallax-y', `${-50 + (yPercent * -10)}%`);
         }
 
-        if (currentState === STATES.ARCHIVES && DOM.phase3.classList.contains('active') && !DOM.phase3.classList.contains('fade-out')) {
+        if (DOM.phase3.classList.contains('active') && !DOM.phase3.classList.contains('exiting')) {
             scrollCurrent += (scrollTarget - scrollCurrent) * 0.08 * timeFactor;
 
             if (DOM.phase3TextDynamic) {
@@ -806,6 +903,13 @@
                 card.style.transform = `translateX(${xPos}px) scale(${scale}) rotateY(${rotateY}deg) translateZ(0)`;
                 card.style.opacity = opacity;
             });
+
+            // Atualiza a posição do Vortex no final da lista
+            if (DOM.vortexFox) {
+                let foxX0 = initialOffset + (DOM.cards.length * cardSpacing);
+                let foxXPos = foxX0 - scrollCurrent;
+                DOM.vortexFox.style.transform = `translateX(${foxXPos}px) translateZ(0)`;
+            }
         }
 
         if (!isGalaxyPaused) {
@@ -958,8 +1062,7 @@
                     isHoveringPixelPhase2 = false;
                 }
 
-                // Só cancela o timer SE o mouse sair totalmente E se não estiver no meio da Trava
-                if (!isHoveringPixelPhase2 && holdTimeout && !isHoldingPhase2) {
+                if (!isHoveringPixelPhase2 && holdTimeout) {
                     cancelPhase2Hold();
                 }
             }
@@ -970,7 +1073,7 @@
                 DOM.customCursor.classList.add('hovering');
             } else {
                 DOM.btnReturn.style.transform = `translate(0px, 0px) translateZ(0)`;
-                if (!holdTimeout) DOM.customCursor.classList.remove('hovering');
+                if (!holdTimeout && !DOM.customCursor.classList.contains('releasing')) DOM.customCursor.classList.remove('hovering');
             }
 
         } else if (currentState === STATES.ARCHIVES) {
@@ -988,7 +1091,6 @@
                 if(!isDragging) DOM.customCursor.classList.remove('hovering');
             }
 
-            // Atualiza Tooltip
             updateTooltipPosition(rawMouseX, rawMouseY);
         }
     });
@@ -1002,11 +1104,10 @@
     });
 
     window.addEventListener('wheel', (e) => {
-        if (currentState === STATES.ARCHIVES && DOM.phase3.classList.contains('active') && !DOM.phase3.classList.contains('fade-out')) {
+        if (currentState === STATES.ARCHIVES && DOM.phase3.classList.contains('active') && !DOM.phase3.classList.contains('exiting')) {
             scrollTarget += e.deltaY * 0.8;
             scrollTarget = Math.max(0, Math.min(scrollTarget, maxScroll));
             
-            // Oculta a tooltip momentaneamente no scroll para evitar bugs visuais, ela reaparece no mousemove
             DOM.glassTooltip.classList.remove('active'); 
         }
     });
@@ -1031,7 +1132,6 @@
 
         setTimeout(() => {
             DOM.phase2.classList.add('active');
-            DOM.heroPhase2.classList.add('glitch-entry');
             isGalaxyPaused = true;
             currentState = STATES.ACTIVE_VOID;
         }, 1000);
@@ -1043,7 +1143,6 @@
         DOM.customCursor.classList.remove('hovering');
 
         DOM.phase2.classList.remove('active');
-        DOM.heroPhase2.classList.remove('glitch-entry');
 
         isGalaxyPaused = false;
 
@@ -1063,48 +1162,67 @@
             clearTimeout(holdTimeout);
             holdTimeout = null;
         }
-        isHoldingPhase2 = false;
-        DOM.customCursor.classList.remove('holding');
+        
+        if (isHoldingPhase2) {
+            isHoldingPhase2 = false;
+            DOM.customCursor.classList.remove('holding');
+            
+            DOM.customCursor.classList.add('releasing');
+            setTimeout(() => {
+                DOM.customCursor.classList.remove('releasing');
+            }, 600);
+        }
+        
+        DOM.heroPhase2Wrapper.style.animationPlayState = 'running';
     }
 
     DOM.heroPhase2.addEventListener('mousedown', (e) => {
         if (currentState !== STATES.ACTIVE_VOID || !isHoveringPixelPhase2) return;
         e.preventDefault();
         
-        isHoldingPhase2 = true; // Ativa a trava de segurar
+        isHoldingPhase2 = true; 
+        DOM.customCursor.classList.remove('releasing'); 
         DOM.customCursor.classList.add('holding');
         
+        DOM.heroPhase2Wrapper.style.animationPlayState = 'paused';
+        
         holdTimeout = setTimeout(() => {
+            isHoldingPhase2 = false; 
             DOM.customCursor.classList.remove('holding');
             DOM.customCursor.classList.add('exploding');
+            
+            DOM.heroPhase2Wrapper.style.animationPlayState = 'running';
             
             currentState = STATES.TRANSITIONING;
             DOM.phase2.classList.add('fade-out');
             DOM.phase3.classList.add('active');
             
-            setTimeout(() => { currentState = STATES.ARCHIVES; }, 1500); 
+            setTimeout(() => { 
+                currentState = STATES.ARCHIVES; 
+                DOM.phase2.classList.remove('active');
+                DOM.phase2.classList.remove('fade-out');
+            }, 1500); 
 
             setTimeout(() => {
                 DOM.customCursor.classList.add('resetting');
                 DOM.customCursor.classList.remove('exploding');
                 void DOM.customCursor.offsetWidth; 
                 DOM.customCursor.classList.remove('resetting');
-            }, 800); // Sincronizado com o novo tempo de explosão
+            }, 700); 
 
         }, 3000); 
     });
 
     DOM.heroPhase2.addEventListener('mouseup', cancelPhase2Hold);
     
-    // Se tirar o mouse inteiro do canvas (janela), aí sim ele perde o hold
     window.addEventListener('mouseup', () => {
         if (isHoldingPhase2) cancelPhase2Hold();
     });
 
     DOM.phase3.addEventListener('mousedown', (e) => {
-        if (currentState === STATES.ARCHIVES && DOM.phase3.classList.contains('active') && !DOM.phase3.classList.contains('fade-out')) {
+        if (currentState === STATES.ARCHIVES && DOM.phase3.classList.contains('active') && !DOM.phase3.classList.contains('exiting')) {
             isDragging = true; startX = e.clientX; scrollStart = scrollTarget;
-            DOM.customCursor.classList.add('dragging'); // Usa a classe limpa ao invés de inline
+            DOM.customCursor.classList.add('dragging'); 
             DOM.glassTooltip.classList.remove('active'); 
         }
     });
@@ -1115,21 +1233,18 @@
         DOM.customCursor.classList.remove('hovering');
         DOM.glassTooltip.classList.remove('active');
 
-        DOM.phase3.classList.add('fade-out');
+        DOM.phase3.classList.add('exiting');
 
         setTimeout(() => {
             DOM.phase3.classList.remove('active');
-            DOM.phase3.classList.remove('fade-out');
-            DOM.phase2.classList.remove('fade-out');
+            DOM.phase3.classList.remove('exiting');
 
             scrollTarget = 0;
             scrollCurrent = 0;
-            if (DOM.phase3TextDynamic) {
-                DOM.phase3TextDynamic.style.opacity = '';
-                DOM.phase3TextDynamic.style.transform = '';
-            }
+
+            DOM.phase2.classList.add('active');
             currentState = STATES.ACTIVE_VOID;
-        }, 1000);
+        }, 1200);
     });
 
     function playRetroBeep(frequency) {

@@ -220,6 +220,7 @@
             opacity: 1; pointer-events: auto;
         }
         
+        /* SAÍDA DA FASE 2 APRIMORADA */
         #phase-2.fade-out {
             opacity: 0 !important; pointer-events: none; transition: opacity 1.2s ease !important;
         }
@@ -286,6 +287,7 @@
             100% { transform: scaleY(1) scaleX(1) translateZ(0); }
         }
 
+        /* ANIMAÇÃO DE ENTRADA DO VODDKIN (FASE 2) */
         .hero-character-phase2 {
             height: 85vh; max-height: 900px; display: block;
             pointer-events: auto;
@@ -395,7 +397,7 @@
         
         .project-card {
             position: absolute;
-            left: 0;
+            left: 0; /* GARANTINDO ANCORAGEM NO CANTO ESQUERDO DO CONTAINER DIREITO PARA CÁLCULO JS */
             width: 25vw; max-width: 400px; aspect-ratio: 3/4; 
             overflow: visible !important; transform-origin: center center;
             will-change: transform, opacity;
@@ -440,35 +442,10 @@
             color: #fff; transform: skewX(15deg);
         }
 
-        /* VORTEX MASCOT (Fim da Lista) */
-        .end-mascot {
-            position: absolute;
-            width: 18vw;
-            max-width: 250px;
-            transform-origin: bottom center;
-            will-change: transform, opacity;
-            opacity: 0;
-            pointer-events: none; 
-        }
-        .end-mascot img {
-            width: 100%;
-            display: block;
-            animation: foxBreathe 3s ease-in-out infinite;
-            transform-origin: bottom center;
-            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5));
-        }
-        @keyframes foxBreathe {
-            0%, 100% { transform: scaleY(1) scaleX(1); }
-            50% { transform: scaleY(1.05) scaleX(0.97); }
-        }
-        #phase-3.active .end-mascot {
-            opacity: 0.5; /* Mantém sutil por não ser um card interativo */
-            transition: opacity 2s ease 1.5s;
-        }
-
         #phase-3.active .phase3-top-title { transform: translateX(-50%) translateY(0); opacity: 1; filter: blur(0); }
         #phase-3.active .phase3-main-title { transform: translateX(0); opacity: 1; filter: blur(0); }
 
+        /* --- CLASSE PURA DE SAÍDA DA FASE 3 --- */
         #phase-3.exiting {
             opacity: 0 !important;
             pointer-events: none;
@@ -479,10 +456,6 @@
             opacity: 0 !important;
             filter: blur(15px) !important;
             transition: transform 1s cubic-bezier(0.8, 0, 0.2, 1), opacity 0.8s ease, filter 0.8s ease !important;
-        }
-        #phase-3.exiting .end-mascot {
-            opacity: 0 !important;
-            transition: opacity 0.8s ease !important;
         }
         #phase-3.exiting .phase3-main-title,
         #phase-3.exiting .phase3-top-title {
@@ -536,79 +509,60 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer !important; /* Mostra que é clicável */
+            overflow: visible; /* CRUCIAL: Permite que o drop-shadow vaze para fora do tamanho da imagem */
         }
 
-        /* Configuração da imagem e animação de respiração */
         .mascot-img {
-            width: 85%; /* Deixa a raposa num tamanho harmonioso com os cards */
+            width: 100%; /* Expandido para 100% para abrigar o padding sem mudar a hierarquia do flexbox */
+            padding: 35px; /* SOLUÇÃO DEFINITIVA DO CORTE: Cria um espaço transparente por dentro da imagem. A máscara não vai mais encostar no brilho! */
             height: auto;
             object-fit: contain;
             transform-origin: bottom center;
-            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6)); /* Sombra para dar profundidade no fundo escuro */
             animation: mascotBreathe 4s ease-in-out infinite; /* Animação suave de sono */
-            transition: filter 0.5s ease;
         }
 
-        /* Faz a raposinha "respirar" escalando o eixo Y levemente */
-        @keyframes mascotBreathe {
-            0%, 100% { transform: scaleY(1) scaleX(1); }
-            50% { transform: scaleY(1.04) scaleX(0.98); }
+        /* Raposa Base - Sem luz e um pouco apagada */
+        .mascot-img.base-fox {
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.8)) brightness(0.85);
         }
 
-        /* =========================================
-           FÍSICA DEFINITIVA DO VORTEX (DUAS CAMADAS)
-           ========================================= */
-
-        .mascot-card .card-entrance-wrapper {
-            position: relative;
-            cursor: pointer !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Configuração de ambas as raposas para se sobreporem com perfeição */
-        .mascot-img {
-            width: 85%;
-            height: auto;
-            object-fit: contain;
-            transform-origin: bottom center;
-            /* Ambas "respiram" juntas na mesma sincronia */
-            animation: mascotBreathe 4s ease-in-out infinite;
-        }
-
-        /* CAMADA 1 (Fundo) */
-        .base-fox {
-            position: relative;
-            z-index: 1;
-            /* Se quiser ela mais escura no escuro, adicione: filter: brightness(0.8); */
-        }
-
-        /* CAMADA 2 (A Máscara Transparente do Mouse) */
-        .reveal-mask {
+        /* Raposa Brilhante - A LUZ É DELA, FIXA E ESTÁTICA */
+        .mascot-img.glow-fox {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; align-items: center; justify-content: center;
+            top: 0; bottom: 0; left: 0; right: 0;
+            margin: auto;
+            
+            /* USANDO BRIGHTNESS E DROP-SHADOW PARA EFEITO DE STROKE/AURA ROXA PESADA */
+            /* Aumentado o raio do brilho base de 10px para 15px e o brightness para 1.4 */
+            filter: brightness(1.4)
+                    drop-shadow(3px 0 0 rgba(139, 92, 246, 1))
+                    drop-shadow(-3px 0 0 rgba(139, 92, 246, 1))
+                    drop-shadow(0 3px 0 rgba(139, 92, 246, 1))
+                    drop-shadow(0 -3px 0 rgba(139, 92, 246, 1))
+                    drop-shadow(0 0 15px rgba(139, 92, 246, 0.6)); /* Brilho suave aumentado */
+            
+            /* O SEGREDO DO MOTOR DE REVELAÇÃO: MÁSCARA MÓVEL */
+            /* SOLUÇÃO DEFINITIVA DO CORTE:
+               1. Aumentamos o raio do gradiente (de 80px para 150px) para ser maior que a raposa.
+               2. O gradiente vai de preto 0% (revelação total) até preto 30% (mantém total no corpo)
+                  e depois suaviza para transparent 100% (oculta).
+               Isso garante que ao chegar perto, a raposa inteira fique "dentro" da área preta
+               da máscara, permitindo que os drop-shadows vazem sem cortes.
+            */
+            -webkit-mask-image: radial-gradient(circle 150px at var(--mouse-x, -200vw) var(--mouse-y, -200vw), black 0%, black 30%, transparent 100%);
+            mask-image: radial-gradient(circle 150px at var(--mouse-x, -200vw) var(--mouse-y, -200vw), black 0%, black 30%, transparent 100%);
+            
+            -webkit-mask-size: contain; mask-size: contain;
+            -webkit-mask-position: center bottom; mask-position: center bottom;
+            -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+            
+            opacity: 1; /* SEMPRE LIGADO - Mascaramento controla visibilidade */
+            pointer-events: none;
             z-index: 2;
-            pointer-events: none; /* Para não bugar o clique */
-            
-            /* O mouse diz onde é o buraco da máscara */
-            --vortex-luz-x: var(--mouse-x-percent, -100%);
-            --vortex-luz-y: var(--mouse-y-percent, -100%);
-            
-            /* CORTA a camada de cima, REVELANDO a luz só onde o mouse está (raio de 180px) */
-            -webkit-mask-image: radial-gradient(circle 180px at var(--vortex-luz-x) var(--vortex-luz-y), black 0%, rgba(0,0,0,0.5) 50%, transparent 100%);
-            mask-image: radial-gradient(circle 180px at var(--vortex-luz-x) var(--vortex-luz-y), black 0%, rgba(0,0,0,0.5) 50%, transparent 100%);
         }
 
-        /* A RAPOSA BRILHANTE (Presa dentro da Máscara) */
-        .glowing-fox {
-            position: absolute;
-            /* A LUZ ROXA E O BRILHO SUTILEMENTE MAIS BRANCO SÃO FIXOS AQUI */
-            filter: drop-shadow(0 0 45px rgba(139, 92, 246, 0.95)) brightness(1.35) saturate(1.1);
-        }
-
-        /* Animação do Poke (Esticadinha/Bolinha Quicando) */
+        /* Animação Elástica do Clique (O Quique da Raposa) */
         @keyframes vortexEsticadinha {
             0% { transform: scale(1) translateY(0); }
             15% { transform: scale(0.85, 1.15) translateY(-8px); }
@@ -619,10 +573,14 @@
             100% { transform: scale(1) translateY(0); }
         }
 
-        /* O JS aplica isso na div, e anima as DUAS raposas juntas */
-        .vortex-poked .base-fox,
-        .vortex-poked .glowing-fox {
+        .vortex-poked {
             animation: vortexEsticadinha 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) both !important;
+        }
+
+        /* Faz a raposinha "respirar" escalando o eixo Y levemente */
+        @keyframes mascotBreathe {
+            0%, 100% { transform: scaleY(1) scaleX(1); }
+            50% { transform: scaleY(1.04) scaleX(0.98); }
         }
 
         /* Tempo de entrada na tela (Cascata): Ele é o 7º elemento, então entra depois do card 6 */
@@ -637,7 +595,6 @@
 </head>
 <body>
 
-    <audio id="vortex-sound" src="https://cdn.freesound.org/previews/273/273330_5132717-lq.mp3" preload="auto"></audio>
     <div class="vignette"></div>
     <div id="custom-cursor" class="custom-cursor"></div>
     <div id="glass-tooltip" class="glass-tooltip"></div>
@@ -743,13 +700,10 @@
                     </div>
                 </div>
 
-                <div class="project-card mascot-card" data-tooltip="Zzz... Vortex está recarregando as energias no Void.">
+                <div class="project-card mascot-card" data-tooltip="Zzz... Vortex está recarregando as energies no Void.">
                     <div class="card-entrance-wrapper">
                         <img src="assets/img/Vortex.png" class="mascot-img base-fox" alt="Vortex Dormindo">
-                        
-                        <div class="reveal-mask">
-                            <img src="assets/img/Vortex.png" class="mascot-img glowing-fox" alt="Vortex Brilhando">
-                        </div>
+                        <img src="assets/img/Vortex.png" class="mascot-img glow-fox" alt="">
                     </div>
                 </div>
 
@@ -766,7 +720,8 @@
         </div>
     </div>
 
-<script>
+    <audio id="vortex-sound" src="https://cdn.freesound.org/previews/273/273330_5132717-lq.mp3" preload="auto"></audio>
+    <script>
 (() => {
     'use strict';
 
@@ -796,8 +751,7 @@
         btnReturnWrapperP3: document.getElementById('btn-return-wrapper-p3'),
         phase3TextDynamic: document.getElementById('phase3-text-dynamic'),
         phase3TopTitle: document.getElementById('phase3-top-title'),
-        cards: document.querySelectorAll('.project-card'),
-        vortexFox: document.getElementById('vortex-fox')
+        cards: document.querySelectorAll('.project-card')
     };
 
     let rawMouseX = window.innerWidth / 2;
@@ -814,9 +768,15 @@
     let initialOffset = 0;
     let maxScroll = 0;
     let isDragging = false;
+    let startX = 0;
+    let scrollStart = 0;
 
+    // Função dinâmica para calcular métricas baseadas no tamanho da janela
     function updateLayoutMetrics() {
-        cardSpacing = window.innerWidth * 0.35;
+        // Redefine DOM.cards caso novos cards tenham sido injetados dinamicamente
+        DOM.cards = document.querySelectorAll('.project-card');
+
+        cardSpacing = window.innerWidth * 0.35; 
         initialOffset = window.innerWidth * 0.25;
         
         // Pega a largura real geométrica do card (25vw ou o limite de 400px)
@@ -824,19 +784,21 @@
         
         // O container direito começa em 35vw. O meio exato do monitor é 50vw.
         // A matemática para o centro do card parar cirurgicamente em 50vw:
-        const targetXPos = (window.innerWidth * 0.15) - (cardWidth / 2);
+        // O container direito '.phase3-right' tem largura de 65vw.
+        // O ponto 50% do monitor fica na posição rawX = window.innerWidth * 0.5.
+        // A posição relativa desse ponto dentro do container direito é (50vw - 35vw) = 15vw.
+        const targetXPosInsideRight = (window.innerWidth * 0.15) - (cardWidth / 2);
         
-        // A posição bruta final da raposa no array inteiro
+        // A posição bruta final da raposa no array inteiro (x0 inicial)
         const lastCardX0 = initialOffset + ((DOM.cards.length - 1) * cardSpacing);
         
-        // Define o novo limite absoluto "ancorado" ao centro
-        maxScroll = lastCardX0 - targetXPos;
+        // Define o novo limite absoluto "ancorado" ao centro.
+        // maxScroll é a quantidade de scroll necessário para que o x0 final chegue em targetXPosInsideRight.
+        maxScroll = lastCardX0 - targetXPosInsideRight;
     }
     
     // Inicia a matemática antes da animação rodar
-    updateLayoutMetrics(); 
-    let startX = 0;
-    let scrollStart = 0;
+    updateLayoutMetrics();
 
     const offscreenCanvas = document.createElement('canvas');
     const offCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
@@ -1020,14 +982,13 @@
 
         if (DOM.phase3.classList.contains('active') && !DOM.phase3.classList.contains('exiting')) {
             
-            // FÍSICA DE SNAP-BACK (Mola de Retorno)
-            // Se o usuário soltou o clique e puxou além do limite, a mola puxa de volta
+            // FÍSICA DE SNAP-BACK (Mola de Retorno ao soltar overscroll)
             if (!isDragging) {
                 if (scrollTarget > maxScroll) {
-                    // Puxa suavemente de volta para a raposa
+                    // Puxa suavemente de volta para o limite máximo (a raposa no meio)
                     scrollTarget += (maxScroll - scrollTarget) * 0.15 * timeFactor;
                 } else if (scrollTarget < 0) {
-                    // Puxa suavemente de volta para o primeiro card
+                    // Puxa suavemente de volta para o limite mínimo (primeiro card)
                     scrollTarget += (0 - scrollTarget) * 0.15 * timeFactor;
                 }
             }
@@ -1053,6 +1014,22 @@
                 card.style.transform = `translateX(${xPos}px) scale(${scale}) rotateY(${rotateY}deg) translateZ(0)`;
                 card.style.opacity = opacity;
             });
+
+            // =========================================
+            // REVELAÇÃO DO VORTEX A 60 FPS (FÍSICA CORRETA)
+            // =========================================
+            const vortexCard = DOM.cards[DOM.cards.length - 1]; // Pega o último card (Mascote)
+            if (vortexCard) {
+                const wrapper = vortexCard.querySelector('.card-entrance-wrapper');
+                if (wrapper) {
+                    const rect = wrapper.getBoundingClientRect();
+                    // Atualiza constantemente com base na posição crua do mouse VS posição crua da raposa
+                    const x = rawMouseX - rect.left;
+                    const y = rawMouseY - rect.top;
+                    wrapper.style.setProperty('--mouse-x', `${x}px`);
+                    wrapper.style.setProperty('--mouse-y', `${y}px`);
+                }
+            }
         }
 
         if (!isGalaxyPaused) {
@@ -1140,7 +1117,10 @@
 
     animFrameId = requestAnimationFrame(engineTick);
 
-    window.addEventListener('resize', () => { initGalaxy(); });
+    window.addEventListener('resize', () => { 
+        initGalaxy(); 
+        updateLayoutMetrics(); // Recalcula o centro absoluto caso a janela mude de tamanho
+    });
 
     window.addEventListener('mousemove', (e) => {
         rawMouseX = e.clientX;
@@ -1239,29 +1219,17 @@
                 }
             }
 
+            const r3Rect = DOM.btnReturnWrapperP3.getBoundingClientRect();
+            if (e.clientX >= r3Rect.left && e.clientX <= r3Rect.right && e.clientY >= r3Rect.top && e.clientY <= r3Rect.bottom) {
+                DOM.btnReturnP3.style.transform = `translate(${(e.clientX - r3Rect.left - r3Rect.width / 2) * 0.3}px, ${(e.clientY - r3Rect.top - r3Rect.height / 2) * 0.3}px) translateZ(0)`;
+                DOM.customCursor.classList.add('hovering');
+            } else {
+                DOM.btnReturnP3.style.transform = `translate(0px, 0px) translateZ(0)`;
+                if(!isDragging) DOM.customCursor.classList.remove('hovering');
+            }
+
             updateTooltipPosition(rawMouseX, rawMouseY);
         }
-
-        // =========================================
-        // MOTOR DA MÁSCARA DO VORTEX
-        // =========================================
-        const vortexCard = DOM.cards[DOM.cards.length - 1]; 
-        
-        if (currentState === STATES.ARCHIVES && vortexCard && DOM.phase3.classList.contains('active')) {
-            const maskLayer = vortexCard.querySelector('.reveal-mask');
-            if (maskLayer) {
-                const rect = vortexCard.getBoundingClientRect();
-                
-                // Calcula a porcentagem X e Y baseada na posição exata da raposa
-                const xPercent = ((e.clientX - rect.left) / rect.width) * 100;
-                const yPercent = ((e.clientY - rect.top) / rect.height) * 100;
-                
-                // Envia a coordenada pro CSS revelar o brilho que tá lá embaixo
-                maskLayer.style.setProperty('--mouse-x-percent', `${xPercent}%`);
-                maskLayer.style.setProperty('--mouse-y-percent', `${yPercent}%`);
-            }
-        }
-
     });
 
     window.addEventListener('mouseup', () => {
@@ -1276,7 +1244,7 @@
         if (currentState === STATES.ARCHIVES && DOM.phase3.classList.contains('active') && !DOM.phase3.classList.contains('exiting')) {
             scrollTarget += e.deltaY * 0.8;
             
-            // Limita o estouro máximo da rodinha do mouse para a mola poder agir
+            // Limita o estouro máximo da rodinha do mouse para a mola de snap-back poder agir
             if (scrollTarget > maxScroll + 200) scrollTarget = maxScroll + 200;
             if (scrollTarget < -200) scrollTarget = -200;
             
@@ -1369,6 +1337,8 @@
             DOM.phase2.classList.add('fade-out');
             DOM.phase3.classList.add('active');
             
+            // O grande segredo da limpeza: Desativa totalmente a Fase 2 após ela desaparecer, 
+            // permitindo que ela "nasça de novo" perfeitamente na hora de voltar.
             setTimeout(() => { 
                 currentState = STATES.ARCHIVES; 
                 DOM.phase2.classList.remove('active');
@@ -1405,6 +1375,7 @@
         DOM.customCursor.classList.remove('hovering');
         DOM.glassTooltip.classList.remove('active');
 
+        // Ativa a classe pura de CSS que cuida de evaporar a Fase 3 e os cards de forma limpa.
         DOM.phase3.classList.add('exiting');
 
         setTimeout(() => {
@@ -1414,6 +1385,7 @@
             scrollTarget = 0;
             scrollCurrent = 0;
 
+            // Reboot absoluto da Fase 2
             DOM.phase2.classList.add('active');
             currentState = STATES.ACTIVE_VOID;
         }, 1200);
@@ -1478,25 +1450,29 @@
     });
 
     // =========================================
-    // EVENTO DE CUTUCAR O VORTEX
+    // Evento de Cutucar o Vortex (Elastic Poke)
     // =========================================
-    const vortexFox = DOM.cards[DOM.cards.length - 1]; 
-    const vortexAudio = document.getElementById('vortex-sound');
+    const vortexFoxContainer = DOM.cards[DOM.cards.length - 1]; // O container do mascote
+    const vortexAudioSource = document.getElementById('vortex-sound');
 
-    if (vortexFox) {
-        vortexFox.addEventListener('click', () => {
-            if (vortexAudio) {
-                vortexAudio.currentTime = 0; 
-                vortexAudio.play().catch(e => console.log("Áudio bloqueado", e));
+    if (vortexFoxContainer) {
+        vortexFoxContainer.addEventListener('click', () => {
+            // 1. Toca o som reservado (para e toca de novo se clicar rápido)
+            if (vortexAudioSource) {
+                vortexAudioSource.currentTime = 0; 
+                vortexAudioSource.play().catch(e => console.log("Áudio bloqueado", e));
             }
             
-            const wrapper = vortexFox.querySelector('.card-entrance-wrapper');
+            // 2. Dá a esticadinha elástica (adiciona a classe e remove depois que a animação acaba)
+            const wrapper = vortexFoxContainer.querySelector('.card-entrance-wrapper');
             if (wrapper) {
-                // Remove e adiciona pra garantir que quique mesmo se clicar rápido 2x
+                // Remove caso esteja clicando rápido para reiniciar animação
                 wrapper.classList.remove('vortex-poked');
-                void wrapper.offsetWidth; 
+                void wrapper.offsetWidth; // Trigger reflow para reiniciar CSS animation
+                
                 wrapper.classList.add('vortex-poked');
                 
+                // Remove a classe após 600ms (tempo da animação CSS)
                 setTimeout(() => {
                     wrapper.classList.remove('vortex-poked');
                 }, 600);

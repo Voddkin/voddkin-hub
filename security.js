@@ -95,4 +95,85 @@
 
     // Disable dragging globally for native elements (images, etc)
     window.addEventListener('dragstart', (e) => e.preventDefault());
+
+    // Mobile Overlay Interactive Logic
+    window.addEventListener('DOMContentLoaded', () => {
+        const overlays = document.querySelectorAll('.mobile-lock-overlay');
+        overlays.forEach(overlay => {
+            if (!overlay) return;
+            const canvas = document.createElement('canvas');
+            canvas.className = 'interactive-canvas';
+            overlay.insertBefore(canvas, overlay.firstChild);
+            
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+            
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+            
+            function createParticles(x, y, count) {
+                for(let i = 0; i < count; i++) {
+                    particles.push({
+                        x: x, y: y,
+                        vx: (Math.random() - 0.5) * 8,
+                        vy: (Math.random() - 0.5) * 8,
+                        life: 1,
+                        size: Math.random() * 3 + 1,
+                        hue: 200 + Math.random() * 60 // Blues/purples
+                    });
+                }
+            }
+            
+            overlay.addEventListener('click', (e) => {
+                if (e.target.classList.contains('lock-chibi')) {
+                    e.target.classList.remove('chibi-bounce');
+                    void e.target.offsetWidth; // trigger reflow
+                    e.target.classList.add('chibi-bounce');
+                    const rect = e.target.getBoundingClientRect();
+                    createParticles(rect.left + rect.width/2, rect.top + rect.height/2, 40);
+                    return;
+                }
+                createParticles(e.clientX, e.clientY, 15);
+            });
+            
+            overlay.addEventListener('touchstart', (e) => {
+                if (e.target.classList.contains('lock-chibi')) return;
+                for (let i = 0; i < e.touches.length; i++) {
+                    createParticles(e.touches[i].clientX, e.touches[i].clientY, 15);
+                }
+            }, {passive: true});
+            
+            function animate() {
+                // If overlay is hidden, don't waste resources
+                if (window.getComputedStyle(overlay).display === 'none') {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                ctx.clearRect(0, 0, width, height);
+                for(let i = particles.length - 1; i >= 0; i--) {
+                    let p = particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.life -= 0.02;
+                    p.size *= 0.96;
+                    
+                    if (p.life <= 0) {
+                        particles.splice(i, 1);
+                        continue;
+                    }
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `hsla(${p.hue}, 80%, 60%, ${p.life})`;
+                    ctx.fill();
+                }
+                requestAnimationFrame(animate);
+            }
+            animate();
+        });
+    });
 })();

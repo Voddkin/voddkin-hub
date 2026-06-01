@@ -1,3 +1,8 @@
 node_modules/
-package-lock.json
-package.json
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example

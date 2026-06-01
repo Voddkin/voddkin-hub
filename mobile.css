@@ -1,0 +1,162 @@
+/* mobile.css */
+
+/* --- Mobile Lock Screen Component --- */
+.mobile-lock-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: linear-gradient(-45deg, #020108, #0b051a, #03010a, #080414);
+  background-size: 400% 400%;
+  animation: ns-deepSpaceNebula 20s ease infinite;
+  z-index: 9999999;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #fff;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.mobile-lock-overlay .lock-title {
+  font-family: 'EuropaGrotesk-Bold', 'Courier New', Courier, monospace;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 0 15px rgba(255,255,255,0.4);
+  animation: lockFadeInDown 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+.mobile-lock-overlay .lock-desc {
+  font-family: 'EuropaGrotesk-Medium', 'Courier New', Courier, monospace;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.8);
+  max-width: 400px;
+  line-height: 1.6;
+  letter-spacing: 0.05em;
+  margin-bottom: 3rem;
+  animation: lockFadeInUp 1.5s 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+.mobile-lock-overlay .chibi-container {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  /* fade in elegance */
+  animation: lockChibiFade 2.5s 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mobile-lock-overlay .lock-chibi {
+  width: 150px;
+  max-width: 60vw;
+  height: auto;
+  filter: drop-shadow(0 0 20px rgba(255,255,255,0.15));
+}
+
+@keyframes lockFadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes lockFadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes lockChibiFade {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 60px);
+    filter: drop-shadow(0 0 0 rgba(255,255,255,0));
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+    filter: drop-shadow(0 0 30px rgba(255,255,255,0.4));
+  }
+}
+
+/* --- Mobile Media Query --- */
+@media screen and (max-width: 900px), screen and (max-height: 600px), screen and (hover: none) and (pointer: coarse) {
+  
+  /* Show Lock Overlay globally */
+  .mobile-lock-overlay {
+    display: flex !important;
+  }
+
+  /* Hide everything else except the noscript and lock overlay */
+  body > *:not(.mobile-lock-overlay):not(noscript) {
+    display: none !important;
+  }
+
+  /* ------------------------------------------- */
+  /* Specific exception for 404 page             */
+  /* ------------------------------------------- */
+  body.page-404 > *:not(.mobile-lock-overlay):not(noscript) {
+    display: block !important;
+  }
+  body.page-404 > .not-found-container {
+    display: flex !important;
+  }
+  
+  /* Hide the overlay on 404 */
+  body.page-404 .mobile-lock-overlay {
+    display: none !important;
+  }
+
+  /* 404 Responsiveness adjustments */
+  body.page-404 {
+    display: flex !important;
+    padding: 1rem;
+    box-sizing: border-box;
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100vh;
+  }
+
+  body.page-404 .not-found-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  body.page-404 .not-found-title {
+    font-size: clamp(2.5rem, 12vw, 4rem) !important;
+    margin-bottom: 0.5rem;
+  }
+
+  body.page-404 .not-found-desc {
+    font-size: clamp(0.85rem, 4vw, 1rem) !important;
+    text-align: center;
+    line-height: 1.5;
+    margin-bottom: 2rem;
+  }
+
+  body.page-404 .btn-return {
+    padding: 14px 25px !important;
+    font-size: 0.8rem !important;
+    white-space: normal;
+    text-align: center;
+    max-width: 85%;
+  }
+
+  body.page-404 .oops-image {
+    max-width: 90% !important;
+    margin-top: 2rem !important;
+  }
+  
+  body.page-404 p[style*="italic"] {
+    font-size: 0.75rem !important;
+    line-height: 1.4;
+    padding: 0 10px;
+    margin-top: 10px !important;
+  }
+}

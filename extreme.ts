@@ -533,7 +533,50 @@ editorDiv.style.boxSizing = 'border-box';
 editorDiv.style.zIndex = '1000';
 editorDiv.style.overflowY = 'auto';
 
-let currentTool = 'wall';
+let currentTool = 'select';
+let selectedElement: { type: 'key'|'door'|'enemy', ref: any } | null = null;
+
+function loadSelectedIntoForm() {
+    const enemyConf = document.getElementById('enemy-config');
+    const itemConf = document.getElementById('item-config');
+    if(enemyConf) enemyConf.style.display = 'none';
+    if(itemConf) itemConf.style.display = 'none';
+
+    if (!selectedElement) return;
+
+    if (selectedElement.type === 'enemy') {
+        if(enemyConf) enemyConf.style.display = 'block';
+        (document.getElementById('enemy-type') as HTMLSelectElement).value = selectedElement.ref.type;
+        (document.getElementById('enemy-dir') as HTMLSelectElement).value = selectedElement.ref.dir.toString();
+        (document.getElementById('enemy-speed') as HTMLInputElement).value = selectedElement.ref.speed.toString();
+        (document.getElementById('enemy-cycle') as HTMLInputElement).value = selectedElement.ref.cycleLength.toString();
+        (document.getElementById('enemy-offset') as HTMLInputElement).value = selectedElement.ref.offset.toString();
+    } else if (selectedElement.type === 'key' || selectedElement.type === 'door') {
+        if(itemConf) itemConf.style.display = 'block';
+        (document.getElementById('item-color') as HTMLSelectElement).value = selectedElement.ref.color || 'yellow';
+    }
+}
+
+function updateSelectedFromForm() {
+    if (!selectedElement) return;
+    if (selectedElement.type === 'enemy') {
+        selectedElement.ref.type = (document.getElementById('enemy-type') as HTMLSelectElement).value;
+        selectedElement.ref.dir = parseInt((document.getElementById('enemy-dir') as HTMLSelectElement).value);
+        selectedElement.ref.speed = parseFloat((document.getElementById('enemy-speed') as HTMLInputElement).value);
+        selectedElement.ref.cycleLength = parseInt((document.getElementById('enemy-cycle') as HTMLInputElement).value);
+        selectedElement.ref.offset = parseInt((document.getElementById('enemy-offset') as HTMLInputElement).value);
+    } else if (selectedElement.type === 'key' || selectedElement.type === 'door') {
+        selectedElement.ref.color = (document.getElementById('item-color') as HTMLSelectElement).value;
+    }
+    rebuildItemsAndGrid();
+}
+
+// Add event listeners to the forms for live updates
+['enemy-type', 'enemy-dir', 'enemy-speed', 'enemy-cycle', 'enemy-offset', 'item-color'].forEach(id => {
+    document.getElementById(id)?.addEventListener('change', updateSelectedFromForm);
+    document.getElementById(id)?.addEventListener('input', updateSelectedFromForm);
+});
+
 
 editorDiv.innerHTML = `
     <h2 style="margin-top:0">LEVEL EDITOR</h2>
@@ -544,6 +587,7 @@ editorDiv.innerHTML = `
     
     <label>Select Tool:</label>
     <select id="editor-tool" style="width:100%; margin: 5px 0 15px 0; padding: 5px; background: #000; color: #FFF; border: 1px solid #555;">
+        <option value="select">Select / Edit</option>
         <option value="wall">Wall</option>
         <option value="player">Player Spawn</option>
         <option value="key">Key</option>
@@ -598,13 +642,19 @@ document.getElementById('editor-tool')?.addEventListener('change', (e) => {
     currentTool = (e.target as HTMLSelectElement).value;
     const enemyConf = document.getElementById('enemy-config');
     const itemConf = document.getElementById('item-config');
-    if(enemyConf) enemyConf.style.display = currentTool === 'enemy' ? 'block' : 'none';
-    if(itemConf) itemConf.style.display = (currentTool === 'key' || currentTool === 'door') ? 'block' : 'none';
+    if (currentTool === 'select') {
+        loadSelectedIntoForm();
+    } else {
+        if(enemyConf) enemyConf.style.display = currentTool === 'enemy' ? 'block' : 'none';
+        if(itemConf) itemConf.style.display = (currentTool === 'key' || currentTool === 'door') ? 'block' : 'none';
+    }
 });
 
 document.getElementById('btn-playtest')?.addEventListener('click', () => {
     player.hp = player.maxHp;
     player.keys = {};
+    player.x = currentLevelData.playerSpawn[0];
+    player.y = currentLevelData.playerSpawn[1];
     gameState = 'playing';
     editorDiv.style.display = 'none';
     rebuildItemsAndGrid(); 
@@ -651,10 +701,34 @@ canvas.addEventListener('mousedown', e => {
     if(gameState !== 'editing') return;
     e.preventDefault();
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const px = (e.clientX - rect.left) * scaleX;
-    const py = (e.clientY - rect.top) * scaleY;
+    
+    const canvasAspect = canvas.width / canvas.height;
+    const rectAspect = rect.width / rect.height;
+    
+    let renderWidth = rect.width;
+    let renderHeight = rect.height;
+    let renderX = 0;
+    let renderY = 0;
+    
+    if (rectAspect > canvasAspect) {
+        renderHeight = rect.height;
+        renderWidth = rect.height * canvasAspect;
+        renderX = (rect.width - renderWidth) / 2;
+    } else {
+        renderWidth = rect.width;
+        renderHeight = rect.width / canvasAspect;
+        renderY = (rect.height - renderHeight) / 2;
+    }
+    
+    const clientPx = (e.clientX - rect.left) - renderX;
+    const clientPy = (e.clientY - rect.top) - renderY;
+    
+    if (clientPx < 0 || clientPx > renderWidth || clientPy < 0 || clientPy > renderHeight) {
+        return; // Clicked outside the rendered canvas area
+    }
+    
+    const px = clientPx * (canvas.width / renderWidth);
+    const py = clientPy * (canvas.height / renderHeight);
     
     const x = Math.floor(px / TILE);
     const y = Math.floor((py - 32) / TILE);
@@ -664,33 +738,55 @@ canvas.addEventListener('mousedown', e => {
     if (e.button === 0) { 
         if (currentTool === 'eraser') {
             eraseAt(x, y);
+        } else if(currentTool === 'select') {
+            selectedElement = null;
+            let foundEnemy = currentLevelData.enemies.find(e => e.x === x && e.y === y);
+            if (foundEnemy) {
+                selectedElement = { type: 'enemy', ref: foundEnemy };
+            } else {
+                let foundKey = currentLevelData.keyPositions.find(p => p.x === x && p.y === y);
+                if (foundKey) selectedElement = { type: 'key', ref: foundKey };
+                else {
+                    let foundDoor = currentLevelData.doorPositions.find(p => p.x === x && p.y === y);
+                    if (foundDoor) selectedElement = { type: 'door', ref: foundDoor };
+                }
+            }
+            loadSelectedIntoForm();
         } else if(currentTool === 'wall') {
             if(!currentLevelData.walls.some(w => w[0]===x && w[1]===y)) {
                 currentLevelData.walls.push([x,y]);
             }
         } else if(currentTool === 'player') {
             currentLevelData.playerSpawn = [x,y];
+            player.x = x;
+            player.y = y;
         } else if(currentTool === 'key') {
             eraseAt(x, y);
             const color = (document.getElementById('item-color') as HTMLSelectElement).value;
-            currentLevelData.keyPositions.push({x, y, color});
+            let newKey = {x, y, color};
+            currentLevelData.keyPositions.push(newKey);
+            selectedElement = { type: 'key', ref: newKey };
         } else if(currentTool === 'door') {
             eraseAt(x, y);
             const color = (document.getElementById('item-color') as HTMLSelectElement).value;
-            currentLevelData.doorPositions.push({x, y, color});
+            let newDoor = {x, y, color};
+            currentLevelData.doorPositions.push(newDoor);
+            selectedElement = { type: 'door', ref: newDoor };
         } else if(currentTool === 'stairs') {
             eraseAt(x, y);
             currentLevelData.stairsPositions.push([x,y]);
         } else if(currentTool === 'enemy') {
             eraseAt(x, y);
-            currentLevelData.enemies.push({
+            let newEnemy = {
                 x, y,
                 type: (document.getElementById('enemy-type') as HTMLSelectElement).value as 'H'|'V',
                 dir: parseInt((document.getElementById('enemy-dir') as HTMLSelectElement).value),
                 speed: parseFloat((document.getElementById('enemy-speed') as HTMLInputElement).value),
                 cycleLength: parseInt((document.getElementById('enemy-cycle') as HTMLInputElement).value),
                 offset: parseInt((document.getElementById('enemy-offset') as HTMLInputElement).value)
-            });
+            };
+            currentLevelData.enemies.push(newEnemy);
+            selectedElement = { type: 'enemy', ref: newEnemy };
         }
     } else if (e.button === 2) { 
         eraseAt(x, y);

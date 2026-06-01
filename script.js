@@ -711,7 +711,7 @@
                             
                             setTimeout(() => {
                                 DOM.phase1Text.classList.remove('ghost');
-                            }, 500);
+                            }, 800);
 
                             setTimeout(() => {
                                 if (currentState === STATES.TRANSITIONING) {
@@ -956,7 +956,8 @@
             }
         });
 
-        vortexFoxContainer.addEventListener('click', () => {
+        vortexFoxContainer.addEventListener('click', (e) => {
+            if (!DOM.phase3.classList.contains('active')) return;
             comboCount++;
             
             if (vortexAudioSource && comboCount !== 100) {

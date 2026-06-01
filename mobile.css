@@ -190,13 +190,22 @@
 @media screen and (max-width: 900px), screen and (max-height: 600px) {
 
   /* 404 Responsiveness adjustments */
+  html:has(body.page-404),
   body.page-404 {
-    display: flex !important;
-    padding: 1rem;
+    position: fixed !important;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
     box-sizing: border-box;
     overflow: hidden !important;
-    height: 100vh !important;
-    min-height: 100vh;
+    overscroll-behavior: none !important;
+    touch-action: none !important;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
 
   body.page-404 .not-found-container {

@@ -118,19 +118,30 @@
             resize();
             
             function createParticles(x, y, count, isSpecial) {
+                if (isSpecial) {
+                    particles.push({
+                        x: x, y: y, vx: 0, vy: 0,
+                        life: 1, decay: 0.02, size: 20,
+                        hue: Math.random() > 0.5 ? 280 : 45, // Purple & Gold Theme
+                        gravity: 0, drag: 1, isRing: true
+                    });
+                }
                 for(let i = 0; i < count; i++) {
                     const angle = Math.random() * Math.PI * 2;
-                    const speed = isSpecial ? (Math.random() * 15 + 5) : (Math.random() * 10 + 2);
+                    const speed = isSpecial ? (Math.random() * 25 + 5) : (Math.random() * 12 + 2);
                     particles.push({
                         x: x, y: y,
                         vx: Math.cos(angle) * speed,
                         vy: Math.sin(angle) * speed,
                         life: 1,
-                        decay: isSpecial ? 0.012 : 0.018,
-                        size: isSpecial ? (Math.random() * 8 + 3) : (Math.random() * 5 + 2),
-                        hue: isSpecial ? (Math.random() * 50 + 260) : (Math.random() * 60 + 190), // Purple/pink for special, Blue/purple for normal
-                        gravity: isSpecial ? 0.15 : 0.08,
-                        drag: 0.92
+                        decay: isSpecial ? (Math.random() * 0.01 + 0.01) : (Math.random() * 0.01 + 0.015),
+                        size: isSpecial ? (Math.random() * 10 + 4) : (Math.random() * 6 + 2),
+                        hue: isSpecial 
+                            ? (Math.random() > 0.5 ? Math.random() * 40 + 260 : Math.random() * 30 + 30)
+                            : (Math.random() * 60 + 190),
+                        gravity: isSpecial ? 0.3 : 0.08,
+                        drag: isSpecial ? 0.94 : 0.92,
+                        isRing: false
                     });
                 }
             }
@@ -138,29 +149,37 @@
             let pointers = {};
             
             overlay.addEventListener('pointerdown', (e) => {
-                if (e.button !== 0 && e.pointerType === 'mouse') return; // only left click
+                if (e.button !== 0 && e.pointerType === 'mouse') return;
                 const rect = canvas.getBoundingClientRect();
-                
-                if (e.target.classList.contains('lock-chibi') || e.target.closest('.lock-chibi')) {
-                    const chibi = e.target.classList.contains('lock-chibi') ? e.target : e.target.closest('.lock-chibi');
-                    chibi.classList.remove('chibi-bounce');
-                    void chibi.offsetWidth;
-                    chibi.classList.add('chibi-bounce');
-                    
-                    const targetRect = chibi.getBoundingClientRect();
-                    const centerX = targetRect.left - rect.left + targetRect.width / 2;
-                    const centerY = targetRect.top - rect.top + targetRect.height / 2;
-                    createParticles(centerX, centerY, 100, true);
-                    return;
-                }
-                
                 const px = e.clientX - rect.left;
                 const py = e.clientY - rect.top;
                 
-                pointers[e.pointerId] = true;
-                createParticles(px, py, 60, false);
+                let isChibiHit = false;
+                const chibiEl = overlay.querySelector('.lock-chibi');
+                if (chibiEl) {
+                    const crect = chibiEl.getBoundingClientRect();
+                    // Hitbox exactly matching real layout rect
+                    if (e.clientX >= crect.left && e.clientX <= crect.right && 
+                        e.clientY >= crect.top && e.clientY <= crect.bottom) {
+                        isChibiHit = true;
+                    }
+                }
                 
-                // Set capture specifically for the canvas/overlay interaction
+                if (isChibiHit) {
+                    chibiEl.classList.remove('chibi-bounce');
+                    void chibiEl.offsetWidth;
+                    chibiEl.classList.add('chibi-bounce');
+                    
+                    const crect = chibiEl.getBoundingClientRect();
+                    const centerX = crect.left - rect.left + crect.width / 2;
+                    const centerY = crect.top - rect.top + crect.height / 2;
+                    createParticles(centerX, centerY, 80, true);
+                    return; // Special tap shouldn't hold-stream particles
+                }
+                
+                pointers[e.pointerId] = { x: px, y: py };
+                createParticles(px, py, 40, false);
+                
                 if (typeof overlay.setPointerCapture === 'function' && !overlay.hasPointerCapture(e.pointerId)) {
                     overlay.setPointerCapture(e.pointerId);
                 }
@@ -169,9 +188,8 @@
             overlay.addEventListener('pointermove', (e) => {
                 if (!pointers[e.pointerId]) return;
                 const rect = canvas.getBoundingClientRect();
-                const px = e.clientX - rect.left;
-                const py = e.clientY - rect.top;
-                createParticles(px, py, 6, false);
+                pointers[e.pointerId].x = e.clientX - rect.left;
+                pointers[e.pointerId].y = e.clientY - rect.top;
             });
             
             const endPointer = (e) => {
@@ -182,11 +200,16 @@
             overlay.addEventListener('pointerleave', endPointer);
             
             function animate() {
-                // If overlay is hidden, don't waste resources
                 if (window.getComputedStyle(overlay).display === 'none') {
                     requestAnimationFrame(animate);
                     return;
                 }
+                
+                // Spawns continuous particles for held pointers (Arrastar/Segurar)
+                Object.values(pointers).forEach(ptr => {
+                    createParticles(ptr.x, ptr.y, 2, false);
+                });
+                
                 ctx.clearRect(0, 0, width, height);
                 ctx.globalCompositeOperation = 'lighter';
                 
@@ -206,17 +229,26 @@
                         continue;
                     }
                     
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    
-                    // Create glowing gradient
-                    let grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
-                    grad.addColorStop(0, `hsla(${p.hue}, 100%, 80%, ${p.life})`);
-                    grad.addColorStop(0.3, `hsla(${p.hue}, 90%, 60%, ${p.life * 0.7})`);
-                    grad.addColorStop(1, `hsla(${p.hue}, 80%, 30%, 0)`);
-                    
-                    ctx.fillStyle = grad;
-                    ctx.fill();
+                    if (p.isRing) {
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        ctx.strokeStyle = `hsla(${p.hue}, 100%, 70%, ${p.life})`;
+                        ctx.lineWidth = 6 * p.life;
+                        ctx.stroke();
+                        p.size += 20; // rapidly expand
+                    } else {
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        
+                        // Create glowing gradient
+                        let grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
+                        grad.addColorStop(0, `hsla(${p.hue}, 100%, 80%, ${p.life})`);
+                        grad.addColorStop(0.3, `hsla(${p.hue}, 90%, 60%, ${p.life * 0.7})`);
+                        grad.addColorStop(1, `hsla(${p.hue}, 80%, 30%, 0)`);
+                        
+                        ctx.fillStyle = grad;
+                        ctx.fill();
+                    }
                 }
                 ctx.globalCompositeOperation = 'source-over';
                 requestAnimationFrame(animate);

@@ -112,7 +112,7 @@
   z-index: 3;
   opacity: 0;
   animation: lockChibiIntro 1.5s 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards,
-             lockChibiLevitate 4s 2.3s ease-in-out infinite alternate;
+             lockChibiLevitate 5s 2.3s ease-in-out infinite;
 }
 
 .mobile-lock-overlay .lock-chibi {
@@ -144,9 +144,13 @@
   from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
 }
-@keyframes lockChibiFade {
+@keyframes lockChibiIntro {
   0% { opacity: 0; transform: translateY(40px) scale(0.95); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes lockChibiLevitate {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(1deg); }
 }
 
 /* --- Specific Trigger for Real Mobile Devices (Touch/No-Hover) --- */

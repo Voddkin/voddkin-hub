@@ -110,41 +110,51 @@
             let particles = [];
             
             function resize() {
-                width = canvas.width = window.innerWidth;
-                height = canvas.height = window.innerHeight;
+                const rect = overlay.getBoundingClientRect();
+                width = canvas.width = rect.width;
+                height = canvas.height = rect.height;
             }
             window.addEventListener('resize', resize);
             resize();
             
-            function createParticles(x, y, count) {
+            function createParticles(x, y, count, isSpecial) {
                 for(let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = isSpecial ? (Math.random() * 8 + 4) : (Math.random() * 4 + 2);
                     particles.push({
                         x: x, y: y,
-                        vx: (Math.random() - 0.5) * 8,
-                        vy: (Math.random() - 0.5) * 8,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
                         life: 1,
-                        size: Math.random() * 3 + 1,
-                        hue: 200 + Math.random() * 60 // Blues/purples
+                        decay: isSpecial ? 0.015 : 0.02,
+                        size: isSpecial ? (Math.random() * 6 + 2) : (Math.random() * 3 + 1),
+                        hue: isSpecial ? (Math.random() * 40 + 260) : (Math.random() * 60 + 200), // Purple/pink for special, Blue/purple for normal
+                        gravity: isSpecial ? 0.15 : 0.05,
+                        drag: 0.94
                     });
                 }
             }
             
             overlay.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
                 if (e.target.classList.contains('lock-chibi')) {
                     e.target.classList.remove('chibi-bounce');
                     void e.target.offsetWidth; // trigger reflow
                     e.target.classList.add('chibi-bounce');
-                    const rect = e.target.getBoundingClientRect();
-                    createParticles(rect.left + rect.width/2, rect.top + rect.height/2, 40);
+                    const targetRect = e.target.getBoundingClientRect();
+                    const centerX = targetRect.left - rect.left + targetRect.width / 2;
+                    const centerY = targetRect.top - rect.top + targetRect.height / 2;
+                    createParticles(centerX, centerY, 50, true);
                     return;
                 }
-                createParticles(e.clientX, e.clientY, 15);
+                createParticles(e.clientX - rect.left, e.clientY - rect.top, 25, false);
             });
             
             overlay.addEventListener('touchstart', (e) => {
+                const rect = canvas.getBoundingClientRect();
                 if (e.target.classList.contains('lock-chibi')) return;
                 for (let i = 0; i < e.touches.length; i++) {
-                    createParticles(e.touches[i].clientX, e.touches[i].clientY, 15);
+                    createParticles(e.touches[i].clientX - rect.left, e.touches[i].clientY - rect.top, 25, false);
                 }
             }, {passive: true});
             
@@ -155,22 +165,37 @@
                     return;
                 }
                 ctx.clearRect(0, 0, width, height);
+                ctx.globalCompositeOperation = 'lighter';
+                
                 for(let i = particles.length - 1; i >= 0; i--) {
                     let p = particles[i];
+                    p.vx *= p.drag;
+                    p.vy *= p.drag;
+                    p.vy += p.gravity;
+                    
                     p.x += p.vx;
                     p.y += p.vy;
-                    p.life -= 0.02;
+                    p.life -= p.decay;
                     p.size *= 0.96;
                     
                     if (p.life <= 0) {
                         particles.splice(i, 1);
                         continue;
                     }
+                    
                     ctx.beginPath();
                     ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    ctx.fillStyle = `hsla(${p.hue}, 80%, 60%, ${p.life})`;
+                    
+                    // Create glowing gradient
+                    let grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
+                    grad.addColorStop(0, `hsla(${p.hue}, 100%, 80%, ${p.life})`);
+                    grad.addColorStop(0.4, `hsla(${p.hue}, 90%, 60%, ${p.life * 0.5})`);
+                    grad.addColorStop(1, `hsla(${p.hue}, 80%, 30%, 0)`);
+                    
+                    ctx.fillStyle = grad;
                     ctx.fill();
                 }
+                ctx.globalCompositeOperation = 'source-over';
                 requestAnimationFrame(animate);
             }
             animate();

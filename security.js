@@ -120,43 +120,66 @@
             function createParticles(x, y, count, isSpecial) {
                 for(let i = 0; i < count; i++) {
                     const angle = Math.random() * Math.PI * 2;
-                    const speed = isSpecial ? (Math.random() * 8 + 4) : (Math.random() * 4 + 2);
+                    const speed = isSpecial ? (Math.random() * 15 + 5) : (Math.random() * 10 + 2);
                     particles.push({
                         x: x, y: y,
                         vx: Math.cos(angle) * speed,
                         vy: Math.sin(angle) * speed,
                         life: 1,
-                        decay: isSpecial ? 0.015 : 0.02,
-                        size: isSpecial ? (Math.random() * 6 + 2) : (Math.random() * 3 + 1),
-                        hue: isSpecial ? (Math.random() * 40 + 260) : (Math.random() * 60 + 200), // Purple/pink for special, Blue/purple for normal
-                        gravity: isSpecial ? 0.15 : 0.05,
-                        drag: 0.94
+                        decay: isSpecial ? 0.012 : 0.018,
+                        size: isSpecial ? (Math.random() * 8 + 3) : (Math.random() * 5 + 2),
+                        hue: isSpecial ? (Math.random() * 50 + 260) : (Math.random() * 60 + 190), // Purple/pink for special, Blue/purple for normal
+                        gravity: isSpecial ? 0.15 : 0.08,
+                        drag: 0.92
                     });
                 }
             }
             
-            overlay.addEventListener('click', (e) => {
+            let pointers = {};
+            
+            overlay.addEventListener('pointerdown', (e) => {
+                if (e.button !== 0 && e.pointerType === 'mouse') return; // only left click
                 const rect = canvas.getBoundingClientRect();
-                if (e.target.classList.contains('lock-chibi')) {
-                    e.target.classList.remove('chibi-bounce');
-                    void e.target.offsetWidth; // trigger reflow
-                    e.target.classList.add('chibi-bounce');
-                    const targetRect = e.target.getBoundingClientRect();
+                
+                if (e.target.classList.contains('lock-chibi') || e.target.closest('.lock-chibi')) {
+                    const chibi = e.target.classList.contains('lock-chibi') ? e.target : e.target.closest('.lock-chibi');
+                    chibi.classList.remove('chibi-bounce');
+                    void chibi.offsetWidth;
+                    chibi.classList.add('chibi-bounce');
+                    
+                    const targetRect = chibi.getBoundingClientRect();
                     const centerX = targetRect.left - rect.left + targetRect.width / 2;
                     const centerY = targetRect.top - rect.top + targetRect.height / 2;
-                    createParticles(centerX, centerY, 50, true);
+                    createParticles(centerX, centerY, 100, true);
                     return;
                 }
-                createParticles(e.clientX - rect.left, e.clientY - rect.top, 25, false);
+                
+                const px = e.clientX - rect.left;
+                const py = e.clientY - rect.top;
+                
+                pointers[e.pointerId] = true;
+                createParticles(px, py, 60, false);
+                
+                // Set capture specifically for the canvas/overlay interaction
+                if (typeof overlay.setPointerCapture === 'function' && !overlay.hasPointerCapture(e.pointerId)) {
+                    overlay.setPointerCapture(e.pointerId);
+                }
             });
             
-            overlay.addEventListener('touchstart', (e) => {
+            overlay.addEventListener('pointermove', (e) => {
+                if (!pointers[e.pointerId]) return;
                 const rect = canvas.getBoundingClientRect();
-                if (e.target.classList.contains('lock-chibi')) return;
-                for (let i = 0; i < e.touches.length; i++) {
-                    createParticles(e.touches[i].clientX - rect.left, e.touches[i].clientY - rect.top, 25, false);
-                }
-            }, {passive: true});
+                const px = e.clientX - rect.left;
+                const py = e.clientY - rect.top;
+                createParticles(px, py, 6, false);
+            });
+            
+            const endPointer = (e) => {
+                delete pointers[e.pointerId];
+            };
+            overlay.addEventListener('pointerup', endPointer);
+            overlay.addEventListener('pointercancel', endPointer);
+            overlay.addEventListener('pointerleave', endPointer);
             
             function animate() {
                 // If overlay is hidden, don't waste resources
@@ -189,7 +212,7 @@
                     // Create glowing gradient
                     let grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
                     grad.addColorStop(0, `hsla(${p.hue}, 100%, 80%, ${p.life})`);
-                    grad.addColorStop(0.4, `hsla(${p.hue}, 90%, 60%, ${p.life * 0.5})`);
+                    grad.addColorStop(0.3, `hsla(${p.hue}, 90%, 60%, ${p.life * 0.7})`);
                     grad.addColorStop(1, `hsla(${p.hue}, 80%, 30%, 0)`);
                     
                     ctx.fillStyle = grad;

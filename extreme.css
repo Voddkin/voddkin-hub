@@ -1,5 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
+@font-face {
+    font-family: 'EuropaGrotesk-Medium';
+    src: url('assets/fonts/EUROPAGROTESKSH-MED.OTF') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'EuropaGrotesk-Demibold';
+    src: url('assets/fonts/EUROPA GROTESK SH DEMBOL.TTF') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'EuropaGrotesk-Bold';
+    src: url('assets/fonts/EUROPA-GROTESK-SH-BOLD.OTF') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+}
+
 body, html {
     margin: 0; padding: 0; width: 100vw; height: 100vh;
     background-color: #000; overflow: hidden;

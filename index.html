@@ -3,605 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Global SEO & Social Sharing (Universal) -->
     <title>Em Breve...</title>
-    <style>
-        @font-face {
-            font-family: 'EuropaGrotesk-Medium';
-            src: url('assets/fonts/EUROPAGROTESKSH-MED.OTF') format('opentype');
-            font-weight: 500;
-            font-style: normal;
-        }
-        @font-face {
-            font-family: 'EuropaGrotesk-Demibold';
-            src: url('assets/fonts/EUROPA GROTESK SH DEMBOL.TTF') format('truetype');
-            font-weight: 600;
-            font-style: normal;
-        }
-        @font-face {
-            font-family: 'EuropaGrotesk-Bold';
-            src: url('assets/fonts/EUROPA-GROTESK-SH-BOLD.OTF') format('opentype');
-            font-weight: 700;
-            font-style: normal;
-        }
+    <meta name="title" property="og:title" content="Em Breve...">
+    <meta name="description" property="og:description" content="Uma nova plataforma voddkana para apresentação de futuros projetos.">
+    <meta name="image" property="og:image" content="https://voddk.in/assets/img/VKlogo.png">
+    <meta name="keywords" content="voddkin, projetos, portfolio, edição, design, criador de conteúdo">
+    <meta name="author" content="Voddkin">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://voddk.in/">
 
-        :root {
-            --bg-color: #030108;
-            --cyan: #06b6d4;
-            --purple: #8b5cf6;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --font-medium: 'EuropaGrotesk-Medium', sans-serif;
-            --font-demibold: 'EuropaGrotesk-Demibold', sans-serif;
-            --font-bold: 'EuropaGrotesk-Bold', sans-serif;
-            --void-timing: 1.2s cubic-bezier(0.7, 0, 0.3, 1);
-            
-            --skew-voddkin: 0deg;
-            --parallax-x: 0px;
-            --parallax-y: -50%;
-        }
+    <!-- Theme Color para mobile -->
+    <meta name="theme-color" content="#050505">
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            cursor: none !important;
-        }
-
-        @keyframes deepSpaceNebula {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        body, html {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            /* O Segredo: Gradiente linear animado simulando nebulosas distantes */
-            background: linear-gradient(-45deg, #020108, #0b051a, #03010a, #080414);
-            background-size: 400% 400%;
-            animation: deepSpaceNebula 20s ease infinite;
-            color: var(--text-main);
-            font-family: var(--font-medium);
-        }
-
-        .gpu-preload {
-            position: absolute;
-            left: -9999px;
-            top: -9999px;
-            visibility: hidden;
-            opacity: 0;
-            pointer-events: none;
-            will-change: transform;
-            transform: translateZ(0);
-        }
-
-        #bg-canvas {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0; pointer-events: none;
-        }
-
-        .vignette {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
-            pointer-events: none; z-index: 5;
-        }
-
-        /* CURSOR SYSTEM */
-        .custom-cursor {
-            position: fixed; top: 0; left: 0;
-            width: 20px; height: 20px;
-            background-color: #ffffff;
-            border-radius: 50%; pointer-events: none;
-            z-index: 99999;
-            transform: translate(-50%, -50%) scale(1) translateZ(0);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
-            will-change: transform, opacity, background-color, box-shadow;
-            opacity: 1;
-            box-shadow: 0 0 0 rgba(139, 92, 246, 0);
-        }
-        .custom-cursor.hovering {
-            transform: translate(-50%, -50%) scale(3) translateZ(0);
-            background-color: rgba(255, 255, 255, 0.5);
-        }
-        .custom-cursor.dragging {
-            transform: translate(-50%, -50%) scale(0.5) translateZ(0) !important;
-        }
-
-        /* ANIMAÇÃO DE CARGA - Fluida usando transitions */
-        .custom-cursor.holding {
-            transform: translate(-50%, -50%) scale(6) translateZ(0) !important;
-            background-color: rgba(139, 92, 246, 0.95) !important;
-            box-shadow: 0 0 60px rgba(139, 92, 246, 0.8) !important;
-            transition: transform 3s cubic-bezier(0.5, 0, 0.2, 1), background-color 3s ease-in, box-shadow 3s ease-in !important;
-        }
-
-        /* ANIMAÇÃO DE SOLTAR (ABORTAR) */
-        .custom-cursor.releasing {
-            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.4s ease, box-shadow 0.4s ease !important;
-        }
-
-        /* EXPLOSÃO LIMPA */
-        .custom-cursor.exploding {
-            transform: translate(-50%, -50%) scale(40) translateZ(0) !important;
-            background-color: rgba(139, 92, 246, 0) !important;
-            box-shadow: 0 0 0px rgba(139, 92, 246, 0) !important;
-            opacity: 0 !important;
-            transition: transform 0.7s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.6s ease-out, background-color 0.6s ease, box-shadow 0.6s ease !important;
-        }
-        
-        .custom-cursor.resetting {
-            transition: none !important;
-        }
-
-        #phase-1-text {
-            position: absolute; left: 12%; top: 50%;
-            transform: translateY(-50%) translateX(0px) translateZ(0);
-            z-index: 10; display: flex; flex-direction: column; gap: 0.5rem;
-            opacity: 1; filter: blur(0px);
-            transition: transform 0.8s ease, opacity 0.8s ease, filter 0.8s ease;
-            pointer-events: none;
-            text-shadow: 0 0 20px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 0, 0, 0.8);
-            will-change: transform, opacity;
-        }
-        #phase-1-text.ghost {
-            transform: translateY(-50%) translateX(-40px) translateZ(0);
-            opacity: 0; filter: blur(10px);
-        }
-
-        .phase1-title {
-            font-family: var(--font-demibold); font-size: 4rem; letter-spacing: 0.2em;
-            color: #fff; text-shadow: 0 0 20px rgba(6, 182, 212, 0.6), 0 0 40px rgba(0, 0, 0, 1);
-        }
-        .phase1-subtitle {
-            font-family: var(--font-medium); font-size: 1rem; letter-spacing: 0.4em;
-            color: var(--cyan); text-transform: uppercase;
-        }
-
-        .hero-wrapper {
-            position: absolute; top: 50%; right: 8%;
-            margin-top: -22.5vh; z-index: 20;
-            transition: transform var(--void-timing), opacity 0.5s ease-out;
-            transform-origin: center center; pointer-events: auto;
-            will-change: transform, opacity;
-            transform: scale(1) translateZ(0);
-        }
-        .hero-character {
-            height: 45vh; max-height: 450px; display: block;
-            animation: complexFloat 5s ease-in-out infinite;
-            user-select: none; -webkit-user-drag: none;
-            will-change: transform;
-            transform: translateY(0px) rotate(0deg) translateZ(0);
-        }
-        @keyframes complexFloat {
-            0% { transform: translateY(0px) rotate(0deg) translateZ(0); }
-            50% { transform: translateY(-15px) rotate(1deg) translateZ(0); }
-            100% { transform: translateY(0px) rotate(0deg) translateZ(0); }
-        }
-        .hero-wrapper.ghost {
-            transform: scale(1.8) translateZ(0); opacity: 0; pointer-events: none;
-        }
-        .hero-wrapper.ghost .hero-character { animation-play-state: paused; }
-
-        #black-hole {
-            position: absolute; width: 1px; height: 1px;
-            background: radial-gradient(circle, #000000 0%, #010308 100%);
-            border-radius: 50%; transform: translate(-50%, -50%) scale(1) translateZ(0);
-            z-index: 15; pointer-events: none;
-            transition: transform var(--void-timing), box-shadow var(--void-timing);
-            box-shadow: 0 0 0px rgba(6, 182, 212, 0); will-change: transform;
-        }
-        #black-hole.active {
-            transform: translate(-50%, -50%) scale(10000) translateZ(0);
-            pointer-events: auto; box-shadow: 0 0 100px rgba(6, 182, 212, 0.15);
-        }
-
-        .film-grain {
-            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
-            opacity: 0; pointer-events: none; z-index: 24; mix-blend-mode: overlay;
-            transition: opacity 1s ease; will-change: transform, opacity;
-        }
-        #phase-2.active .film-grain {
-            opacity: 0.15; animation: grainShift 0.2s steps(2) infinite;
-        }
-        @keyframes grainShift {
-            0%, 100% { transform: translate(0, 0) translateZ(0); }
-            10% { transform: translate(-2%, -2%) translateZ(0); }
-            20% { transform: translate(-4%, 2%) translateZ(0); }
-            30% { transform: translate(2%, -4%) translateZ(0); }
-            40% { transform: translate(-2%, 4%) translateZ(0); }
-            50% { transform: translate(4%, -2%) translateZ(0); }
-            60% { transform: translate(2%, 2%) translateZ(0); }
-            70% { transform: translate(-4%, -4%) translateZ(0); }
-            80% { transform: translate(4%, 4%) translateZ(0); }
-            90% { transform: translate(-2%, -2%) translateZ(0); }
-        }
-
-        #phase-2 {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 25; pointer-events: none; opacity: 0;
-            transition: opacity 0.8s ease;
-        }
-        #phase-2.active {
-            opacity: 1; pointer-events: auto;
-        }
-        
-        /* SAÍDA DA FASE 2 APRIMORADA */
-        #phase-2.fade-out {
-            opacity: 0 !important; pointer-events: none; transition: opacity 1.2s ease !important;
-        }
-        #phase-2.fade-out .hero-character-phase2 {
-            transform: scale(1.1) translateY(-20px) translateZ(0);
-            filter: blur(25px);
-            opacity: 0;
-            transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1), filter 1.2s ease, opacity 1s ease;
-        }
-        #phase-2.fade-out .dark-text-line {
-            transform: translateY(-100px) scale(0.9) translateZ(0);
-            filter: blur(15px);
-            opacity: 0;
-            transition: all 1s cubic-bezier(0.8, 0, 0.2, 1);
-        }
-
-        .dark-texts {
-            position: absolute; right: 8%; top: 50%;
-            display: flex; flex-direction: column; align-items: flex-end;
-            gap: 1.5rem; text-align: right; will-change: transform;
-            transform: translate(var(--parallax-x), var(--parallax-y)) skewX(calc(var(--skew-voddkin) * -2)) translateZ(0);
-        }
-
-        .clip-wrapper { overflow: hidden; padding: 30px; margin: -30px; }
-
-        .dark-text-line {
-            font-family: var(--font-bold); font-size: 8vw; line-height: 0.85;
-            color: #ffffff; text-transform: uppercase; letter-spacing: -0.02em;
-            transform: translateY(150%) translateZ(0);
-            clip-path: polygon(-20% 0, 120% 0, 120% 100%, -20% 100%);
-            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-            will-change: transform, text-shadow;
-        }
-        .clip-wrapper:nth-child(1) .dark-text-line { transition-delay: 0s; }
-        .clip-wrapper:nth-child(2) .dark-text-line { transition-delay: 0.1s; }
-        .clip-wrapper:nth-child(3) .dark-text-line { transition-delay: 0.2s; }
-
-        #phase-2.active .dark-text-line {
-            transform: translateY(0) translateZ(0);
-            transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-            animation: textPulseWhite 1.2s infinite ease-in-out alternate;
-        }
-        #phase-2.active .clip-wrapper:nth-child(1) .dark-text-line { transition-delay: 0.8s; }
-        #phase-2.active .clip-wrapper:nth-child(2) .dark-text-line { transition-delay: 0.95s; }
-        #phase-2.active .clip-wrapper:nth-child(3) .dark-text-line { transition-delay: 1.1s; }
-
-        @keyframes textPulseWhite {
-            0% { text-shadow: 0 0 5px rgba(255, 255, 255, 0.05); }
-            100% { text-shadow: 0 0 15px rgba(255, 255, 255, 0.3); }
-        }
-
-        .hero-phase2-wrapper {
-            position: absolute; left: 2%; bottom: 0;
-            pointer-events: none; transform-origin: bottom center;
-            will-change: transform;
-            transform: translateZ(0);
-        }
-        #phase-2.active .hero-phase2-wrapper {
-            animation: phase2Breathe 4s ease-in-out infinite 1.5s;
-        }
-        @keyframes phase2Breathe {
-            0% { transform: scaleY(1) scaleX(1) translateZ(0); }
-            50% { transform: scaleY(1.015) scaleX(0.99) translateZ(0); }
-            100% { transform: scaleY(1) scaleX(1) translateZ(0); }
-        }
-
-        /* ANIMAÇÃO DE ENTRADA DO VODDKIN (FASE 2) */
-        .hero-character-phase2 {
-            height: 85vh; max-height: 900px; display: block;
-            pointer-events: auto;
-            opacity: 0; transform: scale(1.03) translateZ(0); filter: blur(15px);
-            transform-origin: bottom center;
-            -webkit-mask-image: linear-gradient(to top, transparent 0%, rgba(0,0,0,0.2) 5%, black 15%, black 100%);
-            mask-image: linear-gradient(to top, transparent 0%, rgba(0,0,0,0.2) 5%, black 15%, black 100%);
-            transition: opacity 1.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 1.8s cubic-bezier(0.2, 0.8, 0.2, 1), filter 1.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-            will-change: transform, opacity, filter;
-            user-select: none; -webkit-user-drag: none;
-        }
-        #phase-2.active .hero-character-phase2 {
-            opacity: 1; transform: scale(1) translateZ(0); filter: blur(0px);
-        }
-
-        .btn-return-wrapper {
-            position: absolute; bottom: 8%; left: 50%;
-            transform: translateX(-50%) translateZ(0);
-            width: 200px; height: 80px; display: flex;
-            align-items: center; justify-content: center;
-            pointer-events: none; z-index: 30; will-change: transform;
-        }
-        .btn-return {
-            position: relative; display: flex; align-items: center; gap: 1rem;
-            opacity: 0; transition: opacity 0.3s ease, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-            padding: 1rem 2rem; background: transparent; border: none; outline: none;
-            will-change: transform, opacity; transform: translateZ(0);
-        }
-        #phase-2.active .btn-return-wrapper { pointer-events: auto; }
-        #phase-2.active .btn-return {
-            opacity: 1; transition: opacity 1s ease 2s, transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-
-        .btn-text {
-            font-family: var(--font-medium); font-size: 0.9rem; letter-spacing: 0.4em;
-            color: rgba(255, 255, 255, 0.7); text-transform: uppercase;
-            transition: color 0.4s ease; position: relative; z-index: 2;
-        }
-        .btn-bg-glow {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%) scale(0.8) translateZ(0);
-            width: 100%; height: 100%;
-            background: radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%, transparent 70%);
-            border-radius: 50px; opacity: 0;
-            transition: opacity 0.4s ease, transform 0.4s ease; z-index: 1; filter: blur(10px);
-            will-change: transform, opacity;
-        }
-        .btn-line-top, .btn-line-bottom {
-            position: absolute; left: 50%; transform: translateX(-50%) translateZ(0);
-            width: 0; height: 1px; background: rgba(255, 255, 255, 0.8);
-            transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); will-change: width;
-        }
-        .btn-line-top { top: 0; }
-        .btn-line-bottom { bottom: 0; }
-        .btn-return:hover .btn-text { color: #fff; text-shadow: 0 0 15px rgba(255, 255, 255, 0.8); }
-        .btn-return:hover .btn-bg-glow { opacity: 1; transform: translate(-50%, -50%) scale(1.2) translateZ(0); }
-        .btn-return:hover .btn-line-top, .btn-return:hover .btn-line-bottom { width: 100%; }
-
-        /* Estrutura da Fase 3 - Premium Minimalist */
-        #phase-3 {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at center, #080812 0%, #010103 100%);
-            display: flex; flex-direction: column; justify-content: center;
-            opacity: 0; pointer-events: none; transition: opacity 1.5s ease; z-index: 1000;
-        }
-
-        #phase-3::before {
-            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-            opacity: 0.04; pointer-events: none; mix-blend-mode: overlay;
-        }
-
-        #phase-3.active { opacity: 1; pointer-events: auto; }
-        
-        .phase3-top-title {
-            position: absolute; top: 8%; left: 50%; transform: translateX(-50%) translateY(-30px);
-            font-family: var(--font-medium) !important; 
-            font-weight: 500 !important;
-            color: var(--text-muted); font-size: 0.8rem; letter-spacing: 0.5em;
-            text-transform: uppercase; opacity: 0; filter: blur(10px);
-            transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 1.5s ease, filter 1.5s ease;
-        }
-        
-        .phase3-layout {
-            display: flex; width: 100%; height: 100%; align-items: center; justify-content: space-between;
-        }
-        
-        .phase3-left { 
-            width: 35%; padding-left: 8%; z-index: 10;
-        }
-        
-        #phase3-text-dynamic { will-change: transform, opacity, filter; }
-
-        .phase3-main-title {
-            font-family: var(--font-bold); font-size: 6.5vw; line-height: 0.85; color: #fff;
-            text-transform: uppercase; letter-spacing: -0.02em;
-            text-align: left; margin: 0; display: inline-block; white-space: nowrap;
-            transform: translateX(-50px); opacity: 0; filter: blur(15px);
-            transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s, opacity 1.5s ease 0.2s, filter 1.5s ease 0.2s;
-        }
-        
-        .phase3-right {
-            position: relative; width: 65%; height: 100vh; 
-            perspective: 2000px; display: flex; align-items: center;
-        }
-        
-        .project-card {
-            position: absolute;
-            left: 0; /* GARANTINDO ANCORAGEM NO CANTO ESQUERDO DO CONTAINER DIREITO PARA CÁLCULO JS */
-            width: 25vw; max-width: 400px; aspect-ratio: 3/4; 
-            overflow: visible !important; transform-origin: center center;
-            will-change: transform, opacity;
-        }
-
-        .card-entrance-wrapper {
-            width: 100%; height: 100%; position: relative;
-            transform: translateY(15vh) scale(0.9); opacity: 0; filter: blur(15px);
-            transition: opacity 1.2s ease, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), filter 1.2s ease;
-            pointer-events: auto; 
-        }
-
-        #phase-3.active .project-card:nth-child(1) .card-entrance-wrapper { transition-delay: 0.4s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
-        #phase-3.active .project-card:nth-child(2) .card-entrance-wrapper { transition-delay: 0.5s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
-        #phase-3.active .project-card:nth-child(3) .card-entrance-wrapper { transition-delay: 0.6s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
-        #phase-3.active .project-card:nth-child(4) .card-entrance-wrapper { transition-delay: 0.7s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
-        #phase-3.active .project-card:nth-child(5) .card-entrance-wrapper { transition-delay: 0.8s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
-        #phase-3.active .project-card:nth-child(6) .card-entrance-wrapper { transition-delay: 0.9s; transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
-        
-        .card-img-wrapper {
-            width: 100%; height: 100%; border-radius: 16px; overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.08); 
-            box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.05); 
-            background: rgba(20,20,25,0.8); backdrop-filter: blur(20px);
-        }
-        
-        .card-img {
-            width: 100%; height: 100%; object-fit: cover; opacity: 0.8;
-            transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.5s ease;
-        }
-        .project-card:hover .card-img { transform: scale(1.08); opacity: 1; }
-        
-        .card-diagonal-overlay {
-            position: absolute; bottom: 10%; right: -15%; left: auto; width: auto; 
-            background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.15); transform: skewX(-15deg); padding: 2vw 4vw; text-align: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-            pointer-events: none;
-        }
-        .card-diagonal-overlay span {
-            display: block; font-family: var(--font-bold); font-size: 1rem; letter-spacing: 0.3em; 
-            color: #fff; transform: skewX(15deg);
-        }
-
-        #phase-3.active .phase3-top-title { transform: translateX(-50%) translateY(0); opacity: 1; filter: blur(0); }
-        #phase-3.active .phase3-main-title { transform: translateX(0); opacity: 1; filter: blur(0); }
-
-        /* --- CLASSE PURA DE SAÍDA DA FASE 3 --- */
-        #phase-3.exiting {
-            opacity: 0 !important;
-            pointer-events: none;
-            transition: opacity 1.2s ease 0.3s !important; 
-        }
-        #phase-3.exiting .card-entrance-wrapper {
-            transform: translateY(150px) scale(0.8) rotateX(10deg) !important;
-            opacity: 0 !important;
-            filter: blur(15px) !important;
-            transition: transform 1s cubic-bezier(0.8, 0, 0.2, 1), opacity 0.8s ease, filter 0.8s ease !important;
-        }
-        #phase-3.exiting .phase3-main-title,
-        #phase-3.exiting .phase3-top-title {
-            transform: translateX(-100px) !important;
-            opacity: 0 !important;
-            filter: blur(20px) !important;
-            transition: transform 1s cubic-bezier(0.8, 0, 0.2, 1), opacity 0.8s ease, filter 0.8s ease !important;
-        }
-
-        .p3-return { z-index: 1010; bottom: 5%; }
-        #phase-3.active .p3-return .btn-return { opacity: 1; pointer-events: auto; }
-        #phase-3.exiting .p3-return .btn-return { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
-
-        /* GLASS TOOLTIP */
-        .glass-tooltip {
-            position: fixed;
-            width: 420px;
-            padding: 1.8rem;
-            background: rgba(10, 12, 20, 0.65);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 16px;
-            color: #e2e8f0;
-            font-family: var(--font-medium);
-            font-size: 1.15rem;
-            line-height: 1.6;
-            pointer-events: none;
-            z-index: 999999;
-            opacity: 0;
-            transform: translate(0, 0) scale(0.95);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.7), inset 0 0 20px rgba(255, 255, 255, 0.03);
-            text-shadow: 0 2px 4px rgba(0,0,0,0.6);
-        }
-        .glass-tooltip.active {
-            opacity: 1;
-            transform: translate(0, 0) scale(1);
-        }
-
-        /* =========================================
-           ESTILOS DO MASCOTE VORTEX (FIM DA FASE 3)
-           ========================================= */
-        
-        /* Removemos os fundos e bordas de vidro para ficar só a imagem solta */
-        .mascot-card .card-entrance-wrapper {
-            background: transparent !important;
-            box-shadow: none !important;
-            border: none !important;
-            backdrop-filter: none !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: visible; /* CRUCIAL: Permite que o drop-shadow vaze para fora do tamanho da imagem */
-        }
-
-        .mascot-img {
-            width: 100%; /* Expandido para 100% para abrigar o padding sem mudar a hierarquia do flexbox */
-            padding: 35px; /* SOLUÇÃO DEFINITIVA DO CORTE: Cria um espaço transparente por dentro da imagem. A máscara não vai mais encostar no brilho! */
-            height: auto;
-            object-fit: contain;
-            transform-origin: bottom center;
-            animation: mascotBreathe 4s ease-in-out infinite; /* Animação suave de sono */
-        }
-
-        /* Raposa Base - Sem luz e um pouco apagada */
-        .mascot-img.base-fox {
-            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.8)) brightness(0.85);
-        }
-
-        /* Raposa Brilhante - A LUZ É DELA, FIXA E ESTÁTICA */
-        .mascot-img.glow-fox {
-            position: absolute;
-            top: 0; bottom: 0; left: 0; right: 0;
-            margin: auto;
-            
-            /* USANDO BRIGHTNESS E DROP-SHADOW PARA EFEITO DE STROKE/AURA ROXA PESADA */
-            /* Aumentado o raio do brilho base de 10px para 15px e o brightness para 1.4 */
-            filter: brightness(1.4)
-                    drop-shadow(3px 0 3px rgba(139, 92, 246, 1))
-                    drop-shadow(-3px 0 3px rgba(139, 92, 246, 1))
-                    drop-shadow(0 3px 5px rgba(139, 92, 246, 1))
-                    drop-shadow(0 -3px 0 rgba(139, 92, 246, 1))
-                    drop-shadow(0 0 15px rgba(139, 92, 246, 0.6)); /* Brilho suave aumentado */
-            
-            /* O SEGREDO DO MOTOR DE REVELAÇÃO: MÁSCARA MÓVEL */
-            /* SOLUÇÃO DEFINITIVA DO CORTE:
-               1. Aumentamos o raio do gradiente (de 80px para 150px) para ser maior que a raposa.
-               2. O gradiente vai de preto 0% (revelação total) até preto 30% (mantém total no corpo)
-                  e depois suaviza para transparent 100% (oculta).
-               Isso garante que ao chegar perto, a raposa inteira fique "dentro" da área preta
-               da máscara, permitindo que os drop-shadows vazem sem cortes.
-            */
-            -webkit-mask-image: radial-gradient(circle 150px at var(--mouse-x, -200vw) var(--mouse-y, -200vw), black 0%, black 30%, transparent 100%);
-            mask-image: radial-gradient(circle 150px at var(--mouse-x, -200vw) var(--mouse-y, -200vw), black 0%, black 30%, transparent 100%);
-            
-            -webkit-mask-size: contain; mask-size: contain;
-            -webkit-mask-position: center bottom; mask-position: center bottom;
-            -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
-            
-            opacity: 1; /* SEMPRE LIGADO - Mascaramento controla visibilidade */
-            pointer-events: none;
-            z-index: 2;
-        }
-
-        /* Animação Elástica do Clique (O Quique da Raposa) */
-        @keyframes vortexEsticadinha {
-            0% { transform: scale(1) translateY(0); }
-            15% { transform: scale(0.85, 1.15) translateY(-8px); }
-            30% { transform: scale(1.1, 0.9) translateY(4px); }
-            45% { transform: scale(0.93, 1.07) translateY(-3px); }
-            60% { transform: scale(1.05, 0.95) translateY(1.5px); }
-            75% { transform: scale(0.97, 1.03) translateY(-1px); }
-            100% { transform: scale(1) translateY(0); }
-        }
-
-        .vortex-poked {
-            animation: vortexEsticadinha 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) both !important;
-        }
-
-        /* Faz a raposinha "respirar" escalando o eixo Y levemente */
-        @keyframes mascotBreathe {
-            0%, 100% { transform: scaleY(1) scaleX(1); }
-            50% { transform: scaleY(1.04) scaleX(0.98); }
-        }
-
-        /* Tempo de entrada na tela (Cascata): Ele é o 7º elemento, então entra depois do card 6 */
-        #phase-3.active .project-card:nth-child(7) .card-entrance-wrapper { 
-            transition-delay: 1.0s; 
-            transform: translateY(0) scale(1); 
-            opacity: 1; 
-            filter: blur(0); 
-        }
-
-    </style>
+    <link rel="icon" href="assets/img/VKico.ico" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="security.js"></script>
 </head>
 <body>
+
+    <noscript>
+        <style>
+            #loader-wrapper { display: none !important; }
+            .ns-bg {
+                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                background: linear-gradient(-45deg, #020108, #0b051a, #03010a, #080414);
+                background-size: 400% 400%;
+                animation: ns-deepSpaceNebula 20s ease infinite;
+                z-index: 999999; display: flex; align-items: center; justify-content: center;
+                color: #f8fafc;
+                font-family: 'EuropaGrotesk-Medium', 'Courier New', Courier, monospace;
+            }
+            .ns-container {
+                text-align: center; display: flex; flex-direction: column; align-items: center;
+                animation: ns-fade-in 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0;
+            }
+            h1.ns-title {
+                font-family: 'EuropaGrotesk-Bold', 'Courier New', Courier, monospace;
+                font-size: 1.5rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+                margin: 0 0 1rem; color: #fff; text-shadow: 0 0 15px rgba(255,255,255,0.4);
+            }
+            p.ns-desc {
+                font-family: 'EuropaGrotesk-Medium', 'Courier New', Courier, monospace;
+                font-size: 0.95rem; font-weight: 500; color: rgba(255,255,255,0.8); max-width: 400px;
+                line-height: 1.6; margin: 0 0 3rem; letter-spacing: 0.02em;
+            }
+            .ns-symbol {
+                position: relative; width: 80px; height: 80px; margin-bottom: 3rem;
+            }
+            .ns-circle {
+                position: absolute; border: 1px solid rgba(255,255,255,0.1); border-radius: 50%;
+                top: 0; left: 0; right: 0; bottom: 0; box-sizing: border-box;
+            }
+            .ns-circle-1 { animation: ns-spin 10s linear infinite; border-top-color: rgba(255,255,255,0.8); }
+            .ns-circle-2 { top: 10px; left: 10px; right: 10px; bottom: 10px; animation: ns-spin-rev 15s linear infinite; border: 1px dashed rgba(255,255,255,0.3); }
+            .ns-circle-3 { top: 30px; left: 30px; right: 30px; bottom: 30px; animation: ns-pulse-glow 3s ease-in-out infinite alternate; background: #fff; border: none; box-shadow: 0 0 20px rgba(255,255,255,0.5); }
+            .ns-line {
+                width: 1px; height: 100px; background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
+                transform-origin: top; animation: ns-grow-down 1.5s 0.5s ease-out forwards; transform: scaleY(0);
+            }
+            @keyframes ns-fade-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+            @keyframes ns-spin { to { transform: rotate(360deg); } }
+            @keyframes ns-spin-rev { to { transform: rotate(-360deg); } }
+            @keyframes ns-pulse-glow { from { transform: scale(0.9); box-shadow: 0 0 10px rgba(255,255,255,0.2); } to { transform: scale(1.1); box-shadow: 0 0 30px rgba(255,255,255,0.8); } }
+            @keyframes ns-grow-down { to { transform: scaleY(1); } }
+            @keyframes ns-deepSpaceNebula {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+        </style>
+        <div class="ns-bg">
+            <div class="ns-container">
+                <div class="ns-symbol">
+                    <div class="ns-circle ns-circle-1"></div>
+                    <div class="ns-circle ns-circle-2"></div>
+                    <div class="ns-circle ns-circle-3"></div>
+                </div>
+                <h1 class="ns-title">SCRIPTS DESABILITADOS</h1>
+                <p class="ns-desc">Você manteve o universo em descanso. Portanto, para<br>acordá-lo, é necessário que os scripts também acordem.<br>Habilite os scripts e atualize a página para continuar.</p>
+                <div class="ns-line"></div>
+            </div>
+        </div>
+    </noscript>
+
+    <!-- LOADER SYSTEM -->
+    <div id="loader-wrapper">
+        <div id="loader-orb" class="bouncing">
+            <img src="assets/img/VKlogo.png" class="vk-logo" alt="VK Logo">
+        </div>
+    </div>
 
     <div class="vignette"></div>
     <div id="custom-cursor" class="custom-cursor"></div>
@@ -614,6 +106,13 @@
     <div id="phase-1-text">
         <div class="phase1-title">AURORA SYSTEM</div>
         <div class="phase1-subtitle">Awaiting Uplink // Standby</div>
+        <div class="phase1-contact">
+            <svg viewBox="0 0 127.14 96.36" class="contact-icon"><path fill="currentColor" d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.68,2a67.55,67.55,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1,105.25,105.25,0,0,0,32.19-16.14c2.64-27.38-4.51-51.11-19.32-72.1M42.56,65.36c-5.36,0-9.76-4.83-9.76-10.76s4.31-10.76,9.76-10.76c5.5,0,9.85,4.92,9.76,10.76C52.32,60.53,48.06,65.36,42.56,65.36Zm42,0c-5.36,0-9.76-4.83-9.76-10.76s4.31-10.76,9.76-10.76c5.5,0,9.85,4.92,9.76,10.76C84.32,60.53,80.06,65.36,84.56,65.36Z"/></svg>
+            <span class="contact-text">voddkin</span>
+            <span class="contact-separator">|</span>
+            <svg viewBox="0 0 24 24" class="contact-icon"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+            <span class="contact-text">v0ddkin</span>
+        </div>
     </div>
 
     <div id="hero-action-wrapper" class="hero-wrapper">
@@ -709,9 +208,35 @@
                 </div>
 
                 <div class="project-card mascot-card">
+                    <div id="vortex-counter" class="vortex-counter">0</div>
                     <div class="card-entrance-wrapper">
                         <img src="assets/img/Vortex.png" class="mascot-img base-fox" alt="Vortex Dormindo">
                         <img src="assets/img/Vortex.png" class="mascot-img glow-fox" alt="">
+                    </div>
+                </div>
+
+                <div class="project-card secret-card locked-secret" id="vortex-secret-card" style="display: none;">
+                    <div id="secret-pink-boom" class="secret-pink-boom"></div>
+                    <div class="secret-card-border-lines">
+                        <div class="border-line top"></div>
+                        <div class="border-line right"></div>
+                        <div class="border-line bottom"></div>
+                        <div class="border-line left"></div>
+                    </div>
+                    <div class="card-entrance-wrapper card-entrance-secret">
+                        <div class="secret-vortex-container" id="vortex-secret-container">
+                            <p>Acesse antecipadamente meu mais novo projeto ultrassecreto</p>
+                            <button id="vortex-secret-btn" class="secret-vortex-btn">
+                                <span class="btn-ripple"></span>
+                                <span class="btn-edge-light top"></span>
+                                <span class="btn-edge-light bottom"></span>
+                                Conheça a
+                                <span class="foxty-brand-wrapper">
+                                    <span class="foxty-brand-text">Foxty</span>
+                                    <img src="assets/img/foxty-logo.png" class="foxty-btn-logo" alt="" onerror="this.style.display='none'">
+                                </span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -728,787 +253,8 @@
         </div>
     </div>
 
-    <audio id="vortex-sound" src="https://cdn.freesound.org/previews/273/273330_5132717-lq.mp3" preload="auto"></audio>
-    <script>
-(() => {
-    'use strict';
-
-    const STATES = {
-        STANDBY: 'STANDBY',             
-        TRANSITIONING: 'TRANSITIONING', 
-        ACTIVE_VOID: 'ACTIVE_VOID',     
-        ARCHIVES: 'ARCHIVES'            
-    };
-    let currentState = STATES.STANDBY;
-
-    const DOM = {
-        customCursor: document.getElementById('custom-cursor'),
-        glassTooltip: document.getElementById('glass-tooltip'),
-        phase2: document.getElementById('phase-2'),
-        phase3: document.getElementById('phase-3'),
-        bgCanvas: document.getElementById('bg-canvas'),
-        heroAction: document.getElementById('hero-action'),
-        heroWrapper: document.getElementById('hero-action-wrapper'),
-        blackHole: document.getElementById('black-hole'),
-        btnReturn: document.getElementById('btn-return'),
-        heroPhase2: document.getElementById('hero-phase2'),
-        heroPhase2Wrapper: document.getElementById('hero-phase2-wrapper'),
-        phase1Text: document.getElementById('phase-1-text'),
-        btnReturnWrapper: document.getElementById('btn-return-wrapper'),
-        btnReturnP3: document.getElementById('btn-return-p3'),
-        btnReturnWrapperP3: document.getElementById('btn-return-wrapper-p3'),
-        phase3TextDynamic: document.getElementById('phase3-text-dynamic'),
-        phase3TopTitle: document.getElementById('phase3-top-title'),
-        cards: document.querySelectorAll('.project-card')
-    };
-
-    let rawMouseX = window.innerWidth / 2;
-    let rawMouseY = window.innerHeight / 2;
-    let cursorX = rawMouseX;
-    let cursorY = rawMouseY;
-    let lastMouseX = rawMouseX;
-    let velocityX = 0;
-    let currentSkew = 0;
-
-    let scrollTarget = 0;
-    let scrollCurrent = 0;
-    let cardSpacing = 0; 
-    let initialOffset = 0;
-    let maxScroll = 0;
-    let isDragging = false;
-    let startX = 0;
-    let scrollStart = 0;
-
-    // Função dinâmica para calcular métricas baseadas no tamanho da janela
-    function updateLayoutMetrics() {
-        // Redefine DOM.cards caso novos cards tenham sido injetados dinamicamente
-        DOM.cards = document.querySelectorAll('.project-card');
-
-        cardSpacing = window.innerWidth * 0.35; 
-        initialOffset = window.innerWidth * 0.25;
-        
-        // Pega a largura real geométrica do card (25vw ou o limite de 400px)
-        const cardWidth = Math.min(window.innerWidth * 0.25, 400); 
-        
-        // O container direito começa em 35vw. O meio exato do monitor é 50vw.
-        // A matemática para o centro do card parar cirurgicamente em 50vw:
-        // O container direito '.phase3-right' tem largura de 65vw.
-        // O ponto 50% do monitor fica na posição rawX = window.innerWidth * 0.5.
-        // A posição relativa desse ponto dentro do container direito é (50vw - 35vw) = 15vw.
-        const targetXPosInsideRight = (window.innerWidth * 0.15) - (cardWidth / 2);
-        
-        // A posição bruta final da raposa no array inteiro (x0 inicial)
-        const lastCardX0 = initialOffset + ((DOM.cards.length - 1) * cardSpacing);
-        
-        // Define o novo limite absoluto "ancorado" ao centro.
-        // maxScroll é a quantidade de scroll necessário para que o x0 final chegue em targetXPosInsideRight.
-        maxScroll = lastCardX0 - targetXPosInsideRight;
-    }
-    
-    // Inicia a matemática antes da animação rodar
-    updateLayoutMetrics();
-
-    const offscreenCanvas = document.createElement('canvas');
-    const offCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
-    let isImageLoaded = false;
-    let isHoveringPixel = false;
-    let isCORSBlocked = false;
-
-    const offscreenCanvas2 = document.createElement('canvas');
-    const offCtx2 = offscreenCanvas2.getContext('2d', { willReadFrequently: true });
-    let isImage2Loaded = false;
-    let isHoveringPixelPhase2 = false;
-
-    const ctx = DOM.bgCanvas.getContext('2d', { alpha: false });
-    let width, height, halfW, halfH;
-    let stars = [];
-    let renderList = [];
-    const STAR_COUNT = 2800; /* Mais que o dobro de partículas! */
-    const GALAXY_RADIUS = 2200; /* Raio de expansão da tela muito maior */
-    const SPIRAL_ARMS = 4;
-    const ARM_SPREAD = 0.8; /* Braços mais largos para preencher espaços */
-    let targetRotX = Math.PI / 3;
-    let targetRotY = 0;
-    let currentRotX = targetRotX;
-    let currentRotY = targetRotY;
-    let autoRotY = 0;
-    /* Adicionado os tons da identidade Void/Vortex na paleta de estrelas */
-    const starColors = ['#06b6d4', '#8b5cf6', '#3b82f6', '#0284c7', '#c084fc', '#4c1d95'];
-    const spriteCache = {};
-    let globalTimeScale = 1.0;
-    let isGalaxyPaused = false;
-    let isCataclysmActive = false;
-    let decelerationInterval = null;
-
-    let holdTimeout = null;
-    let isHoldingPhase2 = false;
-
-    const TARGET_WORD = "voddkin";
-    let currentKeyIndex = 0;
-    let easterEggTriggered = false;
-    const AudioContextObj = window.AudioContext || window.webkitAudioContext;
-    let audioCtx;
-    const FREQ = { LOW_C: 130.81, C: 261.63, D: 293.66, E: 329.63, F: 349.23, G: 392.00, A: 440.00, B: 493.88 };
-    const SCALE = [FREQ.C, FREQ.D, FREQ.E, FREQ.F, FREQ.G, FREQ.A, FREQ.B];
-    const EXCEPTION_KEYS = ['v', 'o', 'd', 'k', 'i', 'n'];
-    const successAudio = new Audio("https://cdn.freesound.org/previews/772/772277_12520441-lq.mp3");
-    successAudio.volume = 1.0;
-
-    function createStarSprite(color, type) {
-        const c = document.createElement('canvas');
-        const cCtx = c.getContext('2d');
-        const radius = type === 'gas' ? 80 : (type === 'nebula' ? 30 : 8);
-        c.width = radius * 2; c.height = radius * 2;
-        const grad = cCtx.createRadialGradient(radius, radius, 0, radius, radius, radius);
-        if (type === 'gas') { grad.addColorStop(0, color); grad.addColorStop(1, 'transparent'); }
-        else if (type === 'nebula') { grad.addColorStop(0, color); grad.addColorStop(0.3, color); grad.addColorStop(1, 'transparent'); }
-        else { grad.addColorStop(0, color); grad.addColorStop(0.2, color); grad.addColorStop(1, 'transparent'); }
-        cCtx.fillStyle = grad; cCtx.fillRect(0, 0, c.width, c.height);
-        return { canvas: c, radius: radius };
-    }
-
-    function preRenderSprites() {
-        starColors.forEach(color => {
-            spriteCache[color + '_star'] = createStarSprite(color, 'star');
-            spriteCache[color + '_nebula'] = createStarSprite(color, 'nebula');
-            spriteCache[color + '_gas'] = createStarSprite(color, 'gas');
-        });
-    }
-
-    function initGalaxy() {
-        width = DOM.bgCanvas.width = window.innerWidth;
-        height = DOM.bgCanvas.height = window.innerHeight;
-        halfW = width / 2; halfH = height / 2;
-        stars = [];
-        renderList = new Array(STAR_COUNT);
-
-        for (let i = 0; i < STAR_COUNT; i++) {
-            let ox, oy, oz;
-
-            // NOVA LÓGICA: 40% formam o fundo do universo (Esfera Ambiente), 60% a Galáxia
-            if (i < STAR_COUNT * 0.4) {
-                // Esfera estelar para preencher a tela inteira, independente do ângulo
-                const u = Math.random();
-                const v = Math.random();
-                const theta = u * 2.0 * Math.PI;
-                const phi = Math.acos(2.0 * v - 1.0);
-                const r = Math.cbrt(Math.random()) * (GALAXY_RADIUS * 1.8); // 1.8x maior que a galáxia principal
-                ox = r * Math.sin(phi) * Math.cos(theta);
-                oy = r * Math.sin(phi) * Math.sin(theta);
-                oz = r * Math.cos(phi);
-            } else {
-                // Os braços giratórios da galáxia no meio
-                const distance = Math.pow(Math.random(), 3) * GALAXY_RADIUS;
-                const armOffset = (Math.PI * 2 / SPIRAL_ARMS) * Math.floor(Math.random() * SPIRAL_ARMS);
-                const finalAngle = distance * 0.004 + armOffset + (Math.random() - 0.5) * ARM_SPREAD;
-
-                ox = Math.cos(finalAngle) * distance;
-                oz = Math.sin(finalAngle) * distance;
-                oy = (Math.random() - 0.5) * ((1 - (distance / GALAXY_RADIUS)) * 180); // Espessura vertical aumentada
-            }
-
-            const color = starColors[Math.floor(Math.random() * starColors.length)];
-            const roll = Math.random();
-            let type = roll > 0.9 ? 'gas' : (roll > 0.7 ? 'nebula' : 'star');
-            let baseScale = roll > 0.9 ? Math.random() * 4 + 3 : (roll > 0.7 ? Math.random() * 2 + 1 : Math.random() * 1.2 + 0.3);
-
-            // Calcula a velocidade com base na distância real até o centro (evita bugs no fundo)
-            const distFromCenter = Math.sqrt(ox*ox + oz*oz);
-            const speed = 0.001 + (0.005 * (Math.max(0, 1 - (distFromCenter / GALAXY_RADIUS))));
-            const sprite = spriteCache[color + '_' + type];
-
-            stars.push({
-                ox, oy, oz, baseScale, type,
-                speed: speed,
-                spriteCanvas: sprite.canvas, spriteRadius: sprite.radius,
-                vx: 0, vy: 0, vz: 0
-            });
-            renderList[i] = { px: 0, py: 0, pz: 0, scale: 0, ref: stars[i] };
-        }
-    }
-
-    DOM.heroAction.onload = () => {
-        offscreenCanvas.width = DOM.heroAction.naturalWidth || 1;
-        offscreenCanvas.height = DOM.heroAction.naturalHeight || 1;
-        try { offCtx.drawImage(DOM.heroAction, 0, 0); } catch (e) { }
-        isImageLoaded = true;
-    };
-    if (DOM.heroAction.complete) DOM.heroAction.onload();
-
-    DOM.heroPhase2.onload = () => {
-        offscreenCanvas2.width = DOM.heroPhase2.naturalWidth || 1;
-        offscreenCanvas2.height = DOM.heroPhase2.naturalHeight || 1;
-        try { offCtx2.drawImage(DOM.heroPhase2, 0, 0); } catch (e) { }
-        isImage2Loaded = true;
-    };
-    if (DOM.heroPhase2.complete) DOM.heroPhase2.onload();
-
-    preRenderSprites();
-    initGalaxy();
-
-    let lastTime = performance.now();
-    let animFrameId = null;
-
-    function updateTooltipPosition(x, y) {
-        if (currentState !== STATES.ARCHIVES || isDragging) {
-            DOM.glassTooltip.classList.remove('active');
-            return;
-        }
-
-        DOM.glassTooltip.style.pointerEvents = 'none'; 
-        const hoveredElement = document.elementFromPoint(x, y);
-        let hoveredCard = hoveredElement ? hoveredElement.closest('.project-card') : null;
-        
-        if (hoveredCard) {
-            const text = hoveredCard.getAttribute('data-tooltip');
-            if (text) {
-                DOM.glassTooltip.innerHTML = text;
-                DOM.glassTooltip.classList.add('active');
-                
-                let tx = x + 25;
-                let ty = y + 25;
-                if (tx + DOM.glassTooltip.offsetWidth > window.innerWidth) tx = x - DOM.glassTooltip.offsetWidth - 15;
-                if (ty + DOM.glassTooltip.offsetHeight > window.innerHeight) ty = y - DOM.glassTooltip.offsetHeight - 15;
-                
-                DOM.glassTooltip.style.left = tx + 'px';
-                DOM.glassTooltip.style.top = ty + 'px';
-            }
-        } else {
-            DOM.glassTooltip.classList.remove('active');
-        }
-    }
-
-    function engineTick(timestamp) {
-        let dt = timestamp - lastTime;
-        if (dt > 50) dt = 16.6;
-        lastTime = timestamp;
-
-        const timeFactor = dt / 16.666;
-
-        cursorX += (rawMouseX - cursorX) * 0.2 * timeFactor;
-        cursorY += (rawMouseY - cursorY) * 0.2 * timeFactor;
-        DOM.customCursor.style.left = `${cursorX}px`;
-        DOM.customCursor.style.top = `${cursorY}px`;
-
-        velocityX = rawMouseX - lastMouseX;
-        lastMouseX = rawMouseX;
-
-        if (currentState === STATES.ACTIVE_VOID) {
-            const absVel = Math.abs(velocityX);
-            let targetSkew = 0;
-            if (absVel > 10) { targetSkew = Math.min(absVel * 0.1, 8) * (velocityX > 0 ? 1 : -1); }
-            currentSkew += (targetSkew - currentSkew) * 0.1 * timeFactor;
-
-            const xPercent = (rawMouseX / window.innerWidth) * 2 - 1;
-            const yPercent = (rawMouseY / window.innerHeight) * 2 - 1;
-
-            document.documentElement.style.setProperty('--skew-voddkin', `${currentSkew}deg`);
-            document.documentElement.style.setProperty('--parallax-x', `${xPercent * -20}px`);
-            document.documentElement.style.setProperty('--parallax-y', `${-50 + (yPercent * -10)}%`);
-        }
-
-        if (DOM.phase3.classList.contains('active') && !DOM.phase3.classList.contains('exiting')) {
-            
-            // FÍSICA DE SNAP-BACK (Mola de Retorno ao soltar overscroll)
-            if (!isDragging) {
-                if (scrollTarget > maxScroll) {
-                    // Puxa suavemente de volta para o limite máximo (a raposa no meio)
-                    scrollTarget += (maxScroll - scrollTarget) * 0.15 * timeFactor;
-                } else if (scrollTarget < 0) {
-                    // Puxa suavemente de volta para o limite mínimo (primeiro card)
-                    scrollTarget += (0 - scrollTarget) * 0.15 * timeFactor;
-                }
-            }
-
-            scrollCurrent += (scrollTarget - scrollCurrent) * 0.08 * timeFactor;
-
-            if (DOM.phase3TextDynamic) {
-                let textOpacity = Math.max(0, 1 - (scrollCurrent / 600));
-                let translateFactor = -(scrollCurrent * 0.15);
-                DOM.phase3TextDynamic.style.opacity = textOpacity;
-                DOM.phase3TextDynamic.style.transform = `translateX(${translateFactor}px) translateZ(0)`;
-            }
-
-            DOM.cards.forEach((card, i) => {
-                let x0 = initialOffset + (i * cardSpacing);
-                let xPos = x0 - scrollCurrent;
-                let absX = Math.abs(xPos);
-
-                let scale = 1 - Math.min(absX / 1500, 0.4);
-                let opacity = 1 - Math.min(absX / 800, 1);
-                let rotateY = xPos * -0.02;
-
-                card.style.transform = `translateX(${xPos}px) scale(${scale}) rotateY(${rotateY}deg) translateZ(0)`;
-                card.style.opacity = opacity;
-            });
-
-            // =========================================
-            // REVELAÇÃO DO VORTEX A 60 FPS (FÍSICA CORRETA)
-            // =========================================
-            const vortexCard = DOM.cards[DOM.cards.length - 1]; // Pega o último card (Mascote)
-            if (vortexCard) {
-                const wrapper = vortexCard.querySelector('.card-entrance-wrapper');
-                if (wrapper) {
-                    const rect = wrapper.getBoundingClientRect();
-                    // Atualiza constantemente com base na posição crua do mouse VS posição crua da raposa
-                    const x = rawMouseX - rect.left;
-                    const y = rawMouseY - rect.top;
-                    wrapper.style.setProperty('--mouse-x', `${x}px`);
-                    wrapper.style.setProperty('--mouse-y', `${y}px`);
-                }
-            }
-        }
-
-        if (!isGalaxyPaused) {
-                // Ao invés de pintar de sólido, apagamos o frame anterior deixando transparente!
-                // Isso permite que o CSS animado do Fundo brilhe por trás.
-                ctx.clearRect(0, 0, width, height);
-                ctx.globalCompositeOperation = 'lighter';
-
-            currentRotX += (targetRotX - currentRotX) * 0.05 * globalTimeScale * timeFactor;
-            currentRotY += (targetRotY - currentRotY) * 0.05 * globalTimeScale * timeFactor;
-            autoRotY += 0.0005 * globalTimeScale * timeFactor;
-
-            const totalRotY = currentRotY + autoRotY;
-            const cosX = Math.cos(currentRotX);
-            const sinX = Math.sin(currentRotX);
-            const cosY = Math.cos(totalRotY);
-            const sinY = Math.sin(totalRotY);
-
-            const fov = 800; const zOffset = 1000;
-            let visibleCount = 0;
-
-            for (let i = 0; i < STAR_COUNT; i++) {
-                let s = stars[i];
-
-                if (isCataclysmActive) {
-                    s.ox += s.vx * timeFactor;
-                    s.oy += s.vy * timeFactor;
-                    s.oz += s.vz * timeFactor;
-                    const limit = 4000;
-                    if (s.ox > limit || s.ox < -limit) s.vx *= -1;
-                    if (s.oy > limit || s.oy < -limit) s.vy *= -1;
-                    if (s.oz > limit || s.oz < -limit) s.vz *= -1;
-                } else {
-                    if (globalTimeScale > 0.01) {
-                        const currentSpeed = s.speed * globalTimeScale * timeFactor;
-                        const scaledCos = Math.cos(currentSpeed);
-                        const scaledSin = Math.sin(currentSpeed);
-                        const nx = s.ox * scaledCos - s.oz * scaledSin;
-                        const nz = s.ox * scaledSin + s.oz * scaledCos;
-                        s.ox = nx; s.oz = nz;
-                    }
-                }
-
-                const y1 = s.oy * cosX - s.oz * sinX;
-                const z1 = s.oy * sinX + s.oz * cosX;
-                const finalX = s.ox * cosY + z1 * sinY;
-                const finalZ = -s.ox * sinY + z1 * cosY;
-                const zPos = finalZ + zOffset;
-
-                if (zPos > 0) {
-                    const scale = fov / zPos;
-                    const projX = halfW + finalX * scale;
-                    const projY = halfH + y1 * scale;
-
-                    if (projX > -100 && projX < width + 100 && projY > -100 && projY < height + 100) {
-                        let rl = renderList[visibleCount];
-                        rl.px = Math.trunc(projX);
-                        rl.py = Math.trunc(projY);
-                        rl.pz = finalZ;
-                        rl.scale = scale; rl.ref = s;
-                        visibleCount++;
-                    }
-                }
-            }
-
-            let activeRenderList = renderList.slice(0, visibleCount);
-
-            for (let i = 0; i < visibleCount; i++) {
-                let p = activeRenderList[i];
-                let s = p.ref;
-                let finalScale = s.baseScale * p.scale;
-                let drawRadius = s.spriteRadius * finalScale;
-                let distAlpha = Math.min(1, Math.max(0.05, p.scale * 1.5));
-                let finalAlpha = s.type === 'gas' ? distAlpha * 0.03 : (s.type === 'nebula' ? distAlpha * 0.2 : distAlpha * 0.6);
-
-                ctx.globalAlpha = finalAlpha;
-                ctx.drawImage(s.spriteCanvas, p.px - drawRadius, p.py - drawRadius, Math.trunc(drawRadius * 2), Math.trunc(drawRadius * 2));
-            }
-
-            ctx.globalCompositeOperation = 'source-over';
-            ctx.globalAlpha = 1.0;
-        }
-
-        animFrameId = requestAnimationFrame(engineTick);
-    }
-
-    animFrameId = requestAnimationFrame(engineTick);
-
-    window.addEventListener('resize', () => { 
-        initGalaxy(); 
-        updateLayoutMetrics(); // Recalcula o centro absoluto caso a janela mude de tamanho
-    });
-
-    window.addEventListener('mousemove', (e) => {
-        rawMouseX = e.clientX;
-        rawMouseY = e.clientY;
-
-        if(width && height) {
-            const nx = (e.clientX / width) * 2 - 1;
-            const ny = (e.clientY / height) * 2 - 1;
-            targetRotX = (Math.PI / 3) + ny * 0.3;
-            targetRotY = nx * 0.5;
-        }
-
-        if (currentState === STATES.STANDBY) {
-            if (isImageLoaded && !DOM.heroWrapper.classList.contains('ghost')) {
-                const rect = DOM.heroAction.getBoundingClientRect();
-                if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
-                    isHoveringPixel = true; 
-                    if (!isCORSBlocked) {
-                        try {
-                            const scaleX = DOM.heroAction.naturalWidth / rect.width;
-                            const scaleY = DOM.heroAction.naturalHeight / rect.height;
-                            const x = Math.round((e.clientX - rect.left) * scaleX);
-                            const y = Math.round((e.clientY - rect.top) * scaleY);
-
-                            if (x >= 0 && x < offscreenCanvas.width && y >= 0 && y < offscreenCanvas.height) {
-                                isHoveringPixel = offCtx.getImageData(x, y, 1, 1).data[3] > 0;
-                            } else {
-                                isHoveringPixel = false;
-                            }
-                        } catch (err) {
-                            isCORSBlocked = true;
-                        }
-                    }
-                    if (isHoveringPixel) DOM.customCursor.classList.add('hovering');
-                    else DOM.customCursor.classList.remove('hovering');
-                } else {
-                    isHoveringPixel = false;
-                    DOM.customCursor.classList.remove('hovering');
-                }
-            }
-        } else if (currentState === STATES.ACTIVE_VOID) {
-            if (isImage2Loaded && !DOM.phase2.classList.contains('fade-out')) {
-                const rect2 = DOM.heroPhase2.getBoundingClientRect();
-                if (e.clientX >= rect2.left && e.clientX <= rect2.right && e.clientY >= rect2.top && e.clientY <= rect2.bottom) {
-                    isHoveringPixelPhase2 = true;
-                    if (!isCORSBlocked) {
-                        try {
-                            const scaleX = DOM.heroPhase2.naturalWidth / rect2.width;
-                            const scaleY = DOM.heroPhase2.naturalHeight / rect2.height;
-                            const x = Math.round((e.clientX - rect2.left) * scaleX);
-                            const y = Math.round((e.clientY - rect2.top) * scaleY);
-                            if (x >= 0 && x < offscreenCanvas2.width && y >= 0 && y < offscreenCanvas2.height) {
-                                isHoveringPixelPhase2 = offCtx2.getImageData(x, y, 1, 1).data[3] > 0;
-                            } else {
-                                isHoveringPixelPhase2 = false;
-                            }
-                        } catch (err) {
-                            isCORSBlocked = true;
-                        }
-                    }
-                } else {
-                    isHoveringPixelPhase2 = false;
-                }
-
-                if (!isHoveringPixelPhase2 && holdTimeout) {
-                    cancelPhase2Hold();
-                }
-            }
-
-            const rect = DOM.btnReturnWrapper.getBoundingClientRect();
-            if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
-                DOM.btnReturn.style.transform = `translate(${(e.clientX - rect.left - rect.width / 2) * 0.3}px, ${(e.clientY - rect.top - rect.height / 2) * 0.3}px) translateZ(0)`;
-                DOM.customCursor.classList.add('hovering');
-            } else {
-                DOM.btnReturn.style.transform = `translate(0px, 0px) translateZ(0)`;
-                if (!holdTimeout && !DOM.customCursor.classList.contains('releasing')) DOM.customCursor.classList.remove('hovering');
-            }
-
-        } else if (currentState === STATES.ARCHIVES) {
-            if (isDragging) {
-                let rawTarget = scrollStart + ((startX - e.clientX) * 1.5);
-                
-                // FÍSICA PREMIUM: Tensão Elástica (Rubber Banding)
-                if (rawTarget > maxScroll) {
-                    // Puxando depois da raposa
-                    let overscroll = rawTarget - maxScroll;
-                    // O máximo que ele consegue "esticar" a tela é 350px, com força exigida exponencialmente
-                    scrollTarget = maxScroll + ((overscroll * 350) / (overscroll + 350));
-                } else if (rawTarget < 0) {
-                    // Puxando antes do primeiro card
-                    let overscroll = Math.abs(rawTarget);
-                    scrollTarget = -((overscroll * 350) / (overscroll + 350));
-                } else {
-                    // Movimento livre normal no meio
-                    scrollTarget = rawTarget;
-                }
-            }
-
-            const r3Rect = DOM.btnReturnWrapperP3.getBoundingClientRect();
-            if (e.clientX >= r3Rect.left && e.clientX <= r3Rect.right && e.clientY >= r3Rect.top && e.clientY <= r3Rect.bottom) {
-                DOM.btnReturnP3.style.transform = `translate(${(e.clientX - r3Rect.left - r3Rect.width / 2) * 0.3}px, ${(e.clientY - r3Rect.top - r3Rect.height / 2) * 0.3}px) translateZ(0)`;
-                DOM.customCursor.classList.add('hovering');
-            } else {
-                DOM.btnReturnP3.style.transform = `translate(0px, 0px) translateZ(0)`;
-                if(!isDragging) DOM.customCursor.classList.remove('hovering');
-            }
-
-            updateTooltipPosition(rawMouseX, rawMouseY);
-        }
-    });
-
-    window.addEventListener('mouseup', () => {
-        if (currentState === STATES.ARCHIVES && isDragging) {
-            isDragging = false;
-            DOM.customCursor.classList.remove('dragging');
-            updateTooltipPosition(rawMouseX, rawMouseY);
-        }
-    });
-
-    window.addEventListener('wheel', (e) => {
-        if (currentState === STATES.ARCHIVES && DOM.phase3.classList.contains('active') && !DOM.phase3.classList.contains('exiting')) {
-            scrollTarget += e.deltaY * 0.8;
-            
-            // Limita o estouro máximo da rodinha do mouse para a mola de snap-back poder agir
-            if (scrollTarget > maxScroll + 200) scrollTarget = maxScroll + 200;
-            if (scrollTarget < -200) scrollTarget = -200;
-            
-            DOM.glassTooltip.classList.remove('active'); 
-        }
-    });
-
-    DOM.heroAction.addEventListener('click', () => {
-        if (currentState !== STATES.STANDBY || !isHoveringPixel) return;
-
-        currentState = STATES.TRANSITIONING;
-        DOM.customCursor.classList.remove('hovering');
-
-        const rect = DOM.heroWrapper.getBoundingClientRect();
-        DOM.blackHole.style.left = `${rect.left + rect.width / 2}px`;
-        DOM.blackHole.style.top = `${rect.top + rect.height / 2}px`;
-
-        DOM.heroWrapper.classList.add('ghost');
-        DOM.phase1Text.classList.add('ghost');
-
-        if(decelerationInterval) clearInterval(decelerationInterval);
-        decelerationInterval = setInterval(() => { globalTimeScale = Math.max(0, globalTimeScale - 0.1); }, 50);
-
-        requestAnimationFrame(() => requestAnimationFrame(() => DOM.blackHole.classList.add('active') ));
-
-        setTimeout(() => {
-            DOM.phase2.classList.add('active');
-            isGalaxyPaused = true;
-            currentState = STATES.ACTIVE_VOID;
-        }, 1000);
-    });
-
-    DOM.btnReturn.addEventListener('click', () => {
-        if (currentState !== STATES.ACTIVE_VOID) return;
-        currentState = STATES.TRANSITIONING;
-        DOM.customCursor.classList.remove('hovering');
-
-        DOM.phase2.classList.remove('active');
-
-        isGalaxyPaused = false;
-
-        if(decelerationInterval) clearInterval(decelerationInterval);
-        decelerationInterval = setInterval(() => { globalTimeScale = Math.min(1.0, globalTimeScale + 0.05); }, 50);
-
-        setTimeout(() => {
-            DOM.blackHole.classList.remove('active');
-            DOM.heroWrapper.classList.remove('ghost');
-            DOM.phase1Text.classList.remove('ghost');
-            currentState = STATES.STANDBY;
-        }, 800);
-    });
-
-    function cancelPhase2Hold() {
-        if (holdTimeout) {
-            clearTimeout(holdTimeout);
-            holdTimeout = null;
-        }
-        
-        if (isHoldingPhase2) {
-            isHoldingPhase2 = false;
-            DOM.customCursor.classList.remove('holding');
-            
-            DOM.customCursor.classList.add('releasing');
-            setTimeout(() => {
-                DOM.customCursor.classList.remove('releasing');
-            }, 600);
-        }
-        
-        DOM.heroPhase2Wrapper.style.animationPlayState = 'running';
-    }
-
-    DOM.heroPhase2.addEventListener('mousedown', (e) => {
-        if (currentState !== STATES.ACTIVE_VOID || !isHoveringPixelPhase2) return;
-        e.preventDefault();
-        
-        isHoldingPhase2 = true; 
-        DOM.customCursor.classList.remove('releasing'); 
-        DOM.customCursor.classList.add('holding');
-        
-        DOM.heroPhase2Wrapper.style.animationPlayState = 'paused';
-        
-        holdTimeout = setTimeout(() => {
-            isHoldingPhase2 = false; 
-            DOM.customCursor.classList.remove('holding');
-            DOM.customCursor.classList.add('exploding');
-            
-            DOM.heroPhase2Wrapper.style.animationPlayState = 'running';
-            
-            currentState = STATES.TRANSITIONING;
-            DOM.phase2.classList.add('fade-out');
-            DOM.phase3.classList.add('active');
-            
-            // O grande segredo da limpeza: Desativa totalmente a Fase 2 após ela desaparecer, 
-            // permitindo que ela "nasça de novo" perfeitamente na hora de voltar.
-            setTimeout(() => { 
-                currentState = STATES.ARCHIVES; 
-                DOM.phase2.classList.remove('active');
-                DOM.phase2.classList.remove('fade-out');
-            }, 1500); 
-
-            setTimeout(() => {
-                DOM.customCursor.classList.add('resetting');
-                DOM.customCursor.classList.remove('exploding');
-                void DOM.customCursor.offsetWidth; 
-                DOM.customCursor.classList.remove('resetting');
-            }, 700); 
-
-        }, 3000); 
-    });
-
-    DOM.heroPhase2.addEventListener('mouseup', cancelPhase2Hold);
-    
-    window.addEventListener('mouseup', () => {
-        if (isHoldingPhase2) cancelPhase2Hold();
-    });
-
-    DOM.phase3.addEventListener('mousedown', (e) => {
-        if (currentState === STATES.ARCHIVES && DOM.phase3.classList.contains('active') && !DOM.phase3.classList.contains('exiting')) {
-            isDragging = true; startX = e.clientX; scrollStart = scrollTarget;
-            DOM.customCursor.classList.add('dragging'); 
-            DOM.glassTooltip.classList.remove('active'); 
-        }
-    });
-
-    DOM.btnReturnP3.addEventListener('click', () => {
-        if (currentState !== STATES.ARCHIVES) return;
-        currentState = STATES.TRANSITIONING;
-        DOM.customCursor.classList.remove('hovering');
-        DOM.glassTooltip.classList.remove('active');
-
-        // Ativa a classe pura de CSS que cuida de evaporar a Fase 3 e os cards de forma limpa.
-        DOM.phase3.classList.add('exiting');
-
-        setTimeout(() => {
-            DOM.phase3.classList.remove('active');
-            DOM.phase3.classList.remove('exiting');
-
-            scrollTarget = 0;
-            scrollCurrent = 0;
-
-            // Reboot absoluto da Fase 2
-            DOM.phase2.classList.add('active');
-            currentState = STATES.ACTIVE_VOID;
-        }, 1200);
-    });
-
-    function playRetroBeep(frequency) {
-        if (!audioCtx) audioCtx = new AudioContextObj();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-
-        const osc = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-
-        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
-
-        osc.connect(gainNode); gainNode.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.35);
-    }
-
-    function triggerGalaxyExplosion() {
-        isCataclysmActive = true;
-        if (isGalaxyPaused) isGalaxyPaused = false;
-        stars.forEach(s => {
-            s.vx = (Math.random() - 0.5) * 15;
-            s.vy = (Math.random() - 0.5) * 15;
-            s.vz = (Math.random() - 0.5) * 15;
-            s.baseScale = s.baseScale * 3;
-        });
-    }
-
-    window.addEventListener('keydown', (e) => {
-        if (easterEggTriggered) return;
-
-        if (currentState !== STATES.STANDBY) return; 
-
-        const key = e.key.toLowerCase();
-
-        if (key === TARGET_WORD[currentKeyIndex]) {
-            playRetroBeep(SCALE[currentKeyIndex]);
-            currentKeyIndex++;
-
-            if (currentKeyIndex === TARGET_WORD.length) {
-                easterEggTriggered = true;
-                setTimeout(() => {
-                    successAudio.play().catch(e => console.log("Áudio bloqueado pelo navegador", e));
-                    triggerGalaxyExplosion();
-                }, 150);
-            }
-        } else {
-            currentKeyIndex = 0;
-            if (key === TARGET_WORD[0]) {
-                playRetroBeep(SCALE[0]);
-                currentKeyIndex = 1;
-            } else if (EXCEPTION_KEYS.includes(key)) {
-                playRetroBeep(FREQ.C);
-            } else {
-                playRetroBeep(FREQ.LOW_C);
-            }
-        }
-    });
-
-    // =========================================
-    // Evento de Cutucar o Vortex (Elastic Poke)
-    // =========================================
-    const vortexFoxContainer = DOM.cards[DOM.cards.length - 1]; // O container do mascote
-    const vortexAudioSource = document.getElementById('vortex-sound');
-
-    if (vortexFoxContainer) {
-        vortexFoxContainer.addEventListener('click', () => {
-            // 1. Toca o som reservado (para e toca de novo se clicar rápido)
-            if (vortexAudioSource) {
-                vortexAudioSource.currentTime = 0; 
-                vortexAudioSource.play().catch(e => console.log("Áudio bloqueado", e));
-            }
-            
-            // 2. Dá a esticadinha elástica (adiciona a classe e remove depois que a animação acaba)
-            const wrapper = vortexFoxContainer.querySelector('.card-entrance-wrapper');
-            if (wrapper) {
-                // Remove caso esteja clicando rápido para reiniciar animação
-                wrapper.classList.remove('vortex-poked');
-                void wrapper.offsetWidth; // Trigger reflow para reiniciar CSS animation
-                
-                wrapper.classList.add('vortex-poked');
-                
-                // Remove a classe após 600ms (tempo da animação CSS)
-                setTimeout(() => {
-                    wrapper.classList.remove('vortex-poked');
-                }, 600);
-            }
-        });
-    }
-
-})();
-</script>
+    <audio id="vortex-sound" src="assets/aud/vortexSFX.mp3" preload="auto"></audio>
+    <audio id="revelation-sound" src="assets/aud/revelation.mp3" preload="auto"></audio>
+    <script type="module" src="script.js"></script>
 </body>
 </html>

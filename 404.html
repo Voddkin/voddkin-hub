@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ih... Onde é que você se meteu?</title>
+    <meta name="description" content="Página não encontrada.">
+    <meta name="author" content="Voddkin">
+    <meta name="theme-color" content="#050505">
+    <link rel="icon" href="/assets/img/VKico.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/styles.css">
+    <script type="module" src="/security.js"></script>
+    <style>
+        body, html {
+            margin: 0; padding: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(-45deg, #020108, #0b051a, #03010a, #080414);
+            background-size: 400% 400%;
+            animation: bgNebula 20s ease infinite;
+            overflow: hidden;
+            color: #fff;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        @keyframes bgNebula {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .not-found-container {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            z-index: 10;
+        }
+
+        .oops-image {
+            width: 100%;
+            max-width: 550px;
+            height: auto;
+            margin-top: 4rem;
+            pointer-events: none;
+        }
+
+        .not-found-title {
+            font-family: 'EuropaGrotesk-Bold', 'Courier New', Courier, monospace;
+            font-size: clamp(3.5rem, 8vw, 6rem);
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin: 0 0 5px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            line-height: 1;
+        }
+
+        .not-found-desc {
+            font-family: 'EuropaGrotesk-Medium', 'Courier New', Courier, monospace;
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 0.2em;
+            margin-bottom: 3rem;
+            text-transform: uppercase;
+        }
+
+        .btn-return {
+            font-family: 'EuropaGrotesk-Medium', 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: #fff;
+            text-decoration: none;
+            padding: 16px 45px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 40px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            cursor: none;
+            opacity: 1;
+        }
+
+        .btn-return::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn-return:hover {
+            border-color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .btn-return:hover::before {
+            left: 100%;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Vignette */
+        .vignette {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.85) 150%);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* Glowing Orbs */
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            z-index: 1;
+            pointer-events: none;
+            animation: pulseOrb 8s ease-in-out infinite alternate;
+        }
+
+        .orb-1 { width: 400px; height: 400px; background: rgba(139, 92, 246, 0.3); top: -150px; left: -150px; }
+        .orb-2 { width: 500px; height: 500px; background: rgba(59, 130, 246, 0.2); bottom: -200px; right: -150px; animation-delay: -4s; }
+
+        @keyframes pulseOrb {
+            0% { transform: scale(1); opacity: 0.2; }
+            100% { transform: scale(1.2); opacity: 0.5; }
+        }
+        
+    </style>
+</head>
+<body>
+    <noscript>
+        <style>
+            .ns-bg {
+                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                background: linear-gradient(-45deg, #020108, #0b051a, #03010a, #080414);
+                background-size: 400% 400%;
+                animation: ns-deepSpaceNebula 20s ease infinite;
+                z-index: 999999; display: flex; align-items: center; justify-content: center;
+                color: #f8fafc;
+                font-family: inherit;
+            }
+            .ns-container {
+                text-align: center; display: flex; flex-direction: column; align-items: center;
+                animation: ns-fade-in 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0;
+            }
+            h1.ns-title {
+                font-family: 'EuropaGrotesk-Bold', 'Courier New', Courier, monospace;
+                font-size: 1.5rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+                margin: 0 0 1rem; color: #fff; text-shadow: 0 0 15px rgba(255,255,255,0.4);
+            }
+            p.ns-desc {
+                font-family: 'EuropaGrotesk-Medium', 'Courier New', Courier, monospace;
+                font-size: 0.95rem; font-weight: 500; color: rgba(255,255,255,0.8); max-width: 400px;
+                line-height: 1.6; margin: 0 0 3rem; letter-spacing: 0.02em;
+            }
+            .ns-symbol {
+                position: relative; width: 80px; height: 80px; margin-bottom: 3rem;
+            }
+            .ns-circle {
+                position: absolute; border: 1px solid rgba(255,255,255,0.1); border-radius: 50%;
+                top: 0; left: 0; right: 0; bottom: 0; box-sizing: border-box;
+            }
+            .ns-circle-1 { animation: ns-spin 10s linear infinite; border-top-color: rgba(255,255,255,0.8); }
+            .ns-circle-2 { top: 10px; left: 10px; right: 10px; bottom: 10px; animation: ns-spin-rev 15s linear infinite; border: 1px dashed rgba(255,255,255,0.3); }
+            .ns-circle-3 { top: 30px; left: 30px; right: 30px; bottom: 30px; animation: ns-pulse-glow 3s ease-in-out infinite alternate; background: #fff; border: none; box-shadow: 0 0 20px rgba(255,255,255,0.5); }
+            .ns-line {
+                width: 1px; height: 100px; background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
+                transform-origin: top; animation: ns-grow-down 1.5s 0.5s ease-out forwards; transform: scaleY(0);
+            }
+            .not-found-container { display: none !important; }
+            @keyframes ns-fade-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+            @keyframes ns-spin { to { transform: rotate(360deg); } }
+            @keyframes ns-spin-rev { to { transform: rotate(-360deg); } }
+            @keyframes ns-pulse-glow { from { transform: scale(0.9); box-shadow: 0 0 10px rgba(255,255,255,0.2); } to { transform: scale(1.1); box-shadow: 0 0 30px rgba(255,255,255,0.8); } }
+            @keyframes ns-grow-down { to { transform: scaleY(1); } }
+            @keyframes ns-deepSpaceNebula {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+        </style>
+        <div class="ns-bg">
+            <div class="ns-container">
+                <div class="ns-symbol">
+                    <div class="ns-circle ns-circle-1"></div>
+                    <div class="ns-circle ns-circle-2"></div>
+                    <div class="ns-circle ns-circle-3"></div>
+                </div>
+                <h1 class="ns-title">SCRIPTS DESABILITADOS</h1>
+                <p class="ns-desc">Você manteve o universo em descanso. Portanto, para<br>acordá-lo, é necessário que os scripts também acordem.<br>Habilite os scripts e atualize a página para continuar.</p>
+                <div class="ns-line"></div>
+            </div>
+        </div>
+    </noscript>
+    <div class="vignette"></div>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div id="custom-cursor" class="custom-cursor"></div>
+    
+    <div class="not-found-container">
+        <h1 class="not-found-title">Erro 404</h1>
+        <p class="not-found-desc">Tá tudo bem, é normal se perder as vezes.<br>Eu te ajudo:</p>
+        <a href="/" id="btn-return" class="btn-return">Clique aqui e volte para casa</a>
+        <img src="/assets/img/ooops....png" alt="Oops" class="oops-image">
+    </div>
+
+    <script type="module" src="/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voddkin | Extreme</title>
+    <meta name="description" content="Extreme - Projeto Voddkin.">
+    <meta name="author" content="Voddkin">
+    <meta name="theme-color" content="#050505">
+    <link rel="icon" href="/assets/img/VKico.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/extreme.css">
+    <script type="module" src="/security.js"></script>
+</head>
+<body>
+    <noscript>
+        <style>
+            .ns-bg {
+                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                background: linear-gradient(-45deg, #020108, #0b051a, #03010a, #080414);
+                background-size: 400% 400%;
+                animation: ns-deepSpaceNebula 20s ease infinite;
+                z-index: 999999; display: flex; align-items: center; justify-content: center;
+                color: #f8fafc;
+                font-family: 'EuropaGrotesk-Medium', 'Courier New', Courier, monospace;
+            }
+            .ns-container {
+                text-align: center; display: flex; flex-direction: column; align-items: center;
+                animation: ns-fade-in 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0;
+            }
+            h1.ns-title {
+                font-family: 'EuropaGrotesk-Bold', 'Courier New', Courier, monospace;
+                font-size: 1.5rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+                margin: 0 0 1rem; color: #fff; text-shadow: 0 0 15px rgba(255,255,255,0.4);
+            }
+            p.ns-desc {
+                font-family: 'EuropaGrotesk-Medium', 'Courier New', Courier, monospace;
+                font-size: 0.95rem; font-weight: 500; color: rgba(255,255,255,0.8); max-width: 400px;
+                line-height: 1.6; margin: 0 0 3rem; letter-spacing: 0.02em;
+            }
+            .ns-symbol {
+                position: relative; width: 80px; height: 80px; margin-bottom: 3rem;
+            }
+            .ns-circle {
+                position: absolute; border: 1px solid rgba(255,255,255,0.1); border-radius: 50%;
+                top: 0; left: 0; right: 0; bottom: 0; box-sizing: border-box;
+            }
+            .ns-circle-1 { animation: ns-spin 10s linear infinite; border-top-color: rgba(255,255,255,0.8); }
+            .ns-circle-2 { top: 10px; left: 10px; right: 10px; bottom: 10px; animation: ns-spin-rev 15s linear infinite; border: 1px dashed rgba(255,255,255,0.3); }
+            .ns-circle-3 { top: 30px; left: 30px; right: 30px; bottom: 30px; animation: ns-pulse-glow 3s ease-in-out infinite alternate; background: #fff; border: none; box-shadow: 0 0 20px rgba(255,255,255,0.5); }
+            .ns-line {
+                width: 1px; height: 100px; background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
+                transform-origin: top; animation: ns-grow-down 1.5s 0.5s ease-out forwards; transform: scaleY(0);
+            }
+            @keyframes ns-fade-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+            @keyframes ns-spin { to { transform: rotate(360deg); } }
+            @keyframes ns-spin-rev { to { transform: rotate(-360deg); } }
+            @keyframes ns-pulse-glow { from { transform: scale(0.9); box-shadow: 0 0 10px rgba(255,255,255,0.2); } to { transform: scale(1.1); box-shadow: 0 0 30px rgba(255,255,255,0.8); } }
+            @keyframes ns-grow-down { to { transform: scaleY(1); } }
+            @keyframes ns-deepSpaceNebula {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+        </style>
+        <div class="ns-bg">
+            <div class="ns-container">
+                <div class="ns-symbol">
+                    <div class="ns-circle ns-circle-1"></div>
+                    <div class="ns-circle ns-circle-2"></div>
+                    <div class="ns-circle ns-circle-3"></div>
+                </div>
+                <h1 class="ns-title">SCRIPTS DESABILITADOS</h1>
+                <p class="ns-desc">Você manteve o universo em descanso. Portanto, para<br>acordá-lo, é necessário que os scripts também acordem.<br>Habilite os scripts e atualize a página para continuar.</p>
+                <div class="ns-line"></div>
+            </div>
+        </div>
+    </noscript>
+    
+    <div id="crt-overlay" class="crt"></div>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="256" height="240"></canvas>
+    </div>
+
+    <!-- Mobile controls -->
+    <div id="mobile-controls">
+        <button class="dpad-btn" id="btn-up"></button>
+        <button class="dpad-btn" id="btn-left"></button>
+        <button class="dpad-btn" id="btn-right"></button>
+        <button class="dpad-btn" id="btn-down"></button>
+    </div>
+    
+    <div id="action-controls">
+        <button class="action-btn" id="btn-action">A</button>
+    </div>
+
+    <script type="module" src="/extreme.ts"></script>
+</body>
+</html>

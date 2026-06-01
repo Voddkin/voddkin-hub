@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        (function() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const token = urlParams.get('t');
+                const storedToken = sessionStorage.getItem('_vkAuthToken');
+                const exp = sessionStorage.getItem('_vkAuthExp');
+                
+                // Extremely strict validation: token must exist, match, and not be expired
+                if (!token || !storedToken || !exp || token !== storedToken || Date.now() > parseInt(exp)) {
+                    sessionStorage.removeItem('_vkAuthToken');
+                    sessionStorage.removeItem('_vkAuthExp');
+                    window.location.replace('/404.html');
+                    return;
+                }
+                
+                // If valid, immediately destroy the token so it can NEVER be reused (even on page refresh)
+                sessionStorage.removeItem('_vkAuthToken');
+                sessionStorage.removeItem('_vkAuthExp');
+                
+                // Wipe the token from the URL cleanly so users can't copy "voddk.in/foxty?t=XYZ"
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } catch(e) {
+                window.location.replace('/404.html');
+            }
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Global SEO & Social Sharing (Universal) -->
+    <title>Projeto Foxty | Em Breve</title>
+    <meta name="title" property="og:title" content="Projeto Foxty | Em Breve">
+    <meta name="description" property="og:description" content="Portal de acesso restrito à nova arquitetura de serviços. A autenticação de ambiente é necessária para inicializar o fluxo.">
+    <meta name="image" property="og:image" content="https://voddk.in/assets/img/foxty-logo.png">
+    <meta name="keywords" content="foxty, beta fechado, portal do desenvolvedor, voddkin, vortex, automação visual, early access">
+    <meta name="author" content="Voddkin">
+    <meta name="robots" content="noindex, nofollow">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://voddk.in/foxty.html">
+    
+    <link rel="icon" href="assets/img/foxtyico.ico" type="image/x-icon">
+    
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="security.js"></script>
+</head>
+<body>
+    <noscript>
+        <style>
+            #terminal-container, #loader-wrapper { display: none !important; }
+            .ns-bg {
+                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                background: linear-gradient(-45deg, #020108, #0b051a, #03010a, #080414);
+                background-size: 400% 400%;
+                animation: ns-deepSpaceNebula 20s ease infinite;
+                z-index: 999999; display: flex; align-items: center; justify-content: center;
+                color: #f8fafc;
+                font-family: 'EuropaGrotesk-Medium', 'Courier New', Courier, monospace;
+            }
+            .ns-container {
+                text-align: center; display: flex; flex-direction: column; align-items: center;
+                animation: ns-fade-in 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0;
+            }
+            h1.ns-title {
+                font-family: 'EuropaGrotesk-Bold', 'Courier New', Courier, monospace;
+                font-size: 1.5rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+                margin: 0 0 1rem; color: #fff; text-shadow: 0 0 15px rgba(255,255,255,0.4);
+            }
+            p.ns-desc {
+                font-family: 'EuropaGrotesk-Medium', 'Courier New', Courier, monospace;
+                font-size: 0.95rem; font-weight: 500; color: rgba(255,255,255,0.8); max-width: 400px;
+                line-height: 1.6; margin: 0 0 3rem; letter-spacing: 0.02em;
+            }
+            .ns-symbol {
+                position: relative; width: 80px; height: 80px; margin-bottom: 3rem;
+            }
+            .ns-circle {
+                position: absolute; border: 1px solid rgba(255,255,255,0.1); border-radius: 50%;
+                top: 0; left: 0; right: 0; bottom: 0; box-sizing: border-box;
+            }
+            .ns-circle-1 { animation: ns-spin 10s linear infinite; border-top-color: rgba(255,255,255,0.8); }
+            .ns-circle-2 { top: 10px; left: 10px; right: 10px; bottom: 10px; animation: ns-spin-rev 15s linear infinite; border: 1px dashed rgba(255,255,255,0.3); }
+            .ns-circle-3 { top: 30px; left: 30px; right: 30px; bottom: 30px; animation: ns-pulse-glow 3s ease-in-out infinite alternate; background: #fff; border: none; box-shadow: 0 0 20px rgba(255,255,255,0.5); }
+            .ns-line {
+                width: 1px; height: 100px; background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
+                transform-origin: top; animation: ns-grow-down 1.5s 0.5s ease-out forwards; transform: scaleY(0);
+            }
+            @keyframes ns-fade-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+            @keyframes ns-spin { to { transform: rotate(360deg); } }
+            @keyframes ns-spin-rev { to { transform: rotate(-360deg); } }
+            @keyframes ns-pulse-glow { from { transform: scale(0.9); box-shadow: 0 0 10px rgba(255,255,255,0.2); } to { transform: scale(1.1); box-shadow: 0 0 30px rgba(255,255,255,0.8); } }
+            @keyframes ns-grow-down { to { transform: scaleY(1); } }
+            @keyframes ns-deepSpaceNebula {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+        </style>
+        <div class="ns-bg">
+            <div class="ns-container">
+                <div class="ns-symbol">
+                    <div class="ns-circle ns-circle-1"></div>
+                    <div class="ns-circle ns-circle-2"></div>
+                    <div class="ns-circle ns-circle-3"></div>
+                </div>
+                <h1 class="ns-title">SCRIPTS DESABILITADOS</h1>
+                <p class="ns-desc">Você manteve o universo em descanso. Portanto, para<br>acordá-lo, é necessário que os scripts também acordem.<br>Habilite os scripts e atualize a página para continuar.</p>
+                <div class="ns-line"></div>
+            </div>
+        </div>
+    </noscript>
+    <div id="custom-cursor" class="custom-cursor"></div>
+
+    <!-- VIDEO PLAYER CONTAINER (HIDDEN INITIALLY) -->
+    <div id="video-container">
+        <!-- Cannot pause, has no controls, click events ignored -->
+        <video id="foxty-video" src="assets/vid/sobre-a-foxty.mp4" preload="auto" playsinline disablePictureInPicture></video>
+        
+        <div id="play-button" class="play-button">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+
+        <div id="btn-return-wrapper" class="btn-return-wrapper">
+            <button id="btn-return" class="btn-return" onclick="window.location.href='index.html'">
+                <div class="btn-bg-glow"></div>
+                <div class="btn-line-top"></div>
+                <span class="btn-text">VOLTAR</span>
+                <div class="btn-line-bottom"></div>
+            </button>
+        </div>
+    </div>
+
+
+    <!-- TERMINAL LOADER CONTAINER -->
+    <div class="container" id="terminal-container">
+        <h1>PROJETO FOXTY<span class="blink">_</span></h1>
+        <p style="font-size: 1.1rem; color: #fff; margin-bottom: 30px; letter-spacing: 0.1em;">Estabelecendo conexão segura...</p>
+        
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+        <div id="percentage" style="font-weight: bold; font-size: 1.2rem;">0%</div>
+
+        <div class="log" id="log-container">
+            <!-- Logs will appear here -->
+        </div>
+    </div>
+
+        <script type="module" src="script.js"></script>
+</body>
+</html>

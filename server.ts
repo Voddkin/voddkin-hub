@@ -84,7 +84,7 @@ async function startServer() {
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: "spa",
+      appType: "mpa",
     });
     app.use(vite.middlewares);
   } else {
@@ -96,8 +96,11 @@ async function startServer() {
     app.get('/foxty', (req, res) => {
       res.sendFile(path.join(distPath, 'foxty.html'));
     });
-    app.get('*', (req, res) => {
+    app.get('/', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
+    });
+    app.get('*', (req, res) => {
+      res.status(404).sendFile(path.join(distPath, '404.html'));
     });
   }
 

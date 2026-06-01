@@ -23,9 +23,11 @@ export default defineConfig(() => {
         input: {
           main: path.resolve(__dirname, 'index.html'),
           extreme: path.resolve(__dirname, 'extreme.html'),
-          foxty: path.resolve(__dirname, 'foxty.html')
+          foxty: path.resolve(__dirname, 'foxty.html'),
+          notFound: path.resolve(__dirname, '404.html')
         }
       }
     }
   };
 });
+  

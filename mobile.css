@@ -169,11 +169,15 @@
   /* ------------------------------------------- */
   /* Specific exception for 404 page             */
   /* ------------------------------------------- */
-  body.page-404 > *:not(.mobile-lock-overlay):not(noscript) {
+  body.page-404 > .vignette,
+  body.page-404 > .bg-orb {
     display: block !important;
   }
   body.page-404 > .not-found-container {
     display: flex !important;
+  }
+  body.page-404 #custom-cursor {
+    display: none !important;
   }
   
   /* Hide the overlay on 404 */
@@ -185,25 +189,25 @@
 /* --- General Responsiveness for Narrow Screens (Desktop & Mobile) --- */
 @media screen and (max-width: 900px), screen and (max-height: 600px) {
 
-
   /* 404 Responsiveness adjustments */
   body.page-404 {
     display: flex !important;
     padding: 1rem;
     box-sizing: border-box;
-    overflow-y: auto !important;
-    height: auto !important;
+    overflow: hidden !important;
+    height: 100vh !important;
     min-height: 100vh;
   }
 
   body.page-404 .not-found-container {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
+    padding-top: 0;
+    padding-bottom: 0;
   }
 
   body.page-404 .not-found-title {
     font-size: clamp(2.5rem, 12vw, 4rem) !important;
     margin-bottom: 0.5rem;
+    color: #ffffff !important; /* Ensure it's not red! */
   }
 
   body.page-404 .not-found-desc {
@@ -211,6 +215,7 @@
     text-align: center;
     line-height: 1.5;
     margin-bottom: 2rem;
+    color: rgba(255, 255, 255, 0.8) !important;
   }
 
   body.page-404 .btn-return {
@@ -218,7 +223,11 @@
     font-size: 0.8rem !important;
     white-space: normal;
     text-align: center;
+    display: inline-block !important; /* Ensure it is visible */
     max-width: 85%;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 50; /* ensure it's clickable */
   }
 
   body.page-404 .oops-image {
